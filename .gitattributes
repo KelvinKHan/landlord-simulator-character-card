@@ -1,0 +1,8 @@
+# 常规文本文件统一使用 LF，便于跨平台协作。
+*.md text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+
+# 原始导出必须保持逐字节不变，避免 Git 自动转换换行符。
+/角色卡/原始导出/* -text
