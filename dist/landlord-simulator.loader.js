@@ -1,14 +1,14 @@
-// 房东模拟器多合一在线加载器 v0.1.0-preview.6
+// 房东模拟器多合一在线加载器 v0.2.0-preview.3
 const LANDLORD_LOADER_KEY = 'LandlordSimulatorLoader';
 const LANDLORD_RUNTIME_KEY = 'LandlordSimulator';
 const landlordHost = window.parent ?? window;
 const landlordSources = [
-  "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.6/dist/landlord-simulator.bundle.js",
-  "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.6/dist/landlord-simulator.bundle.js"
+  "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.2.0-preview.3/dist/landlord-simulator.bundle.js",
+  "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.2.0-preview.3/dist/landlord-simulator.bundle.js"
 ];
 const landlordLoaderState = {
-  version: "0.1.0-preview.6",
-  release: "v0.1.0-preview.6",
+  version: "0.2.0-preview.3",
+  release: "v0.2.0-preview.3",
   status: 'loading',
   loadedFrom: null,
   attempts: [],

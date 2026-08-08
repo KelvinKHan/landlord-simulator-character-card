@@ -1,16 +1,16 @@
 {
-  "version": "0.1.0-preview.6",
+  "version": "0.2.0-preview.3",
   "format": "esm",
   "entry": "landlord-simulator.bundle.js",
-  "bytes": 929253,
-  "sha256": "251acc12634f3cf5beb58ba528ae630e971b1e8ba9f078d210522bfc8a160c74",
+  "bytes": 1051484,
+  "sha256": "b052a5a029529db5d5292e6fab199a74ccc69d9da5c8245112506028d3aa3c01",
   "release": {
-    "tag": "v0.1.0-preview.6",
+    "tag": "v0.2.0-preview.3",
     "repository": "KelvinKHan/landlord-simulator-character-card",
     "loader": "landlord-simulator.loader.js",
     "sources": [
-      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.6/dist/landlord-simulator.bundle.js",
-      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.6/dist/landlord-simulator.bundle.js"
+      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.2.0-preview.3/dist/landlord-simulator.bundle.js",
+      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.2.0-preview.3/dist/landlord-simulator.bundle.js"
     ]
   },
   "upstreams": {
@@ -532,6 +532,74 @@
         "世界书与开场白应用/新聊天注入",
         "云端浏览/搜索/上传/下载/登录",
         "云端管理员审核/编辑/删除/封禁"
+      ]
+    },
+    {
+      "id": "landlord-schema-v2",
+      "name": "房东系统变量结构 2.0",
+      "source": null,
+      "entry": "scripts/modules/landlord-schema/index.js",
+      "implementation": "product-module",
+      "requires": [
+        "mvu.framework"
+      ],
+      "provides": [
+        "landlord.schema"
+      ],
+      "legacyRequires": [],
+      "features": [
+        "注册官方 Zod 4 写法的房东系统变量结构",
+        "提供安全解析与默认值补全",
+        "保持模拟模式为默认值"
+      ]
+    },
+    {
+      "id": "landlord-core",
+      "name": "房东经营核心服务",
+      "source": null,
+      "entry": "scripts/modules/landlord-core/index.js",
+      "implementation": "product-module",
+      "requires": [
+        "landlord.schema"
+      ],
+      "provides": [
+        "landlord.store",
+        "landlord.tasks",
+        "building.compiler"
+      ],
+      "legacyRequires": [],
+      "features": [
+        "MVU 事务写入",
+        "多建筑编译",
+        "本地模拟任务",
+        "接管、装修与招募的确认写入"
+      ]
+    },
+    {
+      "id": "landlord-console",
+      "name": "房东经营中枢",
+      "source": null,
+      "entry": "scripts/modules/landlord-console/index.js",
+      "implementation": "product-module",
+      "requires": [
+        "landlord.store",
+        "landlord.tasks",
+        "building.compiler",
+        "ui.floatingMenu"
+      ],
+      "provides": [
+        "landlord.console"
+      ],
+      "legacyRequires": [
+        "FloatingMenuManager"
+      ],
+      "features": [
+        "多建筑资产总览与建筑切换",
+        "楼层和空间编译视图",
+        "本地模拟的接管、装修、招募预览与确认",
+        "经营事件时间线",
+        "糖果明亮主题与 Rose Pine 暗色主题",
+        "桌面与窄屏响应式布局"
       ]
     }
   ],

@@ -1,6 +1,11 @@
+var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
 };
 
 // pinned-upstream:mvuFramework
@@ -70,9 +75,9 @@ var init__ = __esm({
       \u4F4D\u7F6E: z.string().prefault("1-2"),
       \u4F4F\u6237: z.string().prefault("\u65E0"),
       \u63CF\u8FF0: z.string().prefault("\u6682\u65E0\u63CF\u8FF0")
-    }).prefault({}).refine((room) => {
-      const occupants = room.\u4F4F\u6237.split("\u3001").map((s) => s.trim()).filter((s) => s && s !== "\u65E0" && s !== "<user>" && s !== "{{user}}");
-      if (occupants.length > 0 && room.\u7C7B\u578B !== "\u5367\u5BA4" && room.\u7C7B\u578B !== "\u60A8\u7684\u623F\u95F4") return false;
+    }).prefault({}).refine((room2) => {
+      const occupants = room2.\u4F4F\u6237.split("\u3001").map((s) => s.trim()).filter((s) => s && s !== "\u65E0" && s !== "<user>" && s !== "{{user}}");
+      if (occupants.length > 0 && room2.\u7C7B\u578B !== "\u5367\u5BA4" && room2.\u7C7B\u578B !== "\u60A8\u7684\u623F\u95F4") return false;
       return true;
     }, { message: '\u6709\u79DF\u5BA2\u5C45\u4F4F\u7684\u623F\u95F4\u7C7B\u578B\u5FC5\u987B\u4E3A"\u5367\u5BA4"\uFF0C\u4E0D\u80FD\u5C06\u79DF\u5BA2\u5206\u914D\u5230\u975E\u5367\u5BA4\u623F\u95F4' });
     Schema = z.object({
@@ -140,10 +145,10 @@ var init__ = __esm({
     }).superRefine((data, ctx) => {
       const tenantNames = new Set(Object.keys(data.\u79DF\u5BA2\u5217\u8868 || {}));
       const rooms = data.\u516C\u5BD3?.\u623F\u95F4\u5217\u8868 || {};
-      for (const [roomKey, room] of Object.entries(rooms)) {
-        const occupant = room.\u4F4F\u6237;
+      for (const [roomKey, room2] of Object.entries(rooms)) {
+        const occupant = room2.\u4F4F\u6237;
         if (!occupant || occupant === "\u65E0") continue;
-        if (room.\u7C7B\u578B === "\u60A8\u7684\u623F\u95F4") continue;
+        if (room2.\u7C7B\u578B === "\u60A8\u7684\u623F\u95F4") continue;
         const names = occupant.split("\u3001").map((s) => s.trim()).filter((s) => s && s !== "\u65E0" && s !== "<user>" && s !== "{{user}}");
         for (const name of names) {
           if (!tenantNames.has(name)) {
@@ -157,8 +162,8 @@ var init__ = __esm({
       }
       for (const tenantName of tenantNames) {
         let found = false;
-        for (const room of Object.values(rooms)) {
-          const names = (room.\u4F4F\u6237 || "").split("\u3001").map((s) => s.trim());
+        for (const room2 of Object.values(rooms)) {
+          const names = (room2.\u4F4F\u6237 || "").split("\u3001").map((s) => s.trim());
           if (names.includes(tenantName)) {
             found = true;
             break;
@@ -424,8 +429,8 @@ var init__2 = __esm({
       function expand() {
         if (state.isExpanded) return;
         state.isExpanded = true;
-        const icon = state.elements.main.querySelector(".icon");
-        icon.innerHTML = ICONS.chevronDown;
+        const icon2 = state.elements.main.querySelector(".icon");
+        icon2.innerHTML = ICONS.chevronDown;
         state.elements.main.classList.add("expanded");
         state.elements.subs.forEach((fab, index) => {
           fab.classList.remove("collapsing");
@@ -439,8 +444,8 @@ var init__2 = __esm({
       function collapse() {
         if (!state.isExpanded) return;
         state.isExpanded = false;
-        const icon = state.elements.main.querySelector(".icon");
-        icon.innerHTML = ICONS.menu;
+        const icon2 = state.elements.main.querySelector(".icon");
+        icon2.innerHTML = ICONS.menu;
         state.elements.main.classList.remove("expanded");
         state.elements.subs.forEach((fab, index) => {
           fab.classList.remove("expanding");
@@ -763,7 +768,7 @@ function countEmptyBedrooms(data) {
   const rooms = data?.\u516C\u5BD3?.\u623F\u95F4\u5217\u8868;
   if (!rooms) return 0;
   return Object.values(rooms).filter(
-    (room) => room.\u7C7B\u578B === "\u5367\u5BA4" && room.\u4F4F\u6237 === "\u65E0"
+    (room2) => room2.\u7C7B\u578B === "\u5367\u5BA4" && room2.\u4F4F\u6237 === "\u65E0"
   ).length;
 }
 function parsePosition(posStr) {
@@ -773,9 +778,9 @@ function parsePosition(posStr) {
 function findAvailableSlots(floorName, roomsData, totalCapacity = 10) {
   const occupied = [];
   for (const roomKey in roomsData) {
-    const room = roomsData[roomKey];
-    if (room && room.\u697C\u5C42 === floorName) {
-      const pos = parsePosition(room.\u4F4D\u7F6E || "1-2");
+    const room2 = roomsData[roomKey];
+    if (room2 && room2.\u697C\u5C42 === floorName) {
+      const pos = parsePosition(room2.\u4F4D\u7F6E || "1-2");
       for (let i = pos.start; i <= pos.end; i++) {
         occupied.push(i);
       }
@@ -1269,17 +1274,17 @@ function createFloorElement(floor, roomsData, targetDoc) {
   const gridDiv = document.createElement("div");
   gridDiv.className = "room-grid";
   let currentPos = 1;
-  floorRooms.forEach((room) => {
-    if (room.start > currentPos) {
-      const emptySize = room.start - currentPos;
+  floorRooms.forEach((room2) => {
+    if (room2.start > currentPos) {
+      const emptySize = room2.start - currentPos;
       const emptyDiv = document.createElement("div");
       emptyDiv.className = "placeholder";
       emptyDiv.style.flexGrow = emptySize;
       gridDiv.appendChild(emptyDiv);
     }
-    const roomCard = createRoomCard(room, targetDoc);
+    const roomCard = createRoomCard(room2, targetDoc);
     gridDiv.appendChild(roomCard);
-    currentPos = room.end + 1;
+    currentPos = room2.end + 1;
   });
   if (currentPos <= floor.capacity) {
     const emptySize = floor.capacity - currentPos + 1;
@@ -1327,45 +1332,45 @@ function createOutdoorCard(outdoorRoom, targetDoc) {
   };
   return card;
 }
-function createRoomCard(room, targetDoc) {
+function createRoomCard(room2, targetDoc) {
   const roomCard = document.createElement("div");
   roomCard.className = "room-card actionable";
-  roomCard.dataset.roomName = room.key;
-  roomCard.style.flexGrow = room.size;
-  const roomType = SafeGetValue(room.data, "\u7C7B\u578B");
-  const roomName = SafeGetValue(room.data, "\u540D\u79F0", room.key);
-  const occupant = SafeGetValue(room.data, "\u4F4F\u6237");
-  let icon = "\u{1F4E6}";
+  roomCard.dataset.roomName = room2.key;
+  roomCard.style.flexGrow = room2.size;
+  const roomType = SafeGetValue(room2.data, "\u7C7B\u578B");
+  const roomName = SafeGetValue(room2.data, "\u540D\u79F0", room2.key);
+  const occupant = SafeGetValue(room2.data, "\u4F4F\u6237");
+  let icon2 = "\u{1F4E6}";
   if (roomType === "\u60A8\u7684\u623F\u95F4") {
     roomCard.classList.add("your-room");
-    icon = "\u{1F451}";
+    icon2 = "\u{1F451}";
   } else if (roomType === "\u56FA\u5B9A\u8BBE\u65BD") {
     roomCard.classList.add("fixed-room");
-    if (roomName.includes("\u53A8\u623F")) icon = "\u{1F373}";
-    else if (roomName.includes("\u536B") || roomName.includes("\u6D74")) icon = "\u{1F6BF}";
-    else if (roomName.includes("\u5385")) icon = "\u{1F6CB}\uFE0F";
-    else icon = "\u{1F3D7}\uFE0F";
+    if (roomName.includes("\u53A8\u623F")) icon2 = "\u{1F373}";
+    else if (roomName.includes("\u536B") || roomName.includes("\u6D74")) icon2 = "\u{1F6BF}";
+    else if (roomName.includes("\u5385")) icon2 = "\u{1F6CB}\uFE0F";
+    else icon2 = "\u{1F3D7}\uFE0F";
   } else if (roomType === "\u5367\u5BA4") {
     roomCard.classList.add("bedroom-room");
-    icon = "\u{1F6CF}\uFE0F";
+    icon2 = "\u{1F6CF}\uFE0F";
   } else if (roomType === "\u529F\u80FD\u6027\u623F\u95F4") {
     roomCard.classList.add("functional-room");
-    icon = "\u2728";
-    if (roomName.includes("\u4E66")) icon = "\u{1F4DA}";
-    else if (roomName.includes("\u5065\u8EAB") || roomName.includes("\u8FD0\u52A8")) icon = "\u{1F3CB}\uFE0F";
-    else if (roomName.includes("\u5F71")) icon = "\u{1F3AC}";
-    else if (roomName.includes("\u6E38") || roomName.includes("\u7535")) icon = "\u{1F3AE}";
-    else if (roomName.includes("\u9910") || roomName.includes("\u5403")) icon = "\u{1F37D}\uFE0F";
-    else if (roomName.includes("\u8863")) icon = "\u{1F457}";
-    else if (roomName.includes("\u753B") || roomName.includes("\u7ED8")) icon = "\u{1F3A8}";
-    else if (roomName.includes("\u4E50") || roomName.includes("\u7434")) icon = "\u{1F3B9}";
+    icon2 = "\u2728";
+    if (roomName.includes("\u4E66")) icon2 = "\u{1F4DA}";
+    else if (roomName.includes("\u5065\u8EAB") || roomName.includes("\u8FD0\u52A8")) icon2 = "\u{1F3CB}\uFE0F";
+    else if (roomName.includes("\u5F71")) icon2 = "\u{1F3AC}";
+    else if (roomName.includes("\u6E38") || roomName.includes("\u7535")) icon2 = "\u{1F3AE}";
+    else if (roomName.includes("\u9910") || roomName.includes("\u5403")) icon2 = "\u{1F37D}\uFE0F";
+    else if (roomName.includes("\u8863")) icon2 = "\u{1F457}";
+    else if (roomName.includes("\u753B") || roomName.includes("\u7ED8")) icon2 = "\u{1F3A8}";
+    else if (roomName.includes("\u4E50") || roomName.includes("\u7434")) icon2 = "\u{1F3B9}";
   } else {
     roomCard.classList.add("empty-room");
-    icon = "\u{1F9F1}";
+    icon2 = "\u{1F9F1}";
   }
   const iconSpan = document.createElement("div");
   iconSpan.className = "room-icon";
-  iconSpan.textContent = icon;
+  iconSpan.textContent = icon2;
   roomCard.appendChild(iconSpan);
   const nameSpan = document.createElement("span");
   nameSpan.className = "room-name";
@@ -3311,15 +3316,15 @@ var init__3 = __esm({
       const rooms = data.\u516C\u5BD3?.\u623F\u95F4\u5217\u8868;
       if (!rooms) return [];
       const bedrooms = [];
-      for (const [key, room] of Object.entries(rooms)) {
-        if (room.\u7C7B\u578B !== "\u5367\u5BA4") continue;
+      for (const [key, room2] of Object.entries(rooms)) {
+        if (room2.\u7C7B\u578B !== "\u5367\u5BA4") continue;
         bedrooms.push({
           key,
-          name: room.\u540D\u79F0 || key,
-          floor: room.\u697C\u5C42 || "",
-          position: room.\u4F4D\u7F6E || "",
-          occupant: room.\u4F4F\u6237 || "\u65E0",
-          isEmpty: room.\u4F4F\u6237 === "\u65E0"
+          name: room2.\u540D\u79F0 || key,
+          floor: room2.\u697C\u5C42 || "",
+          position: room2.\u4F4D\u7F6E || "",
+          occupant: room2.\u4F4F\u6237 || "\u65E0",
+          isEmpty: room2.\u4F4F\u6237 === "\u65E0"
         });
       }
       return bedrooms;
@@ -3649,14 +3654,14 @@ var init__4 = __esm({
       registerApp: function(appConfig) {
         var id = appConfig.id;
         var name = appConfig.name;
-        var icon = appConfig.icon;
+        var icon2 = appConfig.icon;
         var color = appConfig.color;
         var order = appConfig.order || 99;
         if (!id || !name) {
           console.error("[PhoneSystem] \u6CE8\u518CAPP\u5931\u8D25\uFF1A\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570");
           return false;
         }
-        this.registeredApps.set(id, { id, name, icon, color, order });
+        this.registeredApps.set(id, { id, name, icon: icon2, color, order });
         console.log("[PhoneSystem] APP\u5DF2\u6CE8\u518C:", name);
         this.emit("app-registered", { id, name });
         if (this.iframeWindow) {
@@ -8116,7 +8121,7 @@ var init_APP = __esm({
         if (isSticker) {
           bubbleContent = `<div class="msg-bubble sticker-bubble"><img src="${msg.stickerImage}" alt="\u8868\u60C5\u5305"></div>`;
         } else {
-          bubbleContent = `<div class="msg-bubble">${escapeHtml(msg.content)}</div>`;
+          bubbleContent = `<div class="msg-bubble">${escapeHtml2(msg.content)}</div>`;
         }
         return `
             <div class="chat-message ${isSelf ? "self" : "other"}" data-id="${msg.id}">
@@ -8155,12 +8160,12 @@ var init_APP = __esm({
                         <div class="chat-item-name">${conv.name}</div>
                         <div class="chat-item-time">${timeStr}</div>
                     </div>
-                    <div class="chat-item-preview">${escapeHtml(preview)}</div>
+                    <div class="chat-item-preview">${escapeHtml2(preview)}</div>
                 </div>
             </div>
         `;
       }
-      function escapeHtml(text) {
+      function escapeHtml2(text) {
         const div = document.createElement("div");
         div.textContent = text;
         return div.innerHTML;
@@ -8391,8 +8396,8 @@ var init_APP = __esm({
           return;
         }
         grid.innerHTML = stickers.map((s) => `
-            <div class="sticker-picker-item" data-sticker-id="${s.id}" data-sticker-name="${escapeHtml(s.name || "")}" data-sticker-desc="${escapeHtml(s.description || "")}" title="${escapeHtml(s.name || "")}${s.description ? "\n" + escapeHtml(s.description) : ""}">
-                <img src="${s.imageData || ""}" alt="${escapeHtml(s.name || "")}">
+            <div class="sticker-picker-item" data-sticker-id="${s.id}" data-sticker-name="${escapeHtml2(s.name || "")}" data-sticker-desc="${escapeHtml2(s.description || "")}" title="${escapeHtml2(s.name || "")}${s.description ? "\n" + escapeHtml2(s.description) : ""}">
+                <img src="${s.imageData || ""}" alt="${escapeHtml2(s.name || "")}">
             </div>
         `).join("");
         grid.querySelectorAll(".sticker-picker-item").forEach((item) => {
@@ -10230,7 +10235,7 @@ var init__11 = __esm({
                 <div style="display:flex;align-items:center;margin-bottom:2px;">
                      <span class="log-type ${log.type}">${log.type}</span>
                 </div>
-                <div class="log-message">${escapeHtml(log.message)}</div>
+                <div class="log-message">${escapeHtml2(log.message)}</div>
             </div>
         `).join("");
       }
@@ -10269,13 +10274,13 @@ var init__11 = __esm({
                     ${api.response ? `
                     <div class="api-section">
                         <div class="api-section-title">\u{1F4E5} RESPONSE</div>
-                        <div class="api-section-content" style="color:#a8e6cf">${escapeHtml(api.response)}</div>
+                        <div class="api-section-content" style="color:#a8e6cf">${escapeHtml2(api.response)}</div>
                     </div>
                     ` : ""}
                     ${api.error ? `
                     <div class="api-section">
                         <div class="api-section-title">\u274C ERROR</div>
-                        <div class="api-section-content" style="color:#ff4757;border-color:#ff4757">${escapeHtml(api.error)}</div>
+                        <div class="api-section-content" style="color:#ff4757;border-color:#ff4757">${escapeHtml2(api.error)}</div>
                     </div>
                     ` : ""}
                 </div>
@@ -10297,10 +10302,10 @@ var init__11 = __esm({
           const content = msg.content || "";
           const roleClass = `role-${role}`;
           return `<span class="role-badge ${roleClass}">${role.toUpperCase()}</span>
-${escapeHtml(content)}`;
+${escapeHtml2(content)}`;
         }).join("\n\n");
       }
-      function escapeHtml(text) {
+      function escapeHtml2(text) {
         if (!text) return "";
         const div = document.createElement("div");
         div.textContent = text;
@@ -13966,7 +13971,7 @@ ${userMessage}
                         </div>
                         <div class="chat-item-time">${time}</div>
                     </div>
-                    <div class="chat-item-preview">${escapeHtml(preview.substring(0, 30))}${preview.length > 30 ? "..." : ""}</div>
+                    <div class="chat-item-preview">${escapeHtml2(preview.substring(0, 30))}${preview.length > 30 ? "..." : ""}</div>
                 </div>
             </div>
         `;
@@ -14003,7 +14008,7 @@ ${userMessage}
             <div class="chat-message ${isUser ? "self" : "other"}" data-msg-id="${msg.id}">
                 <div class="msg-avatar" style="background-image: url('${avatarUrl || defaultAvatar}'); background-size: cover;"></div>
                 <div class="msg-content-wrap">
-                    <div class="msg-bubble">${escapeHtml(msg.content)}</div>
+                    <div class="msg-bubble">${escapeHtml2(msg.content)}</div>
                     <div class="msg-retract-btn" data-msg-id="${msg.id}" title="\u5220\u9664\u6D88\u606F">
                         <img src="https://api.iconify.design/ri:delete-back-2-line.svg?color=%23666666" style="width:10px;height:10px;">
                     </div>
@@ -14065,7 +14070,7 @@ ${userMessage}
         if (diff < 864e5) return date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0");
         return date.getMonth() + 1 + "/" + date.getDate();
       }
-      function escapeHtml(str) {
+      function escapeHtml2(str) {
         if (!str) return "";
         return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
       }
@@ -15027,10 +15032,10 @@ async function beautifyMessage(messageId, forceRerender = false) {
 }
 function injectStyles() {
   if ($("#beautify-styles").length === 0) {
-    const styleId2 = "beautify-styles-" + Date.now();
-    $("head").append(`<style id="${styleId2}">${BEAUTIFY_CSS}</style>`);
+    const styleId3 = "beautify-styles-" + Date.now();
+    $("head").append(`<style id="${styleId3}">${BEAUTIFY_CSS}</style>`);
     setTimeout(() => {
-      if ($("#" + styleId2).length === 0) {
+      if ($("#" + styleId3).length === 0) {
         $("head").append(`<style id="beautify-styles-backup-${Date.now()}">${BEAUTIFY_CSS}</style>`);
       }
     }, 1e3);
@@ -15231,9 +15236,9 @@ var init_by_jovial_dolphin_19209 = __esm({
           const name = extract("\u540D\u5B57");
           if (!name) return;
           let tagsHTML = "";
-          const tags = extract("\u6807\u7B7E");
-          if (tags) {
-            tags.split("/").forEach((tag) => {
+          const tags2 = extract("\u6807\u7B7E");
+          if (tags2) {
+            tags2.split("/").forEach((tag) => {
               tagsHTML += `<span style="display:inline-block!important;background-color:#fdf2f8!important;color:#db2777!important;padding:2px 8px!important;border-radius:12px!important;font-size:11px!important;border-width:1px!important;border-style:solid!important;border-color:#fbcfe8!important;margin-right:5px!important;">${tag.trim()}</span>`;
             });
           }
@@ -15899,11 +15904,11 @@ function wsGetAllBedrooms() {
   var layout = wsGetFloorLayout();
   var result = [];
   for (var name in layout.rooms) {
-    var room = layout.rooms[name];
-    if (room.\u7C7B\u578B === "\u5367\u5BA4") {
-      var occupant = room.\u4F4F\u6237 || "\u65E0";
+    var room2 = layout.rooms[name];
+    if (room2.\u7C7B\u578B === "\u5367\u5BA4") {
+      var occupant = room2.\u4F4F\u6237 || "\u65E0";
       var isEmpty = occupant === "\u65E0";
-      result.push({ name, floor: room.\u697C\u5C42, position: room.\u4F4D\u7F6E, description: room.\u63CF\u8FF0 || "", occupant: isEmpty ? "" : occupant, isEmpty });
+      result.push({ name, floor: room2.\u697C\u5C42, position: room2.\u4F4D\u7F6E, description: room2.\u63CF\u8FF0 || "", occupant: isEmpty ? "" : occupant, isEmpty });
     }
   }
   return result;
@@ -15912,10 +15917,10 @@ function wsGetOccupiedSlots(floor) {
   var layout = wsGetFloorLayout();
   var occupied = [];
   for (var name in layout.rooms) {
-    var room = layout.rooms[name];
-    if (room.\u697C\u5C42 !== floor) continue;
-    if (room.\u4F4D\u7F6E && room.\u4F4D\u7F6E.startsWith && room.\u4F4D\u7F6E.startsWith("outdoor")) continue;
-    var parts = (room.\u4F4D\u7F6E || "").split("-").map(Number);
+    var room2 = layout.rooms[name];
+    if (room2.\u697C\u5C42 !== floor) continue;
+    if (room2.\u4F4D\u7F6E && room2.\u4F4D\u7F6E.startsWith && room2.\u4F4D\u7F6E.startsWith("outdoor")) continue;
+    var parts = (room2.\u4F4D\u7F6E || "").split("-").map(Number);
     if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
       for (var i = parts[0]; i <= parts[1]; i++) occupied.push(i);
     }
@@ -16809,7 +16814,7 @@ async function wsSubmitUploadLocal(uploadPanel, targetDoc) {
   var type = wsCurrentTab;
   var name = (uploadPanel.querySelector("#ws-upload-name") || {}).value || "";
   var tagsStr = (uploadPanel.querySelector("#ws-upload-tags") || {}).value || "";
-  var tags = tagsStr.split(",").map(function(t) {
+  var tags2 = tagsStr.split(",").map(function(t) {
     return t.trim();
   }).filter(Boolean);
   if (!name.trim()) {
@@ -16854,7 +16859,7 @@ async function wsSubmitUploadLocal(uploadPanel, targetDoc) {
     }
   }
   try {
-    await wsAddContent(type, { type, name: name.trim(), data, tags });
+    await wsAddContent(type, { type, name: name.trim(), data, tags: tags2 });
     wsToastOk('"' + name.trim() + '" \u5DF2\u4FDD\u5B58\u5230\u672C\u5730');
     uploadPanel.classList.remove("active");
     wsRenderTabContent(targetDoc);
@@ -18918,6 +18923,1426 @@ var init_main = __esm({
   }
 });
 
+// scripts/src/schema/landlord-schema.js
+var Schema2;
+var init_landlord_schema = __esm({
+  "scripts/src/schema/landlord-schema.js"() {
+    Schema2 = z.object({
+      \u623F\u4E1C\u7CFB\u7EDF: z.object({
+        \u7248\u672C: z.string().prefault("2.0"),
+        \u8FD0\u884C\u6A21\u5F0F: z.enum(["\u6A21\u62DF", "\u771F\u5B9E"]).prefault("\u6A21\u62DF"),
+        \u5F53\u524D\u5EFA\u7B51ID: z.string().prefault("building_headquarters"),
+        \u7528\u6237: z.object({
+          \u540D\u79F0: z.string().prefault("{{user}}"),
+          \u7269\u54C1\u680F: z.record(
+            z.string().describe("\u7269\u54C1\u540D"),
+            z.object({
+              \u6570\u91CF: z.coerce.number().transform((value) => Math.max(0, value)).prefault(1),
+              \u63CF\u8FF0: z.string().prefault("\u6682\u65E0\u63CF\u8FF0")
+            }).prefault({})
+          ).prefault({})
+        }).prefault({}),
+        \u5EFA\u7B51\u5217\u8868: z.record(
+          z.string().describe("\u5EFA\u7B51ID"),
+          z.object({
+            \u540D\u79F0: z.string().prefault("\u672A\u547D\u540D\u5EFA\u7B51"),
+            \u7C7B\u578B: z.string().prefault("\u81EA\u7531\u5EFA\u7B51"),
+            \u4E16\u754C\u89C2: z.string().prefault("\u8DDF\u968F\u5F53\u524D\u4E16\u754C"),
+            \u7B80\u4ECB: z.string().prefault("\u6682\u65E0\u4ECB\u7ECD"),
+            \u662F\u5426\u603B\u90E8: z.boolean().prefault(false),
+            \u63A5\u7BA1\u72B6\u6001: z.enum(["\u603B\u90E8", "\u5DF2\u63A5\u7BA1", "\u53EF\u63A5\u7BA1", "\u672A\u53D1\u73B0"]).prefault("\u672A\u53D1\u73B0"),
+            \u611F\u77E5\u5EA6: z.coerce.number().transform((value) => Math.max(0, Math.min(100, value))).prefault(0),
+            \u4E3B\u9898: z.object({
+              \u56FE\u6807: z.string().prefault("building"),
+              \u4E3B\u8272: z.string().prefault("#FF9EAA"),
+              \u8F85\u8272: z.string().prefault("#FFB7B2"),
+              \u7EB9\u7406: z.string().prefault("soft-grid")
+            }).prefault({}),
+            \u7ECF\u8425\u6458\u8981: z.object({
+              \u7B49\u7EA7: z.coerce.number().transform((value) => Math.max(1, value)).prefault(1),
+              \u6D3B\u8DC3\u5EA6: z.coerce.number().transform((value) => Math.max(0, Math.min(100, value))).prefault(0),
+              \u5165\u4F4F\u7387: z.coerce.number().transform((value) => Math.max(0, Math.min(100, value))).prefault(0),
+              \u4ECA\u65E5\u4EAE\u70B9: z.string().prefault("\u4E00\u5207\u6B63\u5728\u7B49\u5F85\u65B0\u7684\u6545\u4E8B")
+            }).prefault({}),
+            \u697C\u5C42\u5217\u8868: z.record(
+              z.string().describe("\u697C\u5C42ID"),
+              z.object({
+                \u540D\u79F0: z.string().prefault("\u672A\u547D\u540D\u697C\u5C42"),
+                \u987A\u5E8F: z.coerce.number().prefault(0),
+                \u611F\u77E5\u5EA6: z.coerce.number().transform((value) => Math.max(0, Math.min(100, value))).prefault(100),
+                \u63CF\u8FF0: z.string().prefault("\u6682\u65E0\u63CF\u8FF0")
+              }).prefault({})
+            ).prefault({}),
+            \u7A7A\u95F4\u5217\u8868: z.record(
+              z.string().describe("\u7A7A\u95F4ID"),
+              z.object({
+                \u540D\u79F0: z.string().prefault("\u672A\u547D\u540D\u7A7A\u95F4"),
+                \u7C7B\u578B: z.string().prefault("\u7A7A\u7F6E\u7A7A\u95F4"),
+                \u697C\u5C42ID: z.string().prefault("floor_ground"),
+                \u5C3A\u5BF8: z.enum(["\u5FAE\u578B", "\u5C0F\u578B", "\u4E2D\u578B", "\u5927\u578B", "\u8D85\u5927\u578B"]).prefault("\u4E2D\u578B"),
+                \u72B6\u6001: z.enum(["\u6B63\u5E38", "\u7A7A\u7F6E", "\u88C5\u4FEE\u4E2D", "\u5F85\u4FEE\u590D", "\u672A\u77E5"]).prefault("\u6B63\u5E38"),
+                \u7528\u9014: z.string().prefault("\u7B49\u5F85\u89C4\u5212"),
+                \u63CF\u8FF0: z.string().prefault("\u6682\u65E0\u63CF\u8FF0"),
+                \u611F\u77E5\u5EA6: z.coerce.number().transform((value) => Math.max(0, Math.min(100, value))).prefault(100),
+                \u76F8\u90BB\u7A7A\u95F4: z.record(z.string().describe("\u76F8\u90BB\u7A7A\u95F4ID"), z.string().prefault("\u76F8\u8FDE")).prefault({}),
+                \u5360\u7528\u8005: z.record(z.string().describe("\u4EBA\u7269ID"), z.string().prefault("\u4F7F\u7528\u8005")).prefault({}),
+                \u8BBE\u65BD: z.record(
+                  z.string().describe("\u8BBE\u65BDID"),
+                  z.object({
+                    \u540D\u79F0: z.string().prefault("\u672A\u547D\u540D\u8BBE\u65BD"),
+                    \u72B6\u6001: z.enum(["\u826F\u597D", "\u666E\u901A", "\u5F85\u4FEE\u590D", "\u505C\u7528"]).prefault("\u666E\u901A"),
+                    \u63CF\u8FF0: z.string().prefault("\u6682\u65E0\u63CF\u8FF0")
+                  }).prefault({})
+                ).prefault({}),
+                \u88C5\u4FEE: z.object({
+                  \u98CE\u683C: z.string().prefault("\u57FA\u7840\u88C5\u4FEE"),
+                  \u914D\u8272: z.record(z.string().describe("\u8272\u5F69\u7528\u9014"), z.string()).prefault({}),
+                  \u6750\u8D28: z.record(z.string().describe("\u90E8\u4F4D"), z.string()).prefault({}),
+                  \u5BB6\u5177: z.record(z.string().describe("\u5BB6\u5177ID"), z.string()).prefault({}),
+                  \u7167\u660E: z.string().prefault("\u81EA\u7136\u67D4\u5149"),
+                  \u6C1B\u56F4: z.string().prefault("\u8212\u9002"),
+                  \u5B8C\u6210\u5EA6: z.coerce.number().transform((value) => Math.max(0, Math.min(100, value))).prefault(0)
+                }).prefault({})
+              }).prefault({})
+            ).prefault({})
+          }).prefault({})
+        ).prefault({}),
+        \u4EBA\u7269\u5217\u8868: z.record(
+          z.string().describe("\u4EBA\u7269ID"),
+          z.object({
+            \u59D3\u540D: z.string().prefault("\u672A\u547D\u540D\u4EBA\u7269"),
+            \u6765\u6E90\u4E16\u754C: z.string().prefault("\u5F53\u524D\u4E16\u754C"),
+            \u8EAB\u4EFD\u7C7B\u578B: z.string().prefault("\u79DF\u5BA2"),
+            \u804C\u4E1A: z.string().prefault("\u6682\u65E0"),
+            \u6240\u5728\u5EFA\u7B51ID: z.string().prefault("building_headquarters"),
+            \u6240\u5728\u7A7A\u95F4ID: z.string().prefault(""),
+            \u5916\u8C8C: z.string().prefault("\u5F85\u8865\u5145"),
+            \u6027\u683C: z.string().prefault("\u5F85\u8865\u5145"),
+            \u72B6\u6001: z.string().prefault("\u6B63\u5E38"),
+            \u5185\u5FC3: z.string().prefault("\u5E73\u9759"),
+            \u611F\u77E5\u5EA6: z.coerce.number().transform((value) => Math.max(0, Math.min(100, value))).prefault(100),
+            \u89C6\u89C9\u8EAB\u4EFD: z.object({
+              \u56FE\u6807: z.string().prefault("person"),
+              \u4E3B\u8272: z.string().prefault("#FF9EAA"),
+              \u7EB9\u6837: z.string().prefault("dots")
+            }).prefault({}),
+            \u5173\u7CFB: z.record(z.string().describe("\u4EBA\u7269ID"), z.string()).prefault({})
+          }).prefault({})
+        ).prefault({}),
+        \u4E8B\u4EF6\u5217\u8868: z.record(
+          z.string().describe("\u4E8B\u4EF6ID"),
+          z.object({
+            \u6807\u9898: z.string().prefault("\u672A\u547D\u540D\u4E8B\u4EF6"),
+            \u7C7B\u578B: z.string().prefault("\u65E5\u5E38"),
+            \u5EFA\u7B51ID: z.string().prefault("building_headquarters"),
+            \u7A7A\u95F4ID: z.string().prefault(""),
+            \u72B6\u6001: z.enum(["\u5F85\u5904\u7406", "\u8FDB\u884C\u4E2D", "\u5DF2\u5B8C\u6210", "\u5DF2\u5FFD\u7565"]).prefault("\u5F85\u5904\u7406"),
+            \u6458\u8981: z.string().prefault("\u6682\u65E0\u6458\u8981"),
+            \u53D1\u751F\u65F6\u95F4: z.string().prefault("\u521A\u521A"),
+            \u53C2\u4E0E\u8005: z.record(z.string().describe("\u4EBA\u7269ID"), z.string().prefault("\u53C2\u4E0E")).prefault({})
+          }).prefault({})
+        ).prefault({})
+      }).prefault({})
+    });
+  }
+});
+
+// scripts/modules/landlord-schema/index.js
+var landlord_schema_exports = {};
+__export(landlord_schema_exports, {
+  activate: () => activate
+});
+function activate(context) {
+  if (context.host[schemaRegistrationKey] !== "2.0") {
+    registerMvuSchema(Schema2);
+    context.host[schemaRegistrationKey] = "2.0";
+  }
+  const service = Object.freeze({
+    version: "2.0",
+    parseRoot(value) {
+      return Schema2.parse(value);
+    },
+    parseState(value) {
+      return Schema2.parse({ \u623F\u4E1C\u7CFB\u7EDF: value }).\u623F\u4E1C\u7CFB\u7EDF;
+    },
+    safeParseState(value) {
+      const result = Schema2.safeParse({ \u623F\u4E1C\u7CFB\u7EDF: value });
+      return result.success ? { success: true, data: result.data.\u623F\u4E1C\u7CFB\u7EDF } : result;
+    }
+  });
+  context.services.register("landlord.schema", service);
+}
+var schemaRegistrationKey;
+var init_landlord_schema2 = __esm({
+  async "scripts/modules/landlord-schema/index.js"() {
+    await init_mvuZod();
+    init_landlord_schema();
+    schemaRegistrationKey = "__landlordMvuSchemaVersion";
+  }
+});
+
+// scripts/src/buildings/compiler.js
+function byOrderDescending(left, right) {
+  return right.order - left.order || left.name.localeCompare(right.name, "zh-CN");
+}
+function visible(value) {
+  return Number(value?.\u611F\u77E5\u5EA6 ?? 100) > 0;
+}
+function compileBuilding(buildingId, building, people = {}) {
+  if (!building || typeof building !== "object") throw new TypeError(`\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${buildingId}`);
+  const floors = Object.entries(building.\u697C\u5C42\u5217\u8868 ?? {}).filter(([, floor]) => visible(floor)).map(([id, floor]) => ({
+    id,
+    name: floor.\u540D\u79F0,
+    order: Number(floor.\u987A\u5E8F ?? 0),
+    description: floor.\u63CF\u8FF0,
+    awareness: Number(floor.\u611F\u77E5\u5EA6 ?? 100),
+    spaces: []
+  })).sort(byOrderDescending);
+  const floorMap = new Map(floors.map((floor) => [floor.id, floor]));
+  for (const [id, space] of Object.entries(building.\u7A7A\u95F4\u5217\u8868 ?? {})) {
+    if (!visible(space)) continue;
+    const floor = floorMap.get(space.\u697C\u5C42ID);
+    if (!floor) continue;
+    const occupants = Object.keys(space.\u5360\u7528\u8005 ?? {}).map((personId) => ({
+      id: personId,
+      name: people[personId]?.\u59D3\u540D ?? personId,
+      role: space.\u5360\u7528\u8005[personId],
+      color: people[personId]?.\u89C6\u89C9\u8EAB\u4EFD?.\u4E3B\u8272 ?? "#FF9EAA"
+    }));
+    floor.spaces.push({
+      id,
+      name: space.\u540D\u79F0,
+      type: space.\u7C7B\u578B,
+      size: space.\u5C3A\u5BF8,
+      weight: sizeWeight[space.\u5C3A\u5BF8] ?? sizeWeight.\u4E2D\u578B,
+      status: space.\u72B6\u6001,
+      purpose: space.\u7528\u9014,
+      description: space.\u63CF\u8FF0,
+      awareness: Number(space.\u611F\u77E5\u5EA6 ?? 100),
+      occupants,
+      facilityCount: Object.keys(space.\u8BBE\u65BD ?? {}).length,
+      renovation: space.\u88C5\u4FEE ?? {}
+    });
+  }
+  for (const floor of floors) {
+    floor.spaces.sort((left, right) => right.weight - left.weight || left.name.localeCompare(right.name, "zh-CN"));
+  }
+  const visibleSpaces = floors.flatMap((floor) => floor.spaces);
+  const occupiedSpaces = visibleSpaces.filter((space) => space.occupants.length > 0).length;
+  const emptySpaces = visibleSpaces.filter((space) => space.status === "\u7A7A\u7F6E").length;
+  return {
+    id: buildingId,
+    name: building.\u540D\u79F0,
+    type: building.\u7C7B\u578B,
+    worldview: building.\u4E16\u754C\u89C2,
+    description: building.\u7B80\u4ECB,
+    status: building.\u63A5\u7BA1\u72B6\u6001,
+    isHeadquarters: Boolean(building.\u662F\u5426\u603B\u90E8),
+    awareness: Number(building.\u611F\u77E5\u5EA6 ?? 0),
+    theme: building.\u4E3B\u9898 ?? {},
+    summary: building.\u7ECF\u8425\u6458\u8981 ?? {},
+    metrics: {
+      floors: floors.length,
+      spaces: visibleSpaces.length,
+      occupiedSpaces,
+      emptySpaces,
+      people: new Set(visibleSpaces.flatMap((space) => space.occupants.map((person) => person.id))).size
+    },
+    floors
+  };
+}
+function compilePortfolio(state) {
+  const buildings = Object.entries(state.\u5EFA\u7B51\u5217\u8868 ?? {}).map(
+    ([id, building]) => compileBuilding(id, building, state.\u4EBA\u7269\u5217\u8868 ?? {})
+  );
+  return {
+    currentBuildingId: state.\u5F53\u524D\u5EFA\u7B51ID,
+    headquarters: buildings.find((building) => building.isHeadquarters) ?? null,
+    owned: buildings.filter((building) => ["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.status)),
+    available: buildings.filter((building) => building.status === "\u53EF\u63A5\u7BA1"),
+    hidden: buildings.filter((building) => building.status === "\u672A\u53D1\u73B0"),
+    buildings
+  };
+}
+var sizeWeight;
+var init_compiler = __esm({
+  "scripts/src/buildings/compiler.js"() {
+    sizeWeight = Object.freeze({ \u5FAE\u578B: 1, \u5C0F\u578B: 2, \u4E2D\u578B: 3, \u5927\u578B: 5, \u8D85\u5927\u578B: 8 });
+  }
+});
+
+// scripts/src/mock/management-recipes.js
+function takeoverDirections(building) {
+  const shared = {
+    hospital: [
+      {
+        id: "healing-community",
+        name: "\u6CBB\u6108\u7CFB\u751F\u6D3B\u533B\u9662",
+        buildingName: "\u767D\u5854\u6CBB\u6108\u751F\u6D3B\u9986",
+        description: "\u4FDD\u7559\u8BCA\u7597\u80FD\u529B\uFF0C\u540C\u65F6\u628A\u7A7A\u7F6E\u75C5\u623F\u6539\u9020\u6210\u5EB7\u590D\u3001\u966A\u4F34\u548C\u8DE8\u4E16\u754C\u5C45\u4F4F\u7A7A\u95F4\u3002",
+        highlight: "\u65E7\u4F4F\u9662\u90E8\u5C06\u6210\u4E3A\u6700\u6E29\u67D4\u7684\u5EB7\u590D\u751F\u6D3B\u533A",
+        summary: "\u533B\u9662\u5C06\u540C\u65F6\u627F\u62C5\u8BCA\u7597\u3001\u751F\u6D3B\u4E0E\u4EBA\u7269\u76F8\u9047\u7684\u529F\u80FD\u3002",
+        tags: ["\u751F\u6D3B\u5316\u533B\u7597", "\u67D4\u548C", "\u9002\u5408\u957F\u671F\u7ECF\u8425"],
+        theme: { \u4E3B\u8272: "#55B7A5", \u8F85\u8272: "#F7D6E0", \u7EB9\u7406: "healing-leaf" },
+        opportunities: ["\u9080\u8BF7\u7279\u6B8A\u4E16\u754C\u7684\u6CBB\u7597\u8005", "\u6539\u9020\u7A7A\u7F6E\u75C5\u623F", "\u5EFA\u7ACB\u5C4B\u9876\u7597\u6108\u82B1\u56ED"]
+      },
+      {
+        id: "multiverse-medical",
+        name: "\u8DE8\u4E16\u754C\u7EFC\u5408\u533B\u9662",
+        buildingName: "\u4E07\u8C61\u8054\u5408\u533B\u9662",
+        description: "\u4E3A\u6765\u81EA\u4E0D\u540C\u4E16\u754C\u7684\u79CD\u65CF\u548C\u80FD\u529B\u5EFA\u7ACB\u4E13\u5C5E\u79D1\u5BA4\uFF0C\u8BA9\u4EBA\u7269\u8BBE\u5B9A\u76F4\u63A5\u6539\u53D8\u533B\u9662\u7ED3\u6784\u3002",
+        highlight: "\u6BCF\u4F4D\u65B0\u6210\u5458\u90FD\u53EF\u80FD\u5E26\u6765\u4E00\u4E2A\u524D\u6240\u672A\u89C1\u7684\u79D1\u5BA4",
+        summary: "\u533B\u9662\u6210\u4E3A\u4E0D\u540C\u4E16\u754C\u533B\u5B66\u3001\u9B54\u6CD5\u4E0E\u79D1\u6280\u78B0\u649E\u7684\u6838\u5FC3\u821E\u53F0\u3002",
+        tags: ["\u8DE8\u4E16\u754C", "\u79D1\u5BA4\u6269\u5F20", "\u9AD8\u81EA\u7531\u5EA6"],
+        theme: { \u4E3B\u8272: "#5B8DEF", \u8F85\u8272: "#C4B5FD", \u7EB9\u7406: "constellation" },
+        opportunities: ["\u5EFA\u7ACB\u9B54\u6CD5\u8BCA\u7597\u79D1", "\u62DB\u52DF\u5F02\u4E16\u754C\u533B\u751F", "\u5904\u7406\u7279\u6B8A\u8BBF\u5BA2\u4E8B\u4EF6"]
+      },
+      {
+        id: "medical-residence",
+        name: "\u533B\u4F4F\u4E00\u4F53\u793E\u533A",
+        buildingName: "\u767D\u5854\u533B\u4F4F\u793E\u533A",
+        description: "\u628A\u533B\u7597\u3001\u4F4F\u5B85\u4E0E\u516C\u5171\u751F\u6D3B\u878D\u5408\u5728\u540C\u4E00\u680B\u5EFA\u7B51\u91CC\uFF0C\u8BA9\u75C5\u60A3\u3001\u5458\u5DE5\u548C\u79DF\u5BA2\u81EA\u7136\u4EA7\u751F\u8054\u7CFB\u3002",
+        highlight: "\u533B\u9662\u4E0D\u518D\u53EA\u6709\u770B\u75C5\u65F6\u624D\u6709\u4EBA\u6765",
+        summary: "\u8FD9\u91CC\u5C06\u6210\u4E3A\u4E00\u680B\u5168\u5929\u5019\u6D3B\u8DC3\u3001\u5173\u7CFB\u5BC6\u96C6\u7684\u7EFC\u5408\u5EFA\u7B51\u3002",
+        tags: ["\u533B\u4F4F\u4E00\u4F53", "\u4EBA\u7269\u5173\u7CFB", "\u65E5\u5E38\u611F"],
+        theme: { \u4E3B\u8272: "#3AAFA9", \u8F85\u8272: "#FDE68A", \u7EB9\u7406: "community-blocks" },
+        opportunities: ["\u8BBE\u7F6E\u5458\u5DE5\u516C\u5BD3", "\u5F00\u653E\u5171\u4EAB\u53A8\u623F", "\u4E3E\u529E\u793E\u533A\u5065\u5EB7\u65E5"]
+      }
+    ],
+    office: [
+      {
+        id: "creative-tower",
+        name: "\u8DE8\u4E16\u754C\u521B\u4F5C\u8005\u5927\u53A6",
+        buildingName: "\u4E07\u8C61\u521B\u4F5C\u5927\u53A6",
+        description: "\u628A\u4E0D\u540C\u4E16\u754C\u7684\u521B\u4F5C\u8005\u3001\u7814\u7A76\u8005\u548C\u5947\u4EBA\u805A\u5230\u540C\u4E00\u680B\u697C\uFF0C\u8BA9\u6BCF\u5C42\u90FD\u6709\u5B8C\u5168\u4E0D\u540C\u7684\u6C14\u8D28\u3002",
+        highlight: "\u9876\u5C42\u4F1A\u8BAE\u5BA4\u5C06\u6210\u4E3A\u8DE8\u4E16\u754C\u7075\u611F\u78B0\u649E\u73B0\u573A",
+        summary: "\u5199\u5B57\u697C\u4F1A\u56F4\u7ED5\u521B\u4F5C\u3001\u5408\u4F5C\u548C\u4EBA\u7269\u78B0\u649E\u6301\u7EED\u751F\u957F\u3002",
+        tags: ["\u521B\u4F5C", "\u8DE8\u4E16\u754C\u56E2\u961F", "\u8F7B\u7ECF\u8425"],
+        theme: { \u4E3B\u8272: "#6B8DC9", \u8F85\u8272: "#F9A8D4", \u7EB9\u7406: "creative-grid" },
+        opportunities: ["\u62DB\u52DF\u7B2C\u4E00\u6279\u521B\u4F5C\u56E2\u961F", "\u6253\u9020\u4E3B\u9898\u697C\u5C42", "\u4E3E\u529E\u516C\u5F00\u5C55\u793A\u65E5"]
+      },
+      {
+        id: "multiverse-agency",
+        name: "\u4E07\u754C\u4E8B\u52A1\u6240",
+        buildingName: "\u4E91\u7AEF\u4E07\u754C\u4E8B\u52A1\u6240",
+        description: "\u4E0D\u540C\u4E16\u754C\u7684\u59D4\u6258\u3001\u8BBF\u5BA2\u548C\u5458\u5DE5\u90FD\u4ECE\u8FD9\u91CC\u8FDB\u5165\uFF0C\u8BA9\u5199\u5B57\u697C\u6210\u4E3A\u6545\u4E8B\u7684\u5206\u53D1\u4E2D\u5FC3\u3002",
+        highlight: "\u5171\u4EAB\u5927\u5385\u5C06\u51FA\u73B0\u6765\u81EA\u4E0D\u540C\u4E16\u754C\u7684\u59D4\u6258\u7A97\u53E3",
+        summary: "\u6BCF\u4F4D\u65B0\u6210\u5458\u90FD\u53EF\u80FD\u4E3A\u5EFA\u7B51\u5E26\u6765\u4E00\u6761\u5168\u65B0\u7684\u4E1A\u52A1\u7EBF\u3002",
+        tags: ["\u59D4\u6258\u4E2D\u5FC3", "\u8BBF\u5BA2\u6D41\u52A8", "\u4E16\u754C\u78B0\u649E"],
+        theme: { \u4E3B\u8272: "#7C6CE7", \u8F85\u8272: "#67E8F9", \u7EB9\u7406: "portal-lines" },
+        opportunities: ["\u5EFA\u7ACB\u5F02\u4E16\u754C\u63A5\u5F85\u90E8", "\u62DB\u52DF\u7279\u6B8A\u987E\u95EE", "\u6539\u9020\u4F20\u9001\u4F1A\u8BAE\u5BA4"]
+      },
+      {
+        id: "life-service-hub",
+        name: "\u751F\u6D3B\u670D\u52A1\u4E2D\u67A2",
+        buildingName: "\u4E91\u7AEF\u751F\u6D3B\u670D\u52A1\u4E2D\u5FC3",
+        description: "\u628A\u529E\u516C\u5BA4\u6539\u9020\u6210\u9762\u5411\u6240\u6709\u5EFA\u7B51\u7684\u540E\u52E4\u3001\u6D3B\u52A8\u548C\u751F\u6D3B\u670D\u52A1\u603B\u90E8\u3002",
+        highlight: "\u8FD9\u91CC\u5C06\u534F\u8C03\u516C\u5BD3\u4E0E\u672A\u6765\u5EFA\u7B51\u7684\u65E5\u5E38\u9700\u6C42",
+        summary: "\u5199\u5B57\u697C\u6210\u4E3A\u6574\u4E2A\u623F\u4E1C\u7248\u56FE\u7684\u6E29\u67D4\u540E\u52E4\u4E2D\u5FC3\u3002",
+        tags: ["\u540E\u52E4", "\u591A\u5EFA\u7B51\u8054\u52A8", "\u751F\u6D3B\u611F"],
+        theme: { \u4E3B\u8272: "#4F8A8B", \u8F85\u8272: "#FBD46D", \u7EB9\u7406: "service-map" },
+        opportunities: ["\u8BBE\u7ACB\u6D3B\u52A8\u7B56\u5212\u90E8", "\u5EFA\u7ACB\u8DE8\u5EFA\u7B51\u914D\u9001", "\u5F00\u653E\u516C\u5171\u4F11\u606F\u5C42"]
+      }
+    ]
+  };
+  const buildingType = building.type ?? building.\u7C7B\u578B;
+  const key = buildingType === "\u533B\u9662" ? "hospital" : buildingType === "\u5199\u5B57\u697C" ? "office" : "office";
+  return shared[key];
+}
+function renovationPlans(building, space) {
+  const accent = building.theme?.\u4E3B\u8272 ?? building.\u4E3B\u9898?.\u4E3B\u8272 ?? "#FF9EAA";
+  const spaceName = space.name ?? space.\u540D\u79F0 ?? "\u8FD9\u4E2A\u7A7A\u95F4";
+  return [
+    {
+      id: "soft-story",
+      name: "\u67D4\u5149\u6545\u4E8B\u573A",
+      style: "\u6E29\u67D4\u73B0\u4EE3",
+      tagline: "\u8BA9\u4EBA\u7269\u613F\u610F\u5728\u8FD9\u91CC\u505C\u4E0B\u6765\u804A\u5929",
+      palette: { \u4E3B\u8272: "#FFF7F9", \u70B9\u7F00: accent, \u6728\u8272: "#D7B89C" },
+      materials: { \u5730\u9762: "\u6D45\u8272\u6728\u5730\u677F", \u5899\u9762: "\u7EC6\u817B\u54D1\u5149\u5899\u9762", \u8F6F\u88C5: "\u67D4\u8F6F\u7EC7\u7269" },
+      furniture: { center: "\u56F4\u5408\u5F0F\u4E3B\u5BB6\u5177", window: "\u7A97\u8FB9\u4F11\u606F\u4F4D", storage: "\u9690\u85CF\u5F0F\u6536\u7EB3\u5899" },
+      lighting: "2700K\u6696\u8272\u5206\u5C42\u706F\u5149",
+      atmosphere: "\u4EB2\u5BC6\u3001\u677E\u5F1B\u3001\u9002\u5408\u5076\u9047",
+      resultDescription: `${spaceName}\u88AB\u6539\u9020\u6210\u62E5\u6709\u67D4\u548C\u5149\u7EBF\u548C\u56F4\u5408\u5EA7\u4F4D\u7684\u6E29\u67D4\u7A7A\u95F4\uFF0C\u8FDB\u5165\u8FD9\u91CC\u7684\u4EBA\u5F88\u81EA\u7136\u5730\u4F1A\u653E\u6162\u811A\u6B65\u3002`,
+      impacts: ["\u63D0\u5347\u4EBA\u7269\u505C\u7559\u610F\u613F", "\u9002\u5408\u65E5\u5E38\u4E92\u52A8", "\u591C\u95F4\u89C6\u89C9\u66F4\u6E29\u6696"]
+    },
+    {
+      id: "world-collision",
+      name: "\u4E07\u754C\u62FC\u8D34",
+      style: "\u8DE8\u4E16\u754C\u6298\u8877",
+      tagline: "\u8BA9\u4E0D\u540C\u6765\u6E90\u7684\u4EBA\u90FD\u80FD\u7559\u4E0B\u81EA\u5DF1\u7684\u75D5\u8FF9",
+      palette: { \u4E3B\u8272: "#232136", \u70B9\u7F00: "#C4A7E7", \u9AD8\u5149: "#F6C177" },
+      materials: { \u5730\u9762: "\u6DF1\u8272\u77F3\u6750\u4E0E\u53D1\u5149\u5D4C\u6761", \u5899\u9762: "\u53EF\u66FF\u6362\u5C55\u793A\u6A21\u5757", \u8F6F\u88C5: "\u591A\u6587\u5316\u7EB9\u6837\u7EC7\u7269" },
+      furniture: { center: "\u53EF\u91CD\u7EC4\u6A21\u5757\u5BB6\u5177", display: "\u4E16\u754C\u6536\u85CF\u5C55\u793A\u5899", corner: "\u5C0F\u578B\u4EA4\u6D41\u89D2" },
+      lighting: "\u53EF\u968F\u4EBA\u7269\u6765\u6E90\u53D8\u5316\u7684\u60C5\u666F\u706F",
+      atmosphere: "\u795E\u79D8\u3001\u4E30\u5BCC\u3001\u5145\u6EE1\u78B0\u649E\u611F",
+      resultDescription: `${spaceName}\u62E5\u6709\u4E86\u50CF\u4E07\u82B1\u7B52\u4E00\u6837\u7684\u8DE8\u4E16\u754C\u9648\u8BBE\uFF0C\u6BCF\u4F4D\u65B0\u6210\u5458\u90FD\u80FD\u5728\u8FD9\u91CC\u627E\u5230\u719F\u6089\u53C8\u964C\u751F\u7684\u7EC6\u8282\u3002`,
+      impacts: ["\u5F3A\u5316\u4E16\u754C\u89C2\u78B0\u649E", "\u9002\u5408\u5C55\u793A\u6536\u85CF", "\u53EF\u968F\u65B0\u4EBA\u7269\u7EE7\u7EED\u751F\u957F"]
+    },
+    {
+      id: "future-calm",
+      name: "\u9759\u8C27\u672A\u6765",
+      style: "\u8F7B\u672A\u6765\u4E3B\u4E49",
+      tagline: "\u6709\u79D1\u6280\u611F\uFF0C\u4F46\u4E0D\u5931\u53BB\u751F\u6D3B\u6E29\u5EA6",
+      palette: { \u4E3B\u8272: "#F8FAFC", \u70B9\u7F00: "#6B8DC9", \u5149\u8272: "#67E8F9" },
+      materials: { \u5730\u9762: "\u65E0\u7F1D\u6D45\u7070\u5730\u576A", \u5899\u9762: "\u5FAE\u5B54\u5438\u97F3\u677F", \u8F6F\u88C5: "\u96FE\u9762\u79D1\u6280\u7EC7\u7269" },
+      furniture: { center: "\u60AC\u6D6E\u611F\u4E3B\u5BB6\u5177", wall: "\u60C5\u666F\u4FE1\u606F\u5899", hidden: "\u81EA\u52A8\u6536\u7EB3\u6A21\u5757" },
+      lighting: "\u65E0\u4E3B\u706F\u5929\u5149\u6A21\u62DF\u7CFB\u7EDF",
+      atmosphere: "\u6E05\u723D\u3001\u5B89\u9759\u3001\u79E9\u5E8F\u611F",
+      resultDescription: `${spaceName}\u53D8\u5F97\u8F7B\u76C8\u800C\u5B89\u9759\uFF0C\u9690\u85CF\u5F0F\u8BBE\u5907\u4E0E\u67D4\u548C\u7684\u4FE1\u606F\u5149\u5E26\u8BA9\u7A7A\u95F4\u50CF\u6765\u81EA\u4E0D\u9065\u8FDC\u7684\u672A\u6765\u3002`,
+      impacts: ["\u63D0\u9AD8\u7A7A\u95F4\u79E9\u5E8F\u611F", "\u9002\u5408\u5DE5\u4F5C\u4E0E\u4E13\u6CE8", "\u5F62\u6210\u660E\u663E\u79D1\u6280\u6C14\u8D28"]
+    }
+  ];
+}
+function recruitmentCandidates(building) {
+  const buildingType = building.type ?? building.\u7C7B\u578B;
+  const role = buildingType === "\u533B\u9662" ? "\u5458\u5DE5" : buildingType === "\u5199\u5B57\u697C" ? "\u6210\u5458" : "\u79DF\u5BA2";
+  const profession = buildingType === "\u533B\u9662" ? "\u8DE8\u754C\u5EB7\u590D\u5E08" : buildingType === "\u5199\u5B57\u697C" ? "\u5947\u60F3\u7B56\u5212\u5E08" : "\u81EA\u7531\u63D2\u753B\u5E08";
+  return [
+    {
+      id: `person_mock_${buildingType}_linxia`,
+      name: "\u6797\u590F",
+      origin: "\u8FD1\u672A\u6765\u90FD\u5E02",
+      role,
+      profession,
+      appearance: "\u77ED\u53D1\u3001\u6D45\u8272\u5916\u5957\uFF0C\u968F\u8EAB\u5E26\u7740\u4E00\u5757\u4F1A\u53D8\u5316\u989C\u8272\u7684\u7535\u5B50\u80F8\u9488\u3002",
+      personality: "\u806A\u660E\u3001\u677E\u5F1B\uFF0C\u9762\u5BF9\u964C\u751F\u4E8B\u7269\u65F6\u603B\u4F1A\u5148\u89C2\u5BDF\u518D\u7ED9\u51FA\u610F\u5916\u7684\u597D\u4E3B\u610F\u3002",
+      firstThought: "\u8FD9\u91CC\u6BD4\u8D44\u6599\u91CC\u5199\u7684\u66F4\u6709\u751F\u6D3B\u6C14\u606F\uFF0C\u4E5F\u8BB8\u6211\u4F1A\u559C\u6B22\u3002",
+      collision: "\u5979\u4E60\u60EF\u7528\u6280\u672F\u89E3\u51B3\u95EE\u9898\uFF0C\u53EF\u80FD\u4F1A\u88AB\u9B54\u6CD5\u6216\u8D85\u81EA\u7136\u79DF\u5BA2\u5F7B\u5E95\u6253\u4E71\u601D\u8DEF\u3002",
+      quote: "\u5148\u522B\u6025\u7740\u89C4\u5B9A\u5B83\u662F\u4EC0\u4E48\uFF0C\u6211\u4EEC\u770B\u770B\u5B83\u8FD8\u80FD\u53D8\u6210\u4EC0\u4E48\u3002",
+      tags: ["\u8FD1\u672A\u6765", "\u521B\u610F", "\u9002\u5E94\u529B\u5F3A"],
+      visualIdentity: { \u56FE\u6807: "spark", \u4E3B\u8272: "#6B8DC9", \u7EB9\u6837: "orbit" }
+    },
+    {
+      id: `person_mock_${buildingType}_shaoqing`,
+      name: "\u90B5\u9752",
+      origin: "\u4E1C\u65B9\u5947\u5E7B\u4E16\u754C",
+      role,
+      profession: buildingType === "\u533B\u9662" ? "\u7075\u606F\u533B\u5E08" : buildingType === "\u5199\u5B57\u697C" ? "\u5F02\u95FB\u987E\u95EE" : "\u9999\u836F\u8C03\u914D\u5E08",
+      appearance: "\u58A8\u8272\u957F\u53D1\u675F\u5728\u8EAB\u540E\uFF0C\u8863\u8896\u95F4\u5E38\u5E26\u7740\u6DE1\u6DE1\u8349\u6728\u9999\u3002",
+      personality: "\u514B\u5236\u3001\u6E29\u548C\uFF0C\u4F46\u5BF9\u73B0\u4EE3\u8BBE\u5907\u6709\u65FA\u76DB\u800C\u4E0D\u80AF\u627F\u8BA4\u7684\u597D\u5947\u5FC3\u3002",
+      firstThought: "\u6B64\u5904\u7075\u6C14\u7A00\u8584\uFF0C\u706F\u706B\u5374\u6BD4\u591C\u660E\u73E0\u8FD8\u8981\u7A33\u5B9A\u3002",
+      collision: "\u4F1A\u628A\u73B0\u4EE3\u8BBE\u65BD\u7406\u89E3\u6210\u7279\u6B8A\u6CD5\u5668\uFF0C\u5E76\u6162\u6162\u53D1\u5C55\u51FA\u4E00\u5957\u81EA\u5DF1\u7684\u4F7F\u7528\u65B9\u5F0F\u3002",
+      quote: "\u82E5\u8FD9\u6247\u95E8\u65E0\u9700\u7B26\u7B93\u4FBF\u80FD\u81EA\u884C\u5F00\u5408\uFF0C\u90A3\u786E\u5B9E\u5F88\u4E86\u4E0D\u8D77\u3002",
+      tags: ["\u4E1C\u65B9\u5947\u5E7B", "\u53CD\u5DEE\u611F", "\u6E29\u548C"],
+      visualIdentity: { \u56FE\u6807: "leaf", \u4E3B\u8272: "#55B7A5", \u7EB9\u6837: "cloud" }
+    },
+    {
+      id: `person_mock_${buildingType}_noa`,
+      name: "\u8BFA\u5A05",
+      origin: "\u661F\u9645\u822A\u884C\u65F6\u4EE3",
+      role,
+      profession: buildingType === "\u533B\u9662" ? "\u8230\u961F\u6025\u6551\u5B98" : buildingType === "\u5199\u5B57\u697C" ? "\u822A\u7EBF\u5206\u6790\u5E08" : "\u661F\u56FE\u4FEE\u590D\u5E08",
+      appearance: "\u94F6\u7070\u77ED\u53D1\uFF0C\u773C\u775B\u50CF\u6620\u7740\u661F\u70B9\uFF0C\u884C\u674E\u53EA\u6709\u4E00\u4E2A\u5C0F\u578B\u91D1\u5C5E\u7BB1\u3002",
+      personality: "\u76F4\u63A5\u3001\u53EF\u9760\uFF0C\u5BF9\u666E\u901A\u751F\u6D3B\u7528\u54C1\u53CD\u800C\u7F3A\u4E4F\u5E38\u8BC6\u3002",
+      firstThought: "\u91CD\u529B\u7A33\u5B9A\uFF0C\u7A7A\u6C14\u8D28\u91CF\u826F\u597D\u3002\u5947\u602A\u7684\u662F\uFF0C\u8FD9\u91CC\u5C45\u7136\u6CA1\u6709\u503C\u73ED\u8868\u3002",
+      collision: "\u5979\u4F1A\u628A\u516C\u5BD3\u548C\u5176\u4ED6\u5EFA\u7B51\u5F53\u6210\u4E00\u8258\u7ED3\u6784\u677E\u6563\u4F46\u5F88\u6709\u8DA3\u7684\u98DE\u8239\u7BA1\u7406\u3002",
+      quote: "\u6211\u53EF\u4EE5\u63A5\u53D7\u6CA1\u6709\u8237\u7A97\uFF0C\u4F46\u81F3\u5C11\u544A\u8BC9\u6211\u53A8\u623F\u7684\u7D27\u6025\u5173\u95ED\u6309\u94AE\u5728\u54EA\u91CC\u3002",
+      tags: ["\u661F\u9645", "\u53EF\u9760", "\u751F\u6D3B\u53CD\u5DEE"],
+      visualIdentity: { \u56FE\u6807: "star", \u4E3B\u8272: "#7C6CE7", \u7EB9\u6837: "stars" }
+    }
+  ];
+}
+var managementMockRecipes;
+var init_management_recipes = __esm({
+  "scripts/src/mock/management-recipes.js"() {
+    managementMockRecipes = Object.freeze({
+      takeover: async ({ building }) => ({
+        source: "local-mock",
+        buildingId: building.id,
+        directions: takeoverDirections(building)
+      }),
+      renovation: async ({ building, space }) => ({
+        source: "local-mock",
+        buildingId: building.id,
+        spaceId: space.id,
+        plans: renovationPlans(building, space)
+      }),
+      recruitment: async ({ building }) => ({
+        source: "local-mock",
+        buildingId: building.id,
+        candidates: recruitmentCandidates(building)
+      })
+    });
+  }
+});
+
+// scripts/src/model/default-state.js
+function room({ name, type, floorId, size, purpose, description, status = "\u6B63\u5E38", adjacent = {}, facilities = {} }) {
+  return {
+    \u540D\u79F0: name,
+    \u7C7B\u578B: type,
+    \u697C\u5C42ID: floorId,
+    \u5C3A\u5BF8: size,
+    \u72B6\u6001: status,
+    \u7528\u9014: purpose,
+    \u63CF\u8FF0: description,
+    \u611F\u77E5\u5EA6: 100,
+    \u76F8\u90BB\u7A7A\u95F4: adjacent,
+    \u5360\u7528\u8005: {},
+    \u8BBE\u65BD: facilities,
+    \u88C5\u4FEE: {
+      \u98CE\u683C: "\u57FA\u7840\u88C5\u4FEE",
+      \u914D\u8272: { \u4E3B\u8272: "#FFF7F9", \u70B9\u7F00: "#FF9EAA" },
+      \u6750\u8D28: {},
+      \u5BB6\u5177: {},
+      \u7167\u660E: "\u81EA\u7136\u67D4\u5149",
+      \u6C1B\u56F4: "\u8212\u9002",
+      \u5B8C\u6210\u5EA6: 35
+    }
+  };
+}
+function createHeadquarters() {
+  return {
+    \u540D\u79F0: "\u623F\u4E1C\u603B\u90E8\u516C\u5BD3",
+    \u7C7B\u578B: "\u516C\u5BD3",
+    \u4E16\u754C\u89C2: "\u8DDF\u968F\u5F53\u524D\u4E16\u754C",
+    \u7B80\u4ECB: "\u73A9\u5BB6\u6700\u521D\u62E5\u6709\u7684\u603B\u90E8\u3002\u8FD9\u91CC\u65E2\u662F\u4F4F\u5904\uFF0C\u4E5F\u662F\u6240\u6709\u5EFA\u7B51\u7ECF\u8425\u8BA1\u5212\u7684\u8D77\u70B9\u3002",
+    \u662F\u5426\u603B\u90E8: true,
+    \u63A5\u7BA1\u72B6\u6001: "\u603B\u90E8",
+    \u611F\u77E5\u5EA6: 100,
+    \u4E3B\u9898: { \u56FE\u6807: "home", \u4E3B\u8272: "#FF9EAA", \u8F85\u8272: "#FFB7B2", \u7EB9\u7406: "candy-grid" },
+    \u7ECF\u8425\u6458\u8981: { \u7B49\u7EA7: 1, \u6D3B\u8DC3\u5EA6: 42, \u5165\u4F4F\u7387: 10, \u4ECA\u65E5\u4EAE\u70B9: "\u9633\u5149\u6B63\u843D\u5728\u4E00\u697C\u5BA2\u5385\u7684\u7A97\u8FB9" },
+    \u697C\u5C42\u5217\u8868: {
+      floor_4: { \u540D\u79F0: "\u56DB\u697C", \u987A\u5E8F: 4, \u611F\u77E5\u5EA6: 35, \u63CF\u8FF0: "\u5C1A\u6709\u8BB8\u591A\u7A7A\u95F4\u7B49\u5F85\u89C4\u5212\u3002" },
+      floor_3: { \u540D\u79F0: "\u4E09\u697C", \u987A\u5E8F: 3, \u611F\u77E5\u5EA6: 55, \u63CF\u8FF0: "\u5B89\u9759\u7684\u9884\u7559\u5C45\u4F4F\u5C42\u3002" },
+      floor_2: { \u540D\u79F0: "\u4E8C\u697C", \u987A\u5E8F: 2, \u611F\u77E5\u5EA6: 100, \u63CF\u8FF0: "\u623F\u4E1C\u7684\u79C1\u4EBA\u697C\u5C42\u3002" },
+      floor_1: { \u540D\u79F0: "\u4E00\u697C", \u987A\u5E8F: 1, \u611F\u77E5\u5EA6: 100, \u63CF\u8FF0: "\u516C\u5BD3\u7684\u4E3B\u8981\u516C\u5171\u751F\u6D3B\u533A\u57DF\u3002" },
+      floor_b1: { \u540D\u79F0: "\u5730\u4E0B\u4E00\u697C", \u987A\u5E8F: -1, \u611F\u77E5\u5EA6: 25, \u63CF\u8FF0: "\u5C1A\u672A\u5B8C\u5168\u6574\u7406\u7684\u5730\u4E0B\u7A7A\u95F4\u3002" }
+    },
+    \u7A7A\u95F4\u5217\u8868: {
+      room_owner: room({
+        name: "\u60A8\u7684\u623F\u95F4",
+        type: "\u60A8\u7684\u623F\u95F4",
+        floorId: "floor_2",
+        size: "\u5927\u578B",
+        purpose: "\u79C1\u4EBA\u751F\u6D3B\u4E0E\u4F11\u606F",
+        description: "\u8FD9\u662F\u60A8\u5728\u603B\u90E8\u516C\u5BD3\u91CC\u7684\u79C1\u4EBA\u7A7A\u95F4\u3002",
+        adjacent: { hall_floor_2: "\u8FDE\u63A5\u8D70\u5ECA" }
+      }),
+      hall_floor_2: room({
+        name: "\u4E8C\u697C\u8D70\u5ECA",
+        type: "\u516C\u5171\u533A\u57DF",
+        floorId: "floor_2",
+        size: "\u4E2D\u578B",
+        purpose: "\u8FDE\u63A5\u4E8C\u697C\u623F\u95F4",
+        description: "\u94FA\u7740\u67D4\u8F6F\u5730\u6BEF\u7684\u5B89\u9759\u8D70\u5ECA\u3002",
+        adjacent: { room_owner: "\u76F8\u90BB" }
+      }),
+      living_room: room({
+        name: "\u5BA2\u5385",
+        type: "\u56FA\u5B9A\u8BBE\u65BD",
+        floorId: "floor_1",
+        size: "\u8D85\u5927\u578B",
+        purpose: "\u4F1A\u5BA2\u3001\u4F11\u606F\u4E0E\u516C\u5171\u6D3B\u52A8",
+        description: "\u5BBD\u655E\u8212\u9002\u7684\u516C\u5171\u5BA2\u5385\uFF0C\u662F\u79DF\u5BA2\u6700\u5BB9\u6613\u76F8\u9047\u7684\u5730\u65B9\u3002",
+        adjacent: { kitchen: "\u5F00\u653E\u5F0F\u8FDE\u63A5", public_bath: "\u7ECF\u8FC7\u8D70\u5ECA", garden: "\u843D\u5730\u95E8\u76F8\u8FDE" },
+        facilities: {
+          sofa_group: { \u540D\u79F0: "\u67D4\u8F6F\u6C99\u53D1\u7EC4", \u72B6\u6001: "\u826F\u597D", \u63CF\u8FF0: "\u8DB3\u591F\u5F88\u591A\u4EBA\u4E00\u8D77\u5750\u4E0B\u3002" }
+        }
+      }),
+      kitchen: room({
+        name: "\u53A8\u623F",
+        type: "\u56FA\u5B9A\u8BBE\u65BD",
+        floorId: "floor_1",
+        size: "\u5927\u578B",
+        purpose: "\u70F9\u996A\u4E0E\u805A\u9910\u51C6\u5907",
+        description: "\u8BBE\u5907\u9F50\u5168\u3001\u53EF\u4EE5\u5927\u5C55\u53A8\u827A\u7684\u5F00\u653E\u53A8\u623F\u3002",
+        adjacent: { living_room: "\u5F00\u653E\u5F0F\u8FDE\u63A5" }
+      }),
+      public_bath: room({
+        name: "\u516C\u5171\u536B\u6D74",
+        type: "\u56FA\u5B9A\u8BBE\u65BD",
+        floorId: "floor_1",
+        size: "\u4E2D\u578B",
+        purpose: "\u516C\u5171\u6D17\u6D74",
+        description: "\u5E72\u51C0\u660E\u4EAE\u3001\u8BBE\u5907\u9F50\u5168\u7684\u516C\u5171\u536B\u6D74\u3002",
+        adjacent: { living_room: "\u7ECF\u8FC7\u8D70\u5ECA" }
+      }),
+      garden: room({
+        name: "\u82B1\u56ED",
+        type: "\u5BA4\u5916\u533A\u57DF",
+        floorId: "floor_1",
+        size: "\u8D85\u5927\u578B",
+        purpose: "\u6563\u6B65\u3001\u4F11\u606F\u4E0E\u4E3E\u529E\u6237\u5916\u6D3B\u52A8",
+        description: "\u9C9C\u82B1\u76DB\u5F00\u7684\u82B1\u56ED\uFF0C\u508D\u665A\u4F1A\u4EAE\u8D77\u6696\u8272\u5EAD\u9662\u706F\u3002",
+        adjacent: { living_room: "\u843D\u5730\u95E8\u76F8\u8FDE", pool: "\u77F3\u677F\u8DEF\u76F8\u8FDE" }
+      }),
+      pool: room({
+        name: "\u6CF3\u6C60",
+        type: "\u5BA4\u5916\u533A\u57DF",
+        floorId: "floor_1",
+        size: "\u5927\u578B",
+        purpose: "\u6E38\u6CF3\u4E0E\u590F\u65E5\u805A\u4F1A",
+        description: "\u6E05\u6F88\u7684\u5BA4\u5916\u6CF3\u6C60\uFF0C\u6C34\u9762\u6620\u7740\u82B1\u56ED\u7684\u706F\u5149\u3002",
+        adjacent: { garden: "\u77F3\u677F\u8DEF\u76F8\u8FDE" }
+      })
+    }
+  };
+}
+function createHospitalCandidate() {
+  return {
+    \u540D\u79F0: "\u767D\u5854\u793E\u533A\u533B\u9662",
+    \u7C7B\u578B: "\u533B\u9662",
+    \u4E16\u754C\u89C2: "\u8DDF\u968F\u5F53\u524D\u4E16\u754C",
+    \u7B80\u4ECB: "\u4E00\u5EA7\u4ECD\u5728\u8FD0\u884C\u7684\u5C0F\u578B\u793E\u533A\u533B\u9662\u3002\u5B83\u6709\u53EF\u9760\u7684\u57FA\u7840\u8BBE\u65BD\uFF0C\u4E5F\u6709\u5927\u7247\u53EF\u4EE5\u91CD\u65B0\u89C4\u5212\u7684\u7A7A\u95F4\u3002",
+    \u662F\u5426\u603B\u90E8: false,
+    \u63A5\u7BA1\u72B6\u6001: "\u53EF\u63A5\u7BA1",
+    \u611F\u77E5\u5EA6: 72,
+    \u4E3B\u9898: { \u56FE\u6807: "hospital", \u4E3B\u8272: "#55B7A5", \u8F85\u8272: "#A7F3D0", \u7EB9\u7406: "medical-cross" },
+    \u7ECF\u8425\u6458\u8981: { \u7B49\u7EA7: 1, \u6D3B\u8DC3\u5EA6: 58, \u5165\u4F4F\u7387: 46, \u4ECA\u65E5\u4EAE\u70B9: "\u65E7\u4F4F\u9662\u90E8\u6B63\u5728\u7B49\u5F85\u65B0\u7684\u7528\u9014" },
+    \u697C\u5C42\u5217\u8868: {
+      hospital_3: { \u540D\u79F0: "\u4E09\u697C\xB7\u4F4F\u9662\u90E8", \u987A\u5E8F: 3, \u611F\u77E5\u5EA6: 45, \u63CF\u8FF0: "\u534A\u6570\u75C5\u623F\u4ECD\u5904\u4E8E\u95F2\u7F6E\u72B6\u6001\u3002" },
+      hospital_2: { \u540D\u79F0: "\u4E8C\u697C\xB7\u8BCA\u7597\u533A", \u987A\u5E8F: 2, \u611F\u77E5\u5EA6: 80, \u63CF\u8FF0: "\u73B0\u6709\u8BCA\u5BA4\u548C\u68C0\u67E5\u5BA4\u96C6\u4E2D\u4E8E\u6B64\u3002" },
+      hospital_1: { \u540D\u79F0: "\u4E00\u697C\xB7\u95E8\u8BCA\u5927\u5385", \u987A\u5E8F: 1, \u611F\u77E5\u5EA6: 100, \u63CF\u8FF0: "\u4ECD\u5728\u6B63\u5E38\u63A5\u5F85\u6765\u8BBF\u8005\u3002" }
+    },
+    \u7A7A\u95F4\u5217\u8868: {
+      hospital_lobby: room({
+        name: "\u95E8\u8BCA\u5927\u5385",
+        type: "\u63A5\u5F85\u7A7A\u95F4",
+        floorId: "hospital_1",
+        size: "\u8D85\u5927\u578B",
+        purpose: "\u6302\u53F7\u3001\u5019\u8BCA\u4E0E\u8BBF\u5BA2\u5206\u6D41",
+        description: "\u91C7\u5149\u4E0D\u9519\uFF0C\u4F46\u65E7\u5F0F\u5EA7\u6905\u8BA9\u8FD9\u91CC\u663E\u5F97\u6709\u4E9B\u75B2\u60EB\u3002",
+        adjacent: { hospital_clinic: "\u697C\u68AF\u4E0E\u7535\u68AF\u76F8\u8FDE" }
+      }),
+      hospital_clinic: room({
+        name: "\u7EFC\u5408\u8BCA\u5BA4",
+        type: "\u8BCA\u7597\u7A7A\u95F4",
+        floorId: "hospital_2",
+        size: "\u5927\u578B",
+        purpose: "\u65E5\u5E38\u8BCA\u7597",
+        description: "\u8BBE\u5907\u57FA\u672C\u9F50\u5168\uFF0C\u53EF\u4EE5\u76F4\u63A5\u6295\u5165\u4F7F\u7528\u3002",
+        adjacent: { hospital_lobby: "\u697C\u68AF\u4E0E\u7535\u68AF\u76F8\u8FDE", hospital_ward: "\u533B\u7528\u7535\u68AF\u76F8\u8FDE" }
+      }),
+      hospital_ward: room({
+        name: "\u65E7\u4F4F\u9662\u90E8",
+        type: "\u75C5\u623F",
+        floorId: "hospital_3",
+        size: "\u8D85\u5927\u578B",
+        purpose: "\u7B49\u5F85\u91CD\u65B0\u89C4\u5212",
+        description: "\u4E00\u6574\u7247\u5B89\u9759\u7684\u65E7\u75C5\u623F\uFF0C\u53EF\u4EE5\u6539\u9020\u6210\u7279\u8272\u75C5\u533A\u3001\u5EB7\u590D\u4E2D\u5FC3\u6216\u5B8C\u5168\u4E0D\u540C\u7684\u7A7A\u95F4\u3002",
+        status: "\u7A7A\u7F6E",
+        adjacent: { hospital_clinic: "\u533B\u7528\u7535\u68AF\u76F8\u8FDE" }
+      })
+    }
+  };
+}
+function createOfficeCandidate() {
+  return {
+    \u540D\u79F0: "\u4E91\u7AEF\u521B\u610F\u5199\u5B57\u697C",
+    \u7C7B\u578B: "\u5199\u5B57\u697C",
+    \u4E16\u754C\u89C2: "\u8DDF\u968F\u5F53\u524D\u4E16\u754C",
+    \u7B80\u4ECB: "\u4F4D\u4E8E\u57CE\u5E02\u4E2D\u5FC3\u7684\u7CBE\u54C1\u5199\u5B57\u697C\uFF0C\u5DF2\u7ECF\u62E5\u6709\u5171\u4EAB\u5927\u5385\u548C\u57FA\u7840\u529E\u516C\u8BBE\u65BD\u3002",
+    \u662F\u5426\u603B\u90E8: false,
+    \u63A5\u7BA1\u72B6\u6001: "\u53EF\u63A5\u7BA1",
+    \u611F\u77E5\u5EA6: 64,
+    \u4E3B\u9898: { \u56FE\u6807: "office", \u4E3B\u8272: "#6B8DC9", \u8F85\u8272: "#C4B5FD", \u7EB9\u7406: "blueprint" },
+    \u7ECF\u8425\u6458\u8981: { \u7B49\u7EA7: 1, \u6D3B\u8DC3\u5EA6: 38, \u5165\u4F4F\u7387: 22, \u4ECA\u65E5\u4EAE\u70B9: "\u9876\u5C42\u7A7A\u4E2D\u4F1A\u8BAE\u5BA4\u62E5\u6709\u6574\u9762\u57CE\u5E02\u666F\u89C2" },
+    \u697C\u5C42\u5217\u8868: {
+      office_12: { \u540D\u79F0: "\u5341\u4E8C\u697C\xB7\u7A7A\u4E2D\u5C42", \u987A\u5E8F: 12, \u611F\u77E5\u5EA6: 55, \u63CF\u8FF0: "\u62E5\u6709\u6700\u597D\u7684\u666F\u89C2\uFF0C\u4E5F\u6700\u9700\u8981\u91CD\u65B0\u89C4\u5212\u3002" },
+      office_11: { \u540D\u79F0: "\u5341\u4E00\u697C\xB7\u529E\u516C\u5C42", \u987A\u5E8F: 11, \u611F\u77E5\u5EA6: 82, \u63CF\u8FF0: "\u6807\u51C6\u529E\u516C\u533A\uFF0C\u57FA\u7840\u8BBE\u65BD\u5B8C\u6574\u3002" },
+      office_10: { \u540D\u79F0: "\u5341\u697C\xB7\u5171\u4EAB\u5927\u5385", \u987A\u5E8F: 10, \u611F\u77E5\u5EA6: 100, \u63CF\u8FF0: "\u8FDE\u63A5\u8BBF\u5BA2\u3001\u5458\u5DE5\u548C\u516C\u5171\u670D\u52A1\u3002" }
+    },
+    \u7A7A\u95F4\u5217\u8868: {
+      office_lobby: room({
+        name: "\u5171\u4EAB\u5927\u5385",
+        type: "\u63A5\u5F85\u7A7A\u95F4",
+        floorId: "office_10",
+        size: "\u8D85\u5927\u578B",
+        purpose: "\u63A5\u5F85\u3001\u4F11\u606F\u4E0E\u5171\u4EAB\u6D3B\u52A8",
+        description: "\u5C42\u9AD8\u5F00\u9614\uFF0C\u4E2D\u592E\u6709\u4E00\u5EA7\u53EF\u4EE5\u66F4\u6362\u4E3B\u9898\u7684\u827A\u672F\u88C5\u7F6E\u3002",
+        adjacent: { office_open: "\u7535\u68AF\u76F8\u8FDE" }
+      }),
+      office_open: room({
+        name: "\u5F00\u653E\u529E\u516C\u533A",
+        type: "\u529E\u516C\u7A7A\u95F4",
+        floorId: "office_11",
+        size: "\u8D85\u5927\u578B",
+        purpose: "\u56E2\u961F\u529E\u516C",
+        description: "\u684C\u6905\u548C\u7F51\u7EDC\u5DF2\u7ECF\u5C31\u4F4D\uFF0C\u53EF\u4EE5\u76F4\u63A5\u62DB\u52DF\u7B2C\u4E00\u6279\u56E2\u961F\u3002",
+        adjacent: { office_lobby: "\u7535\u68AF\u76F8\u8FDE", office_skyroom: "\u697C\u68AF\u4E0E\u7535\u68AF\u76F8\u8FDE" }
+      }),
+      office_skyroom: room({
+        name: "\u7A7A\u4E2D\u4F1A\u8BAE\u5BA4",
+        type: "\u4F1A\u8BAE\u7A7A\u95F4",
+        floorId: "office_12",
+        size: "\u5927\u578B",
+        purpose: "\u4F1A\u8BAE\u3001\u5C55\u793A\u6216\u6539\u9020\u6210\u7279\u6B8A\u7A7A\u95F4",
+        description: "\u6574\u9762\u843D\u5730\u7A97\u5916\u662F\u57CE\u5E02\u5929\u9645\u7EBF\uFF0C\u5BA4\u5185\u5C1A\u672A\u786E\u5B9A\u6700\u7EC8\u7528\u9014\u3002",
+        status: "\u7A7A\u7F6E",
+        adjacent: { office_open: "\u697C\u68AF\u4E0E\u7535\u68AF\u76F8\u8FDE" }
+      })
+    }
+  };
+}
+function createDefaultLandlordState() {
+  return {
+    \u7248\u672C: "2.0",
+    \u8FD0\u884C\u6A21\u5F0F: "\u6A21\u62DF",
+    \u5F53\u524D\u5EFA\u7B51ID: "building_headquarters",
+    \u7528\u6237: { \u540D\u79F0: "{{user}}", \u7269\u54C1\u680F: {} },
+    \u5EFA\u7B51\u5217\u8868: {
+      building_headquarters: createHeadquarters(),
+      building_hospital_candidate: createHospitalCandidate(),
+      building_office_candidate: createOfficeCandidate()
+    },
+    \u4EBA\u7269\u5217\u8868: {},
+    \u4E8B\u4EF6\u5217\u8868: {}
+  };
+}
+function cloneLandlordState(value) {
+  if (typeof structuredClone === "function") return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+}
+var init_default_state = __esm({
+  "scripts/src/model/default-state.js"() {
+  }
+});
+
+// scripts/src/model/validate-state.js
+function assertLandlordState(state) {
+  const buildings = state?.\u5EFA\u7B51\u5217\u8868 ?? {};
+  const people = state?.\u4EBA\u7269\u5217\u8868 ?? {};
+  const headquarters = Object.entries(buildings).filter(([, building]) => building.\u662F\u5426\u603B\u90E8);
+  if (headquarters.length !== 1) throw new Error("\u623F\u4E1C\u7CFB\u7EDF\u5FC5\u987B\u4E14\u53EA\u80FD\u6709\u4E00\u680B\u603B\u90E8\u5EFA\u7B51");
+  if (!buildings[state.\u5F53\u524D\u5EFA\u7B51ID]) throw new Error(`\u5F53\u524D\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${state.\u5F53\u524D\u5EFA\u7B51ID}`);
+  for (const [buildingId, building] of Object.entries(buildings)) {
+    for (const [spaceId, space] of Object.entries(building.\u7A7A\u95F4\u5217\u8868 ?? {})) {
+      if (!building.\u697C\u5C42\u5217\u8868?.[space.\u697C\u5C42ID]) {
+        throw new Error(`\u5EFA\u7B51\u300C${building.\u540D\u79F0}\u300D\u7684\u7A7A\u95F4\u300C${space.\u540D\u79F0}\u300D\u5F15\u7528\u4E86\u4E0D\u5B58\u5728\u7684\u697C\u5C42\uFF1A${space.\u697C\u5C42ID}`);
+      }
+      for (const personId of Object.keys(space.\u5360\u7528\u8005 ?? {})) {
+        const person = people[personId];
+        if (!person) throw new Error(`\u7A7A\u95F4\u300C${spaceId}\u300D\u5F15\u7528\u4E86\u4E0D\u5B58\u5728\u7684\u4EBA\u7269\uFF1A${personId}`);
+        if (person.\u6240\u5728\u5EFA\u7B51ID !== buildingId || person.\u6240\u5728\u7A7A\u95F4ID !== spaceId) {
+          throw new Error(`\u4EBA\u7269\u300C${person.\u59D3\u540D}\u300D\u7684\u4F4D\u7F6E\u4E0E\u7A7A\u95F4\u5360\u7528\u8BB0\u5F55\u4E0D\u4E00\u81F4`);
+        }
+      }
+    }
+  }
+  for (const [personId, person] of Object.entries(people)) {
+    const building = buildings[person.\u6240\u5728\u5EFA\u7B51ID];
+    if (!building) throw new Error(`\u4EBA\u7269\u300C${person.\u59D3\u540D}\u300D\u6240\u5728\u5EFA\u7B51\u4E0D\u5B58\u5728`);
+    if (!person.\u6240\u5728\u7A7A\u95F4ID) continue;
+    const space = building.\u7A7A\u95F4\u5217\u8868?.[person.\u6240\u5728\u7A7A\u95F4ID];
+    if (!space) throw new Error(`\u4EBA\u7269\u300C${person.\u59D3\u540D}\u300D\u6240\u5728\u7A7A\u95F4\u4E0D\u5B58\u5728`);
+    if (!space.\u5360\u7528\u8005?.[personId]) throw new Error(`\u4EBA\u7269\u300C${person.\u59D3\u540D}\u300D\u6CA1\u6709\u51FA\u73B0\u5728\u5BF9\u5E94\u7A7A\u95F4\u7684\u5360\u7528\u8BB0\u5F55\u4E2D`);
+  }
+  return state;
+}
+var init_validate_state = __esm({
+  "scripts/src/model/validate-state.js"() {
+  }
+});
+
+// scripts/src/services/landlord-store.js
+function defaultIdFactory(prefix) {
+  const random = Math.random().toString(36).slice(2, 8);
+  return `${prefix}_${Date.now().toString(36)}_${random}`;
+}
+function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
+  if (!mvu || typeof mvu.transaction !== "function") throw new TypeError("\u623F\u4E1C\u72B6\u6001\u670D\u52A1\u9700\u8981 MVU \u4E8B\u52A1\u670D\u52A1");
+  if (!schema || typeof schema.parseState !== "function") throw new TypeError("\u623F\u4E1C\u72B6\u6001\u670D\u52A1\u9700\u8981 Schema \u89E3\u6790\u5668");
+  const listeners = /* @__PURE__ */ new Set();
+  function parse(value) {
+    return assertLandlordState(schema.parseState(value));
+  }
+  function getState() {
+    const stored = mvu.read("\u623F\u4E1C\u7CFB\u7EDF", null);
+    return parse(stored ?? createDefaultLandlordState());
+  }
+  async function commit(label, change) {
+    let committedState;
+    const transaction = await mvu.transaction(
+      (statData) => {
+        const current = parse(statData.\u623F\u4E1C\u7CFB\u7EDF ?? createDefaultLandlordState());
+        const draft = cloneLandlordState(current);
+        const result = change(draft);
+        committedState = parse(result ?? draft);
+        statData.\u623F\u4E1C\u7CFB\u7EDF = committedState;
+      },
+      {
+        validate: (snapshot) => {
+          snapshot.stat_data.\u623F\u4E1C\u7CFB\u7EDF = parse(snapshot.stat_data.\u623F\u4E1C\u7CFB\u7EDF);
+          return snapshot;
+        }
+      }
+    );
+    const event = Object.freeze({ label, state: cloneLandlordState(committedState), transaction });
+    for (const listener of listeners) listener(event);
+    return event;
+  }
+  return Object.freeze({
+    getState,
+    async ensureInitialized() {
+      if (mvu.read("\u623F\u4E1C\u7CFB\u7EDF", null)) return Object.freeze({ initialized: false, state: getState() });
+      const event = await commit("\u521D\u59CB\u5316\u623F\u4E1C\u7CFB\u7EDF", () => createDefaultLandlordState());
+      return Object.freeze({ initialized: true, state: event.state });
+    },
+    async setCurrentBuilding(buildingId) {
+      return commit("\u5207\u6362\u5F53\u524D\u5EFA\u7B51", (state) => {
+        if (!state.\u5EFA\u7B51\u5217\u8868[buildingId]) throw new Error(`\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${buildingId}`);
+        state.\u5F53\u524D\u5EFA\u7B51ID = buildingId;
+      });
+    },
+    async acquireBuilding(buildingId, direction = null) {
+      return commit("\u63A5\u7BA1\u5EFA\u7B51", (state) => {
+        const building = state.\u5EFA\u7B51\u5217\u8868[buildingId];
+        if (!building) throw new Error(`\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${buildingId}`);
+        if (building.\u63A5\u7BA1\u72B6\u6001 !== "\u53EF\u63A5\u7BA1") throw new Error(`\u5EFA\u7B51\u300C${building.\u540D\u79F0}\u300D\u5F53\u524D\u4E0D\u53EF\u63A5\u7BA1`);
+        building.\u63A5\u7BA1\u72B6\u6001 = "\u5DF2\u63A5\u7BA1";
+        building.\u611F\u77E5\u5EA6 = 100;
+        building.\u7ECF\u8425\u6458\u8981.\u6D3B\u8DC3\u5EA6 = Math.max(50, building.\u7ECF\u8425\u6458\u8981.\u6D3B\u8DC3\u5EA6);
+        if (direction) {
+          building.\u540D\u79F0 = direction.buildingName ?? building.\u540D\u79F0;
+          building.\u7B80\u4ECB = direction.description ?? building.\u7B80\u4ECB;
+          building.\u7ECF\u8425\u6458\u8981.\u4ECA\u65E5\u4EAE\u70B9 = direction.highlight ?? building.\u7ECF\u8425\u6458\u8981.\u4ECA\u65E5\u4EAE\u70B9;
+          building.\u4E3B\u9898 = { ...building.\u4E3B\u9898, ...direction.theme ?? {} };
+        }
+        state.\u5F53\u524D\u5EFA\u7B51ID = buildingId;
+        const eventId = idFactory("event");
+        state.\u4E8B\u4EF6\u5217\u8868[eventId] = {
+          \u6807\u9898: `\u6B63\u5F0F\u63A5\u7BA1\u300C${building.\u540D\u79F0}\u300D`,
+          \u7C7B\u578B: "\u5EFA\u7B51\u63A5\u7BA1",
+          \u5EFA\u7B51ID: buildingId,
+          \u7A7A\u95F4ID: "",
+          \u72B6\u6001: "\u5DF2\u5B8C\u6210",
+          \u6458\u8981: direction?.summary ?? "\u65B0\u7684\u5EFA\u7B51\u5DF2\u7ECF\u52A0\u5165\u623F\u4E1C\u7ECF\u8425\u7248\u56FE\u3002",
+          \u53D1\u751F\u65F6\u95F4: "\u521A\u521A",
+          \u53C2\u4E0E\u8005: {}
+        };
+      });
+    },
+    async applyRenovation({ buildingId, spaceId, plan }) {
+      return commit("\u5E94\u7528\u88C5\u4FEE\u65B9\u6848", (state) => {
+        const building = state.\u5EFA\u7B51\u5217\u8868[buildingId];
+        const space = building?.\u7A7A\u95F4\u5217\u8868?.[spaceId];
+        if (!space) throw new Error(`\u88C5\u4FEE\u76EE\u6807\u4E0D\u5B58\u5728\uFF1A${buildingId}/${spaceId}`);
+        if (!["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.\u63A5\u7BA1\u72B6\u6001)) throw new Error("\u5C1A\u672A\u63A5\u7BA1\u7684\u5EFA\u7B51\u4E0D\u80FD\u88C5\u4FEE");
+        space.\u88C5\u4FEE = {
+          \u98CE\u683C: plan.style,
+          \u914D\u8272: cloneLandlordState(plan.palette ?? {}),
+          \u6750\u8D28: cloneLandlordState(plan.materials ?? {}),
+          \u5BB6\u5177: cloneLandlordState(plan.furniture ?? {}),
+          \u7167\u660E: plan.lighting,
+          \u6C1B\u56F4: plan.atmosphere,
+          \u5B8C\u6210\u5EA6: 100
+        };
+        space.\u72B6\u6001 = "\u6B63\u5E38";
+        space.\u63CF\u8FF0 = plan.resultDescription ?? space.\u63CF\u8FF0;
+        building.\u7ECF\u8425\u6458\u8981.\u4ECA\u65E5\u4EAE\u70B9 = `${space.\u540D\u79F0}\u5B8C\u6210\u4E86\u300C${plan.name}\u300D\u6539\u9020`;
+        const eventId = idFactory("event");
+        state.\u4E8B\u4EF6\u5217\u8868[eventId] = {
+          \u6807\u9898: `${space.\u540D\u79F0}\u7115\u7136\u4E00\u65B0`,
+          \u7C7B\u578B: "\u88C5\u4FEE\u5B8C\u6210",
+          \u5EFA\u7B51ID: buildingId,
+          \u7A7A\u95F4ID: spaceId,
+          \u72B6\u6001: "\u5DF2\u5B8C\u6210",
+          \u6458\u8981: plan.resultDescription,
+          \u53D1\u751F\u65F6\u95F4: "\u521A\u521A",
+          \u53C2\u4E0E\u8005: {}
+        };
+      });
+    },
+    async recruit({ buildingId, spaceId, candidate }) {
+      return commit("\u62DB\u52DF\u5E76\u5B89\u7F6E\u4EBA\u7269", (state) => {
+        const building = state.\u5EFA\u7B51\u5217\u8868[buildingId];
+        const space = building?.\u7A7A\u95F4\u5217\u8868?.[spaceId];
+        if (!space) throw new Error(`\u5B89\u7F6E\u7A7A\u95F4\u4E0D\u5B58\u5728\uFF1A${buildingId}/${spaceId}`);
+        if (!["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.\u63A5\u7BA1\u72B6\u6001)) throw new Error("\u5C1A\u672A\u63A5\u7BA1\u7684\u5EFA\u7B51\u4E0D\u80FD\u62DB\u52DF\u4EBA\u7269");
+        const personId = candidate.id || idFactory("person");
+        if (state.\u4EBA\u7269\u5217\u8868[personId]) throw new Error(`\u4EBA\u7269\u5DF2\u7ECF\u5B58\u5728\uFF1A${personId}`);
+        state.\u4EBA\u7269\u5217\u8868[personId] = {
+          \u59D3\u540D: candidate.name,
+          \u6765\u6E90\u4E16\u754C: candidate.origin,
+          \u8EAB\u4EFD\u7C7B\u578B: candidate.role,
+          \u804C\u4E1A: candidate.profession,
+          \u6240\u5728\u5EFA\u7B51ID: buildingId,
+          \u6240\u5728\u7A7A\u95F4ID: spaceId,
+          \u5916\u8C8C: candidate.appearance,
+          \u6027\u683C: candidate.personality,
+          \u72B6\u6001: "\u521A\u521A\u52A0\u5165",
+          \u5185\u5FC3: candidate.firstThought,
+          \u611F\u77E5\u5EA6: 100,
+          \u89C6\u89C9\u8EAB\u4EFD: cloneLandlordState(candidate.visualIdentity),
+          \u5173\u7CFB: {}
+        };
+        space.\u5360\u7528\u8005[personId] = candidate.role;
+        building.\u7ECF\u8425\u6458\u8981.\u6D3B\u8DC3\u5EA6 = Math.min(100, building.\u7ECF\u8425\u6458\u8981.\u6D3B\u8DC3\u5EA6 + 8);
+        const eventId = idFactory("event");
+        state.\u4E8B\u4EF6\u5217\u8868[eventId] = {
+          \u6807\u9898: `${candidate.name}\u52A0\u5165\u4E86${building.\u540D\u79F0}`,
+          \u7C7B\u578B: "\u4EBA\u7269\u52A0\u5165",
+          \u5EFA\u7B51ID: buildingId,
+          \u7A7A\u95F4ID: spaceId,
+          \u72B6\u6001: "\u5DF2\u5B8C\u6210",
+          \u6458\u8981: `${candidate.name}\u5DF2\u7ECF\u88AB\u5B89\u6392\u5230${space.\u540D\u79F0}\u3002`,
+          \u53D1\u751F\u65F6\u95F4: "\u521A\u521A",
+          \u53C2\u4E0E\u8005: { [personId]: "\u65B0\u6210\u5458" }
+        };
+      });
+    },
+    subscribe(listener) {
+      if (typeof listener !== "function") throw new TypeError("\u72B6\u6001\u8BA2\u9605\u8005\u5FC5\u987B\u662F\u51FD\u6570");
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    }
+  });
+}
+var init_landlord_store = __esm({
+  "scripts/src/services/landlord-store.js"() {
+    init_default_state();
+    init_validate_state();
+  }
+});
+
+// scripts/src/services/mock-task-service.js
+function clone2(value) {
+  if (typeof structuredClone === "function") return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+}
+function defaultIdFactory2(kind) {
+  return `${kind}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+function createMockTaskService({ recipes, idFactory = defaultIdFactory2 }) {
+  const tasks = /* @__PURE__ */ new Map();
+  const listeners = /* @__PURE__ */ new Set();
+  function publish(task) {
+    const snapshot = Object.freeze(clone2(task));
+    for (const listener of listeners) listener(snapshot);
+    return snapshot;
+  }
+  function get(taskId) {
+    const task = tasks.get(taskId);
+    return task ? Object.freeze(clone2(task)) : null;
+  }
+  return Object.freeze({
+    mode: "mock",
+    get,
+    list() {
+      return [...tasks.values()].map((task) => Object.freeze(clone2(task)));
+    },
+    async run(kind, input) {
+      const recipe = recipes[kind];
+      if (typeof recipe !== "function") throw new Error(`\u6CA1\u6709\u6CE8\u518C\u6A21\u62DF\u4EFB\u52A1\uFF1A${kind}`);
+      const id = idFactory("task");
+      const task = { id, kind, status: "running", input: clone2(input), preview: null, error: null };
+      tasks.set(id, task);
+      publish(task);
+      try {
+        const preview = await recipe(clone2(input));
+        if (task.status === "cancelled") return get(id);
+        task.preview = clone2(preview);
+        task.status = "ready";
+      } catch (error) {
+        task.status = "failed";
+        task.error = error instanceof Error ? error.message : String(error);
+      }
+      return publish(task);
+    },
+    cancel(taskId) {
+      const task = tasks.get(taskId);
+      if (!task || !["running", "ready"].includes(task.status)) return false;
+      task.status = "cancelled";
+      publish(task);
+      return true;
+    },
+    async confirm(taskId, apply) {
+      const task = tasks.get(taskId);
+      if (!task) throw new Error(`\u4EFB\u52A1\u4E0D\u5B58\u5728\uFF1A${taskId}`);
+      if (task.status !== "ready") throw new Error(`\u4EFB\u52A1\u5C1A\u4E0D\u53EF\u786E\u8BA4\uFF1A${task.status}`);
+      if (typeof apply !== "function") throw new TypeError("\u786E\u8BA4\u4EFB\u52A1\u5FC5\u987B\u63D0\u4F9B\u5E94\u7528\u51FD\u6570");
+      task.status = "applying";
+      publish(task);
+      try {
+        await apply(clone2(task.preview));
+        task.status = "confirmed";
+      } catch (error) {
+        task.status = "ready";
+        task.error = error instanceof Error ? error.message : String(error);
+        publish(task);
+        throw error;
+      }
+      return publish(task);
+    },
+    subscribe(listener) {
+      if (typeof listener !== "function") throw new TypeError("\u4EFB\u52A1\u8BA2\u9605\u8005\u5FC5\u987B\u662F\u51FD\u6570");
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    }
+  });
+}
+var init_mock_task_service = __esm({
+  "scripts/src/services/mock-task-service.js"() {
+  }
+});
+
+// scripts/modules/landlord-core/index.js
+var landlord_core_exports = {};
+__export(landlord_core_exports, {
+  activate: () => activate2
+});
+function activate2(context) {
+  const schema = context.services.require("landlord.schema");
+  const store = createLandlordStore({ mvu: context.mvu, schema });
+  const tasks = createMockTaskService({ recipes: managementMockRecipes });
+  const compiler = Object.freeze({ compileBuilding, compilePortfolio });
+  context.services.register("landlord.store", store, { legacyGlobal: "LandlordStore" });
+  context.services.register("landlord.tasks", tasks);
+  context.services.register("building.compiler", compiler);
+}
+var init_landlord_core = __esm({
+  "scripts/modules/landlord-core/index.js"() {
+    init_compiler();
+    init_management_recipes();
+    init_landlord_store();
+    init_mock_task_service();
+  }
+});
+
+// scripts/src/ui/console/templates.js
+function icon(name) {
+  return `<span class="lmo-icon">${icons[name] ?? icons.room}</span>`;
+}
+function escapeHtml(value) {
+  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+function safeColor(value, fallback = "#FF9EAA") {
+  return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : fallback;
+}
+function tags(values = []) {
+  return `<div class="lmo-tags">${values.map((value) => `<span>${escapeHtml(value)}</span>`).join("")}</div>`;
+}
+function emptyState(title, text) {
+  return `<div class="lmo-empty">${icon("sparkle")}<strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></div>`;
+}
+function navItem(section, current, label, iconName) {
+  return `<button class="lmo-nav-item ${section === current ? "active" : ""}" data-action="navigate" data-section="${section}">${icon(iconName)}<span>${label}</span></button>`;
+}
+function renderSidebar(ui, portfolio) {
+  return `<aside class="lmo-sidebar">
+    <div class="lmo-brand"><div class="lmo-brand-mark">L</div><div><strong>Landlord</strong><span>\u623F\u4E1C\u7ECF\u8425\u4E2D\u67A2</span></div></div>
+    <nav>
+      ${navItem("portfolio", ui.section, "\u8D44\u4EA7\u603B\u89C8", "buildings")}
+      ${navItem("building", ui.section, "\u5F53\u524D\u5EFA\u7B51", "home")}
+      ${navItem("renovation", ui.section, "\u88C5\u4FEE\u4E2D\u5FC3", "renovate")}
+      ${navItem("recruitment", ui.section, "\u62DB\u52DF\u4E2D\u5FC3", "recruit")}
+      ${navItem("events", ui.section, "\u52A8\u6001\u8BB0\u5F55", "event")}
+    </nav>
+    <div class="lmo-sidebar-summary">
+      <span>\u7ECF\u8425\u7248\u56FE</span><strong>${portfolio.owned.length}<small> \u680B\u5DF2\u63A5\u7BA1</small></strong>
+      <div><i style="width:${Math.min(100, 28 + portfolio.owned.length * 18)}%"></i></div>
+      <p>${portfolio.available.length} \u4E2A\u63A5\u7BA1\u673A\u4F1A\u6B63\u5728\u7B49\u5F85</p>
+    </div>
+    <div class="lmo-mode"><span class="lmo-pulse"></span><div><strong>\u672C\u5730\u6A21\u62DF\u6A21\u5F0F</strong><small>\u4E0D\u4F1A\u8C03\u7528\u771F\u5B9E AI</small></div></div>
+  </aside>`;
+}
+function renderHeader(current, ui) {
+  const eyebrow = ui.section === "portfolio" ? "PROPERTY PORTFOLIO" : `${current.type.toUpperCase()} \xB7 ${current.status}`;
+  return `<header class="lmo-header">
+    <div><span class="lmo-eyebrow">${escapeHtml(eyebrow)}</span><h1>${escapeHtml(sectionTitle(ui.section, current))}</h1></div>
+    <div class="lmo-header-actions"><span class="lmo-status-dot">\u7CFB\u7EDF\u5C31\u7EEA</span><button class="lmo-icon-button" data-action="close" aria-label="\u5173\u95ED">${icon("close")}</button></div>
+  </header>`;
+}
+function sectionTitle(section, current) {
+  if (section === "portfolio") return "\u6211\u7684\u5EFA\u7B51\u7248\u56FE";
+  if (section === "renovation") return "\u88C5\u4FEE\u5177\u73B0\u5316\u4E2D\u5FC3";
+  if (section === "recruitment") return "\u8DE8\u4E16\u754C\u62DB\u52DF\u4E2D\u5FC3";
+  if (section === "takeover") return "\u5EFA\u7B51\u63A5\u7BA1\u63D0\u6848";
+  if (section === "events") return "\u5EFA\u7B51\u52A8\u6001\u8BB0\u5F55";
+  return current.name;
+}
+function buildingCard(building, action) {
+  const accent = safeColor(building.theme?.\u4E3B\u8272);
+  const owned = ["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.status);
+  return `<button class="lmo-building-card" data-action="${action}" data-building-id="${escapeHtml(building.id)}" style="--building-accent:${accent}">
+    <div class="lmo-building-visual"><span class="lmo-building-type">${escapeHtml(building.type)}</span><span class="lmo-building-glyph">${icon(building.isHeadquarters ? "home" : "buildings")}</span><i></i><i></i><i></i></div>
+    <div class="lmo-building-copy"><div class="lmo-card-title"><div><strong>${escapeHtml(building.name)}</strong><span>${escapeHtml(building.worldview)}</span></div><span class="lmo-badge ${owned ? "owned" : ""}">${escapeHtml(building.status)}</span></div>
+    <p>${escapeHtml(building.description)}</p>
+    <div class="lmo-card-metrics"><span><b>${building.metrics.floors}</b> \u5C42</span><span><b>${building.metrics.spaces}</b> \u7A7A\u95F4</span><span><b>${building.summary.\u6D3B\u8DC3\u5EA6 ?? 0}</b> \u6D3B\u8DC3</span><em>${owned ? "\u8FDB\u5165\u7BA1\u7406" : "\u67E5\u770B\u63D0\u6848"} ${icon("arrow")}</em></div></div>
+  </button>`;
+}
+function renderPortfolio(state, portfolio) {
+  const current = portfolio.buildings.find((item) => item.id === state.\u5F53\u524D\u5EFA\u7B51ID) ?? portfolio.headquarters;
+  const recentEvents = Object.entries(state.\u4E8B\u4EF6\u5217\u8868 ?? {}).slice(-3).reverse();
+  return `<section class="lmo-view lmo-portfolio">
+    <div class="lmo-hero" style="--building-accent:${safeColor(current.theme?.\u4E3B\u8272)}">
+      <div><span class="lmo-kicker">\u5F53\u524D\u7ECF\u8425\u7126\u70B9</span><h2>${escapeHtml(current.name)}</h2><p>${escapeHtml(current.summary.\u4ECA\u65E5\u4EAE\u70B9)}</p>
+      <button class="lmo-primary" data-action="open-building" data-building-id="${escapeHtml(current.id)}">\u8FDB\u5165\u5EFA\u7B51 ${icon("arrow")}</button></div>
+      <div class="lmo-hero-orbit"><span>${portfolio.owned.length}</span><small>\u680B\u5EFA\u7B51</small><i></i><i></i><i></i></div>
+    </div>
+    <div class="lmo-section-heading"><div><span>OWNED</span><h2>\u5DF2\u7ECF\u5C5E\u4E8E\u4F60\u7684\u5730\u65B9</h2></div><p>\u6BCF\u4E00\u680B\u5EFA\u7B51\u90FD\u4F7F\u7528\u540C\u4E00\u4EFD\u771F\u5B9E\u72B6\u6001\uFF0C\u4F46\u62E5\u6709\u81EA\u5DF1\u7684\u7A7A\u95F4\u8BED\u8A00\u3002</p></div>
+    <div class="lmo-building-grid">${portfolio.owned.map((building) => buildingCard(building, "open-building")).join("")}</div>
+    <div class="lmo-section-heading"><div><span>OPPORTUNITIES</span><h2>\u4E0B\u4E00\u6B21\u63A5\u7BA1\u673A\u4F1A</h2></div><p>\u4E0D\u662F\u7A7A\u58F3\uFF1A\u5B83\u4EEC\u5DF2\u7ECF\u6709\u683C\u5C40\u3001\u8BBE\u65BD\u548C\u7B49\u5F85\u88AB\u6539\u53D8\u7684\u90E8\u5206\u3002</p></div>
+    <div class="lmo-building-grid">${portfolio.available.map((building) => buildingCard(building, "open-takeover")).join("")}</div>
+    <div class="lmo-dashboard-row">
+      <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon("event")}<span><strong>\u521A\u521A\u53D1\u751F</strong><small>\u6240\u6709\u6A21\u5757\u5C06\u9010\u6B65\u5171\u7528\u8FD9\u6761\u65F6\u95F4\u7EBF</small></span></div></div>
+      ${recentEvents.length ? `<div class="lmo-mini-timeline">${recentEvents.map(([, event]) => `<div><i></i><span><strong>${escapeHtml(event.\u6807\u9898)}</strong><small>${escapeHtml(event.\u6458\u8981)}</small></span><time>${escapeHtml(event.\u53D1\u751F\u65F6\u95F4)}</time></div>`).join("")}</div>` : emptyState("\u7B49\u5F85\u7B2C\u4E00\u4E2A\u53D8\u5316", "\u63A5\u7BA1\u3001\u88C5\u4FEE\u6216\u62DB\u52DF\u540E\uFF0C\u8FD9\u91CC\u4F1A\u7559\u4E0B\u771F\u5B9E\u8BB0\u5F55\u3002")}</article>
+      <article class="lmo-panel lmo-world-card"><div class="lmo-panel-title"><div>${icon("sparkle")}<span><strong>\u4E16\u754C\u78B0\u649E\u9884\u89C8</strong><small>\u4E0D\u9700\u8981\u989D\u5916\u7D20\u6750\u5E93</small></span></div></div><p>\u5EFA\u7B51\u63D0\u4F9B\u7A33\u5B9A\u7A7A\u95F4\uFF0C\u4EBA\u7269\u5E26\u6765\u5B8C\u5168\u4E0D\u540C\u7684\u89C4\u5219\u3002\u88C5\u4FEE\u3001\u62DB\u52DF\u4E0E\u6545\u4E8B\u4F1A\u4ECE\u540C\u4E00\u4EFD\u72B6\u6001\u7EE7\u7EED\u751F\u957F\u3002</p>${tags(["\u5EFA\u7B51\u51B3\u5B9A\u821E\u53F0", "\u4EBA\u7269\u5E26\u6765\u53D8\u5316", "\u4EE3\u7801\u4FDD\u8BC1\u4E00\u81F4"])}</article>
+    </div>
+  </section>`;
+}
+function spaceCard(space) {
+  const sizeClass = `size-${escapeHtml(space.size)}`;
+  return `<button class="lmo-space-card ${sizeClass}" data-action="select-space" data-space-id="${escapeHtml(space.id)}">
+    <div><span class="lmo-space-type">${escapeHtml(space.type)}</span><span class="lmo-space-status status-${escapeHtml(space.status)}">${escapeHtml(space.status)}</span></div>
+    <strong>${escapeHtml(space.name)}</strong><p>${escapeHtml(space.purpose)}</p>
+    <footer><span>${space.occupants.length ? `${space.occupants.length} \u4EBA\u6B63\u5728\u4F7F\u7528` : "\u7B49\u5F85\u4EBA\u7269\u8FDB\u5165"}</span><span>${escapeHtml(space.renovation?.\u98CE\u683C ?? "\u57FA\u7840\u88C5\u4FEE")}</span></footer>
+  </button>`;
+}
+function renderBuilding(building) {
+  return `<section class="lmo-view">
+    <div class="lmo-building-banner" style="--building-accent:${safeColor(building.theme?.\u4E3B\u8272)}"><div><span>${escapeHtml(building.type)} \xB7 ${escapeHtml(building.worldview)}</span><h2>${escapeHtml(building.name)}</h2><p>${escapeHtml(building.description)}</p></div><div class="lmo-banner-actions"><button class="lmo-secondary" data-action="navigate" data-section="renovation">${icon("renovate")} \u5F00\u59CB\u88C5\u4FEE</button><button class="lmo-primary" data-action="navigate" data-section="recruitment">${icon("recruit")} \u62DB\u52DF\u4EBA\u7269</button></div></div>
+    <div class="lmo-metric-strip"><div><span>\u53EF\u89C1\u697C\u5C42</span><strong>${building.metrics.floors}</strong></div><div><span>\u5F53\u524D\u7A7A\u95F4</span><strong>${building.metrics.spaces}</strong></div><div><span>\u5DF2\u5B89\u7F6E\u4EBA\u7269</span><strong>${building.metrics.people}</strong></div><div><span>\u6D3B\u8DC3\u5EA6</span><strong>${building.summary.\u6D3B\u8DC3\u5EA6 ?? 0}<small>%</small></strong></div></div>
+    <div class="lmo-floor-list">${building.floors.map((floor) => `<article class="lmo-floor"><header><div><span>${String(floor.order).padStart(2, "0")}</span><div><strong>${escapeHtml(floor.name)}</strong><small>${escapeHtml(floor.description)}</small></div></div><em>\u611F\u77E5 ${floor.awareness}%</em></header><div class="lmo-space-grid">${floor.spaces.length ? floor.spaces.map(spaceCard).join("") : emptyState("\u8FD9\u4E00\u5C42\u4ECD\u662F\u672A\u77E5", "\u968F\u7740\u63A5\u7BA1\u548C\u63A2\u7D22\uFF0C\u65B0\u7684\u7A7A\u95F4\u4F1A\u9010\u6B65\u663E\u73B0\u3002")}</div></article>`).join("")}</div>
+  </section>`;
+}
+function workflowSteps(active) {
+  return `<div class="lmo-workflow-steps"><span class="done"><b>1</b>\u9009\u62E9\u76EE\u6807</span><i></i><span class="${active >= 2 ? "done" : ""}"><b>2</b>\u751F\u6210\u9884\u89C8</span><i></i><span class="${active >= 3 ? "done" : ""}"><b>3</b>\u786E\u8BA4\u5199\u5165</span></div>`;
+}
+function renderTakeover(building, task, selectedId, busy) {
+  const directions = task?.status === "ready" ? task.preview.directions : [];
+  return `<section class="lmo-view lmo-workflow">${workflowSteps(directions.length ? 2 : 1)}
+    <div class="lmo-workflow-intro" style="--building-accent:${safeColor(building.theme?.\u4E3B\u8272)}"><button class="lmo-text-button" data-action="navigate" data-section="portfolio">${icon("back")} \u8FD4\u56DE\u8D44\u4EA7\u603B\u89C8</button><div><span class="lmo-building-type">${escapeHtml(building.type)}</span><h2>${escapeHtml(building.name)}</h2><p>${escapeHtml(building.description)}</p></div><div class="lmo-facts"><span><b>${building.metrics.floors}</b> \u5C42\u57FA\u7840\u683C\u5C40</span><span><b>${building.metrics.spaces}</b> \u4E2A\u73B0\u6709\u7A7A\u95F4</span><span><b>${building.awareness}%</b> \u5DF2\u611F\u77E5</span></div></div>
+    ${!directions.length ? `<div class="lmo-generation-callout">${icon("sparkle")}<div><strong>\u751F\u6210\u4E09\u79CD\u63A5\u7BA1\u65B9\u5411</strong><p>\u5F53\u524D\u53EA\u8BFB\u53D6\u672C\u5730\u56FA\u5B9A\u6837\u4F8B\uFF0C\u4E0D\u4F1A\u8BBF\u95EE\u804A\u5929\u8BB0\u5F55\uFF0C\u4E5F\u4E0D\u4F1A\u8C03\u7528\u4EFB\u4F55\u771F\u5B9E AI\u3002</p></div><button class="lmo-primary" data-action="run-takeover" data-building-id="${escapeHtml(building.id)}" ${busy ? "disabled" : ""}>${busy ? "\u6B63\u5728\u6574\u7406\u2026" : "\u751F\u6210\u672C\u5730\u63D0\u6848"}</button></div>` : `<div class="lmo-option-grid">${directions.map((direction) => `<button class="lmo-option-card ${selectedId === direction.id ? "selected" : ""}" data-action="choose-option" data-option-id="${escapeHtml(direction.id)}"><div class="lmo-option-check">${selectedId === direction.id ? icon("check") : ""}</div><span>\u7ECF\u8425\u65B9\u5411</span><h3>${escapeHtml(direction.name)}</h3><p>${escapeHtml(direction.description)}</p>${tags(direction.tags)}<ul>${direction.opportunities.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></button>`).join("")}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? "\u65B9\u6848\u5DF2\u7ECF\u9009\u5B9A" : "\u9009\u62E9\u4E00\u4E2A\u65B9\u5411\u7EE7\u7EED"}</strong><span>\u53EA\u6709\u70B9\u51FB\u786E\u8BA4\u540E\uFF0C\u5EFA\u7B51\u72B6\u6001\u624D\u4F1A\u6B63\u5F0F\u6539\u53D8\u3002</span></div><button class="lmo-primary" data-action="confirm-takeover" ${selectedId && !busy ? "" : "disabled"}>\u786E\u8BA4\u63A5\u7BA1 ${icon("arrow")}</button></div>`}
+  </section>`;
+}
+function ownedSpaceOptions(building, selectedSpaceId, action = "choose-workflow-space") {
+  return building.floors.flatMap((floor) => floor.spaces).map((space) => `<button class="lmo-compact-space ${selectedSpaceId === space.id ? "selected" : ""}" data-action="${action}" data-space-id="${escapeHtml(space.id)}"><span>${escapeHtml(space.type)}</span><strong>${escapeHtml(space.name)}</strong><small>${escapeHtml(space.status)} \xB7 ${escapeHtml(space.size)}</small></button>`).join("");
+}
+function renderRenovation(building, task, selectedSpaceId, selectedId, busy) {
+  const plans = task?.status === "ready" ? task.preview.plans : [];
+  const space = building.floors.flatMap((floor) => floor.spaces).find((item) => item.id === selectedSpaceId);
+  return `<section class="lmo-view lmo-workflow">${workflowSteps(plans.length ? 2 : selectedSpaceId ? 1 : 0)}
+    <div class="lmo-two-column"><aside class="lmo-selector"><span class="lmo-kicker">\u9009\u62E9\u88C5\u4FEE\u76EE\u6807</span><h2>${escapeHtml(building.name)}</h2><div class="lmo-compact-list">${ownedSpaceOptions(building, selectedSpaceId)}</div></aside>
+    <div class="lmo-workspace">${!space ? emptyState("\u5148\u9009\u62E9\u4E00\u4E2A\u7A7A\u95F4", "\u53EF\u4EE5\u4ECE\u4E00\u4E2A\u623F\u95F4\u5F00\u59CB\uFF0C\u4E0D\u9700\u8981\u4E00\u6B21\u88C5\u4FEE\u6574\u680B\u5EFA\u7B51\u3002") : !plans.length ? `<div class="lmo-preview-room"><span>${escapeHtml(space.type)} \xB7 ${escapeHtml(space.size)}</span><h2>${escapeHtml(space.name)}</h2><p>${escapeHtml(space.description)}</p><div class="lmo-current-style"><small>\u5F53\u524D\u88C5\u4FEE</small><strong>${escapeHtml(space.renovation?.\u98CE\u683C)}</strong><span>${escapeHtml(space.renovation?.\u6C1B\u56F4)}</span></div><button class="lmo-primary" data-action="run-renovation" ${busy ? "disabled" : ""}>${icon("sparkle")} ${busy ? "\u6B63\u5728\u6574\u7406\u2026" : "\u751F\u6210\u4E09\u4E2A\u672C\u5730\u65B9\u6848"}</button></div>` : `<div class="lmo-renovation-plans">${plans.map((plan) => `<button class="lmo-renovation-card ${selectedId === plan.id ? "selected" : ""}" data-action="choose-option" data-option-id="${escapeHtml(plan.id)}"><div class="lmo-palette">${Object.values(plan.palette).map((color) => `<i style="--swatch:${safeColor(color, "#E2E8F0")}"></i>`).join("")}</div><span>${escapeHtml(plan.style)}</span><h3>${escapeHtml(plan.name)}</h3><p>${escapeHtml(plan.tagline)}</p>${tags(plan.impacts)}<small>${escapeHtml(plan.lighting)}</small></button>`).join("")}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? "\u88C5\u4FEE\u6548\u679C\u53EF\u4EE5\u5177\u73B0\u5316" : "\u6311\u9009\u6700\u559C\u6B22\u7684\u65B9\u6848"}</strong><span>\u786E\u8BA4\u540E\u4F1A\u6539\u53D8\u7A7A\u95F4\u63CF\u8FF0\u3001\u914D\u8272\u3001\u6750\u8D28\u548C\u4E8B\u4EF6\u8BB0\u5F55\u3002</span></div><button class="lmo-primary" data-action="confirm-renovation" ${selectedId && !busy ? "" : "disabled"}>\u5E94\u7528\u88C5\u4FEE ${icon("arrow")}</button></div>`}</div></div>
+  </section>`;
+}
+function renderRecruitment(building, task, selectedSpaceId, selectedId, busy) {
+  const candidates = task?.status === "ready" ? task.preview.candidates : [];
+  return `<section class="lmo-view lmo-workflow">${workflowSteps(candidates.length ? 2 : 1)}
+    <div class="lmo-generation-callout compact">${icon("recruit")}<div><strong>\u4E3A\u300C${escapeHtml(building.name)}\u300D\u5BFB\u627E\u65B0\u6210\u5458</strong><p>\u5019\u9009\u4EBA\u6765\u81EA\u672C\u5730\u6837\u4F8B\uFF0C\u786E\u8BA4\u524D\u4E0D\u4F1A\u51FA\u73B0\u5728\u4EBA\u7269\u5217\u8868\u6216\u5EFA\u7B51\u91CC\u3002</p></div>${!candidates.length ? `<button class="lmo-primary" data-action="run-recruitment" ${busy ? "disabled" : ""}>${busy ? "\u6B63\u5728\u6574\u7406\u2026" : "\u751F\u6210\u672C\u5730\u5019\u9009\u4EBA"}</button>` : ""}</div>
+    ${candidates.length ? `<div class="lmo-recruit-layout"><div class="lmo-candidate-list">${candidates.map((candidate) => `<button class="lmo-candidate ${selectedId === candidate.id ? "selected" : ""}" data-action="choose-option" data-option-id="${escapeHtml(candidate.id)}" style="--person-accent:${safeColor(candidate.visualIdentity.\u4E3B\u8272)}"><div class="lmo-avatar">${escapeHtml(candidate.name.slice(0, 1))}</div><div><span>${escapeHtml(candidate.origin)} \xB7 ${escapeHtml(candidate.profession)}</span><h3>${escapeHtml(candidate.name)}</h3><p>${escapeHtml(candidate.personality)}</p><blockquote>\u201C${escapeHtml(candidate.quote)}\u201D</blockquote>${tags(candidate.tags)}</div><i class="lmo-option-check">${selectedId === candidate.id ? icon("check") : ""}</i></button>`).join("")}</div><aside class="lmo-placement"><span class="lmo-kicker">\u5B89\u6392\u4F4D\u7F6E</span><h3>\u8BA9\u4EBA\u7269\u771F\u6B63\u8FDB\u5165\u5EFA\u7B51</h3><p>\u9009\u62E9\u4E00\u4E2A\u7A7A\u95F4\u540E\uFF0C\u4EBA\u7269\u6863\u6848\u3001\u95E8\u724C\u548C\u5EFA\u7B51\u5360\u7528\u8BB0\u5F55\u4F1A\u540C\u65F6\u521B\u5EFA\u3002</p><div class="lmo-compact-list">${ownedSpaceOptions(building, selectedSpaceId, "choose-recruit-space")}</div></aside></div><div class="lmo-confirm-bar"><div><strong>${selectedId && selectedSpaceId ? "\u4EBA\u7269\u4E0E\u4F4D\u7F6E\u5DF2\u7ECF\u786E\u5B9A" : "\u8BF7\u9009\u62E9\u4EBA\u7269\u548C\u5B89\u7F6E\u4F4D\u7F6E"}</strong><span>\u8FD9\u4E00\u6B65\u4F1A\u5199\u5165\u4EBA\u7269\u3001\u7A7A\u95F4\u548C\u4E8B\u4EF6\u4E09\u5904\u72B6\u6001\u3002</span></div><button class="lmo-primary" data-action="confirm-recruitment" ${selectedId && selectedSpaceId && !busy ? "" : "disabled"}>\u786E\u8BA4\u52A0\u5165 ${icon("arrow")}</button></div>` : emptyState("\u5019\u9009\u540D\u5355\u5C1A\u672A\u751F\u6210", "\u70B9\u51FB\u4E0A\u65B9\u6309\u94AE\uFF0C\u7528\u672C\u5730\u6A21\u62DF\u6570\u636E\u9884\u89C8\u5B8C\u6574\u6D41\u7A0B\u3002")}
+  </section>`;
+}
+function renderEvents(state, portfolio) {
+  const events = Object.entries(state.\u4E8B\u4EF6\u5217\u8868 ?? {}).reverse();
+  return `<section class="lmo-view"><div class="lmo-section-heading"><div><span>BUILDING MEMORY</span><h2>\u771F\u6B63\u53D1\u751F\u8FC7\u7684\u53D8\u5316</h2></div><p>\u8FD9\u91CC\u53EA\u6709\u786E\u8BA4\u5199\u5165\u8FC7\u7684\u64CD\u4F5C\uFF0C\u4E0D\u5C55\u793A\u4E34\u65F6\u5019\u9009\u548C\u53D6\u6D88\u7684\u65B9\u6848\u3002</p></div>${events.length ? `<div class="lmo-event-timeline">${events.map(([id, event]) => {
+    const building = portfolio.buildings.find((item) => item.id === event.\u5EFA\u7B51ID);
+    return `<article><div class="lmo-event-mark">${icon(event.\u7C7B\u578B === "\u4EBA\u7269\u52A0\u5165" ? "person" : event.\u7C7B\u578B === "\u88C5\u4FEE\u5B8C\u6210" ? "renovate" : "buildings")}</div><div><span>${escapeHtml(event.\u7C7B\u578B)} \xB7 ${escapeHtml(building?.name ?? "\u672A\u77E5\u5EFA\u7B51")}</span><h3>${escapeHtml(event.\u6807\u9898)}</h3><p>${escapeHtml(event.\u6458\u8981)}</p><small>${escapeHtml(event.\u53D1\u751F\u65F6\u95F4)} \xB7 ${escapeHtml(id)}</small></div><em>${escapeHtml(event.\u72B6\u6001)}</em></article>`;
+  }).join("")}</div>` : emptyState("\u8FD8\u6CA1\u6709\u7ECF\u8425\u8BB0\u5F55", "\u5B8C\u6210\u7B2C\u4E00\u6B21\u63A5\u7BA1\u3001\u88C5\u4FEE\u6216\u62DB\u52DF\u540E\uFF0C\u5EFA\u7B51\u8BB0\u5FC6\u4F1A\u51FA\u73B0\u5728\u8FD9\u91CC\u3002")}</section>`;
+}
+function renderConsole({ state, portfolio, current, ui, task }) {
+  let content;
+  if (ui.section === "portfolio") content = renderPortfolio(state, portfolio);
+  else if (ui.section === "building") content = renderBuilding(current);
+  else if (ui.section === "takeover") content = renderTakeover(ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
+  else if (ui.section === "renovation") content = renderRenovation(current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
+  else if (ui.section === "recruitment") content = renderRecruitment(current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
+  else content = renderEvents(state, portfolio);
+  const displayBuilding = ui.section === "takeover" ? ui.targetBuilding : current;
+  return `<div class="lmo-backdrop" data-action="close-backdrop"><div class="lmo-shell" role="dialog" aria-modal="true" aria-label="\u623F\u4E1C\u7ECF\u8425\u4E2D\u67A2" style="--active-accent:${safeColor(displayBuilding.theme?.\u4E3B\u8272)}">
+    ${renderSidebar(ui, portfolio)}<main class="lmo-main">${renderHeader(displayBuilding, ui)}<div class="lmo-scroll">${ui.notice ? `<div class="lmo-notice ${ui.notice.type}">${escapeHtml(ui.notice.text)}</div>` : ""}${content}</div></main>
+  </div></div>`;
+}
+var icons;
+var init_templates = __esm({
+  "scripts/src/ui/console/templates.js"() {
+    icons = Object.freeze({
+      home: '<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+      buildings: '<svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M8 7h4M8 11h4M8 15h4M2 21h20M16 9h2a2 2 0 0 1 2 2v10"/></svg>',
+      room: '<svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v16M4 21h17M15 12h.01M8 7h7"/></svg>',
+      renovate: '<svg viewBox="0 0 24 24"><path d="m14 6 4 4M4 20l4.5-1 10-10a2.8 2.8 0 0 0-4-4l-10 10zM13 6l4 4M5 15l4 4"/></svg>',
+      recruit: '<svg viewBox="0 0 24 24"><path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M16 11h6"/></svg>',
+      event: '<svg viewBox="0 0 24 24"><path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M18 12h3M6 21h12M8 17a6 6 0 1 1 8 0l-1 1H9z"/></svg>',
+      close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
+      arrow: '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
+      sparkle: '<svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
+      back: '<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
+      check: '<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>',
+      person: '<svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/></svg>'
+    });
+  }
+});
+
+// scripts/src/ui/console/controller.js
+function createLandlordConsole({ document: document2, store, tasks, compiler, logger }) {
+  let root = null;
+  let visible2 = false;
+  let disposed = false;
+  const ui = {
+    section: "portfolio",
+    targetBuildingId: null,
+    selectedSpaceId: null,
+    selectedOptionId: null,
+    taskId: null,
+    busy: false,
+    notice: null
+  };
+  function getData() {
+    const state = store.getState();
+    const portfolio = compiler.compilePortfolio(state);
+    const current = portfolio.buildings.find((item) => item.id === state.\u5F53\u524D\u5EFA\u7B51ID) ?? portfolio.headquarters;
+    const targetBuilding = portfolio.buildings.find((item) => item.id === ui.targetBuildingId) ?? current;
+    return { state, portfolio, current, targetBuilding };
+  }
+  function resetWorkflow({ keepSpace = false } = {}) {
+    ui.taskId = null;
+    ui.selectedOptionId = null;
+    if (!keepSpace) ui.selectedSpaceId = null;
+    ui.notice = null;
+  }
+  function setNotice(text, type = "info") {
+    ui.notice = { text, type };
+  }
+  function render() {
+    if (!visible2 || disposed) return;
+    const data = getData();
+    ui.targetBuilding = data.targetBuilding;
+    const task = ui.taskId ? tasks.get(ui.taskId) : null;
+    root.innerHTML = renderConsole({ ...data, ui, task });
+    root.querySelector(".lmo-backdrop").dataset.theme = detectTheme(document2);
+  }
+  async function withBusy(work) {
+    if (ui.busy) return;
+    ui.busy = true;
+    ui.notice = null;
+    render();
+    try {
+      await work();
+    } catch (error) {
+      logger.error(error);
+      setNotice(error instanceof Error ? error.message : String(error), "error");
+    } finally {
+      ui.busy = false;
+      render();
+    }
+  }
+  async function runTask(kind, input) {
+    const task = await tasks.run(kind, input);
+    if (task.status !== "ready") throw new Error(task.error ?? "\u672C\u5730\u6A21\u62DF\u4EFB\u52A1\u5931\u8D25");
+    ui.taskId = task.id;
+  }
+  async function handleAction(button) {
+    const action = button.dataset.action;
+    const data = getData();
+    if (action === "close") return close();
+    if (action === "navigate") {
+      const next = button.dataset.section;
+      if (next !== ui.section) resetWorkflow();
+      ui.section = next;
+      return render();
+    }
+    if (action === "open-building") {
+      await store.setCurrentBuilding(button.dataset.buildingId);
+      resetWorkflow();
+      ui.section = "building";
+      return render();
+    }
+    if (action === "open-takeover") {
+      resetWorkflow();
+      ui.targetBuildingId = button.dataset.buildingId;
+      ui.section = "takeover";
+      return render();
+    }
+    if (action === "select-space") {
+      ui.selectedSpaceId = button.dataset.spaceId;
+      resetWorkflow({ keepSpace: true });
+      ui.section = "renovation";
+      return render();
+    }
+    if (action === "choose-workflow-space" || action === "choose-recruit-space") {
+      const changed = ui.selectedSpaceId !== button.dataset.spaceId;
+      ui.selectedSpaceId = button.dataset.spaceId;
+      if (changed && action === "choose-workflow-space") {
+        ui.taskId = null;
+        ui.selectedOptionId = null;
+      }
+      return render();
+    }
+    if (action === "choose-option") {
+      ui.selectedOptionId = button.dataset.optionId;
+      return render();
+    }
+    if (action === "run-takeover") {
+      return withBusy(() => runTask("takeover", { building: data.targetBuilding }));
+    }
+    if (action === "run-renovation") {
+      const space = data.current.floors.flatMap((floor) => floor.spaces).find((item) => item.id === ui.selectedSpaceId);
+      if (!space) throw new Error("\u8BF7\u9009\u62E9\u88C5\u4FEE\u7A7A\u95F4");
+      return withBusy(() => runTask("renovation", { building: data.current, space }));
+    }
+    if (action === "run-recruitment") {
+      return withBusy(() => runTask("recruitment", { building: data.current }));
+    }
+    if (action === "confirm-takeover") {
+      return withBusy(async () => {
+        const task = tasks.get(ui.taskId);
+        const direction = task?.preview?.directions.find((item) => item.id === ui.selectedOptionId);
+        if (!direction) throw new Error("\u8BF7\u9009\u62E9\u63A5\u7BA1\u65B9\u5411");
+        await tasks.confirm(task.id, () => store.acquireBuilding(data.targetBuilding.id, direction));
+        ui.targetBuildingId = null;
+        resetWorkflow();
+        ui.section = "building";
+        setNotice("\u5EFA\u7B51\u5DF2\u7ECF\u8FDB\u5165\u4F60\u7684\u7ECF\u8425\u7248\u56FE", "success");
+      });
+    }
+    if (action === "confirm-renovation") {
+      return withBusy(async () => {
+        const task = tasks.get(ui.taskId);
+        const plan = task?.preview?.plans.find((item) => item.id === ui.selectedOptionId);
+        if (!plan || !ui.selectedSpaceId) throw new Error("\u8BF7\u9009\u62E9\u88C5\u4FEE\u65B9\u6848");
+        await tasks.confirm(
+          task.id,
+          () => store.applyRenovation({ buildingId: data.current.id, spaceId: ui.selectedSpaceId, plan })
+        );
+        resetWorkflow();
+        setNotice("\u88C5\u4FEE\u5DF2\u7ECF\u5177\u73B0\u5316\u5E76\u5199\u5165\u5EFA\u7B51\u72B6\u6001", "success");
+      });
+    }
+    if (action === "confirm-recruitment") {
+      return withBusy(async () => {
+        const task = tasks.get(ui.taskId);
+        const candidate = task?.preview?.candidates.find((item) => item.id === ui.selectedOptionId);
+        if (!candidate || !ui.selectedSpaceId) throw new Error("\u8BF7\u9009\u62E9\u5019\u9009\u4EBA\u548C\u5B89\u7F6E\u7A7A\u95F4");
+        await tasks.confirm(
+          task.id,
+          () => store.recruit({ buildingId: data.current.id, spaceId: ui.selectedSpaceId, candidate })
+        );
+        resetWorkflow();
+        setNotice(`${candidate.name}\u5DF2\u7ECF\u6B63\u5F0F\u52A0\u5165${data.current.name}`, "success");
+      });
+    }
+  }
+  function onClick(event) {
+    if (event.target === event.currentTarget.querySelector(".lmo-backdrop")) return close();
+    const button = event.target.closest("[data-action]");
+    if (!button || button.dataset.action === "close-backdrop") return;
+    void handleAction(button);
+  }
+  function onKeyDown(event) {
+    if (visible2 && event.key === "Escape") close();
+  }
+  async function open() {
+    if (disposed) return;
+    await store.ensureInitialized();
+    visible2 = true;
+    root.hidden = false;
+    render();
+  }
+  function close() {
+    visible2 = false;
+    if (root) {
+      root.hidden = true;
+      root.innerHTML = "";
+    }
+  }
+  root = document2.createElement("div");
+  root.id = "landlord-console-root";
+  root.hidden = true;
+  root.addEventListener("click", onClick);
+  document2.body.appendChild(root);
+  document2.addEventListener("keydown", onKeyDown);
+  const unsubscribeStore = store.subscribe(() => render());
+  const unsubscribeTasks = tasks.subscribe(() => render());
+  return Object.freeze({
+    open,
+    close,
+    render,
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      unsubscribeStore();
+      unsubscribeTasks();
+      document2.removeEventListener("keydown", onKeyDown);
+      root.removeEventListener("click", onClick);
+      root.remove();
+      root = null;
+    }
+  });
+}
+function detectTheme(document2) {
+  const classes = `${document2.documentElement?.className ?? ""} ${document2.body?.className ?? ""}`.toLowerCase();
+  if (classes.includes("dark")) return "dark";
+  return globalThis.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+var init_controller = __esm({
+  "scripts/src/ui/console/controller.js"() {
+    init_templates();
+  }
+});
+
+// scripts/modules/landlord-console/styles.css
+var styles_default;
+var init_styles = __esm({
+  "scripts/modules/landlord-console/styles.css"() {
+    styles_default = '#landlord-console-root { position: relative; z-index: 2147483000; }\n.lmo-backdrop {\n  --lmo-bg: #fffafb; --lmo-surface: rgba(255,255,255,.86); --lmo-panel: #fff; --lmo-panel-soft: #fff5f7;\n  --lmo-text: #283044; --lmo-muted: #778096; --lmo-line: rgba(99,73,85,.12); --lmo-shadow: 0 28px 80px rgba(82,47,67,.22);\n  --lmo-positive: #46a98e; --lmo-danger: #d85a72; --lmo-sidebar: linear-gradient(165deg,#fff 0%,#fff4f7 100%);\n  position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; padding: 24px;\n  background: rgba(38,29,43,.48); backdrop-filter: blur(14px) saturate(1.15); -webkit-backdrop-filter: blur(14px) saturate(1.15);\n  font-family: Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color: var(--lmo-text);\n  animation: lmo-fade-in .2s ease-out;\n}\n.lmo-backdrop[data-theme="dark"] {\n  --lmo-bg: #232136; --lmo-surface: rgba(42,39,63,.9); --lmo-panel: #2a273f; --lmo-panel-soft: #312d49;\n  --lmo-text: #e0def4; --lmo-muted: #9893ad; --lmo-line: rgba(224,222,244,.1); --lmo-shadow: 0 30px 90px rgba(0,0,0,.52);\n  --lmo-positive: #9ccfd8; --lmo-danger: #eb6f92; --lmo-sidebar: linear-gradient(165deg,#2a273f 0%,#232136 100%);\n}\n.lmo-backdrop * { box-sizing: border-box; }\n.lmo-backdrop button { font: inherit; color: inherit; }\n.lmo-backdrop svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }\n.lmo-shell { width: min(1180px,96vw); height: min(880px,92vh); display: grid; grid-template-columns: 224px minmax(0,1fr); overflow: hidden; border: 1px solid rgba(255,255,255,.56); border-radius: 26px; background: var(--lmo-bg); box-shadow: var(--lmo-shadow); animation: lmo-rise .34s cubic-bezier(.2,.8,.2,1); }\n.lmo-icon { display: inline-grid; place-items: center; width: 20px; height: 20px; flex: 0 0 auto; }\n.lmo-sidebar { min-width: 0; padding: 26px 17px 18px; display: flex; flex-direction: column; gap: 26px; border-right: 1px solid var(--lmo-line); background: var(--lmo-sidebar); }\n.lmo-brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; }\n.lmo-brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(135deg,#ff9eaa,#c4a7e7); box-shadow: 0 8px 20px rgba(235,111,146,.25); color: white; font: 800 19px/1 Georgia,serif; }\n.lmo-brand div:last-child { display: grid; gap: 1px; }\n.lmo-brand strong { font: 750 15px/1.2 Georgia,"Songti SC",serif; letter-spacing: .02em; }\n.lmo-brand span { color: var(--lmo-muted); font-size: 10px; letter-spacing: .08em; }\n.lmo-sidebar nav { display: grid; gap: 5px; }\n.lmo-nav-item { border: 0; background: transparent; width: 100%; min-height: 43px; padding: 0 12px; border-radius: 13px; display: flex; align-items: center; gap: 11px; cursor: pointer; color: var(--lmo-muted); font-size: 13px; text-align: left; transition: .18s ease; }\n.lmo-nav-item:hover { background: var(--lmo-panel); color: var(--lmo-text); transform: translateX(2px); }\n.lmo-nav-item.active { color: var(--lmo-text); background: var(--lmo-panel); box-shadow: 0 8px 24px rgba(82,47,67,.08); }\n.lmo-nav-item.active .lmo-icon { color: var(--active-accent); }\n.lmo-sidebar-summary { margin-top: auto; padding: 15px; border: 1px solid var(--lmo-line); border-radius: 16px; background: color-mix(in srgb,var(--lmo-panel) 82%,transparent); }\n.lmo-sidebar-summary > span { color: var(--lmo-muted); font-size: 10px; letter-spacing: .12em; }\n.lmo-sidebar-summary strong { display: block; margin: 7px 0; font-size: 24px; }\n.lmo-sidebar-summary small { color: var(--lmo-muted); font-size: 10px; font-weight: 500; }\n.lmo-sidebar-summary > div { height: 5px; border-radius: 9px; overflow: hidden; background: var(--lmo-line); }\n.lmo-sidebar-summary i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#ff9eaa,#c4a7e7); }\n.lmo-sidebar-summary p { margin: 8px 0 0; color: var(--lmo-muted); font-size: 10px; line-height: 1.5; }\n.lmo-mode { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 12px; background: rgba(70,169,142,.09); }\n.lmo-mode div { display: grid; gap: 1px; }\n.lmo-mode strong { font-size: 10px; color: var(--lmo-positive); }\n.lmo-mode small { font-size: 9px; color: var(--lmo-muted); }\n.lmo-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lmo-positive); box-shadow: 0 0 0 4px color-mix(in srgb,var(--lmo-positive) 18%,transparent); }\n.lmo-main { min-width: 0; display: grid; grid-template-rows: 76px minmax(0,1fr); }\n.lmo-header { padding: 0 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--lmo-line); background: color-mix(in srgb,var(--lmo-surface) 92%,transparent); backdrop-filter: blur(16px); }\n.lmo-header h1 { margin: 3px 0 0; font: 700 20px/1.2 Georgia,"Songti SC",serif; }\n.lmo-eyebrow,.lmo-kicker { display: block; color: var(--active-accent); font-size: 9px; font-weight: 800; letter-spacing: .16em; }\n.lmo-header-actions { display: flex; align-items: center; gap: 12px; }\n.lmo-status-dot { padding: 6px 9px; border-radius: 99px; background: rgba(70,169,142,.1); color: var(--lmo-positive); font-size: 10px; }\n.lmo-icon-button { width: 34px; height: 34px; padding: 7px; border: 1px solid var(--lmo-line); border-radius: 11px; background: var(--lmo-panel); cursor: pointer; transition: .15s; }\n.lmo-icon-button:hover { color: var(--lmo-danger); transform: rotate(4deg); }\n.lmo-scroll { min-height: 0; overflow: auto; padding: 25px 28px 40px; scrollbar-width: thin; scrollbar-color: var(--lmo-line) transparent; }\n.lmo-view { display: grid; gap: 22px; max-width: 970px; margin: 0 auto; animation: lmo-content-in .24s ease-out; }\n.lmo-notice { max-width: 970px; margin: 0 auto 14px; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--lmo-line); background: var(--lmo-panel); font-size: 12px; }\n.lmo-notice.success { border-color: color-mix(in srgb,var(--lmo-positive) 35%,var(--lmo-line)); color: var(--lmo-positive); }\n.lmo-notice.error { border-color: color-mix(in srgb,var(--lmo-danger) 35%,var(--lmo-line)); color: var(--lmo-danger); }\n.lmo-hero { min-height: 210px; padding: 28px 31px; border-radius: 22px; display: grid; grid-template-columns: 1fr 210px; align-items: center; overflow: hidden; position: relative; background: linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 16%,var(--lmo-panel)),var(--lmo-panel)); border: 1px solid color-mix(in srgb,var(--building-accent) 25%,var(--lmo-line)); }\n.lmo-hero::before { content:""; position:absolute; inset:0; opacity:.32; background-image: radial-gradient(var(--building-accent) 1px,transparent 1px); background-size:18px 18px; mask-image:linear-gradient(90deg,transparent,black); pointer-events:none; }\n.lmo-hero > div { position: relative; }\n.lmo-hero h2 { margin: 8px 0 6px; font: 750 clamp(24px,3vw,37px)/1.1 Georgia,"Songti SC",serif; }\n.lmo-hero p { max-width: 540px; margin: 0 0 20px; color: var(--lmo-muted); font-size: 12px; }\n.lmo-primary,.lmo-secondary { min-height: 39px; padding: 0 16px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; font-size: 12px; font-weight: 700; transition: .17s ease; }\n.lmo-primary { color: white !important; background: linear-gradient(135deg,var(--active-accent),color-mix(in srgb,var(--active-accent) 66%,#7c6ce7)); box-shadow: 0 8px 20px color-mix(in srgb,var(--active-accent) 26%,transparent); }\n.lmo-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 26px color-mix(in srgb,var(--active-accent) 32%,transparent); }\n.lmo-primary:disabled { opacity: .42; cursor: not-allowed; box-shadow: none; }\n.lmo-primary .lmo-icon,.lmo-secondary .lmo-icon { width: 16px; height: 16px; }\n.lmo-secondary { border: 1px solid var(--lmo-line); background: var(--lmo-panel); }\n.lmo-secondary:hover { border-color: var(--active-accent); color: var(--active-accent); }\n.lmo-hero-orbit { justify-self: center; width: 132px; height: 132px; border: 1px solid color-mix(in srgb,var(--building-accent) 35%,transparent); border-radius: 50%; display: grid; place-content: center; text-align: center; }\n.lmo-hero-orbit::before,.lmo-hero-orbit::after { content:""; position:absolute; inset:-14px; border:1px dashed color-mix(in srgb,var(--building-accent) 25%,transparent); border-radius:50%; animation:lmo-spin 18s linear infinite; }\n.lmo-hero-orbit::after { inset:18px; animation-direction:reverse; animation-duration:10s; }\n.lmo-hero-orbit span { font: 800 38px/1 Georgia,serif; color: var(--building-accent); }\n.lmo-hero-orbit small { margin-top: 4px; color: var(--lmo-muted); font-size: 10px; }\n.lmo-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-top: 4px; }\n.lmo-section-heading span { color: var(--active-accent); font-size: 9px; font-weight: 800; letter-spacing: .17em; }\n.lmo-section-heading h2 { margin: 4px 0 0; font: 700 20px/1.2 Georgia,"Songti SC",serif; }\n.lmo-section-heading > p { max-width: 390px; margin: 0; color: var(--lmo-muted); font-size: 10px; line-height: 1.6; text-align: right; }\n.lmo-building-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }\n.lmo-building-card { min-width: 0; padding: 0; display: grid; grid-template-columns: 128px 1fr; overflow: hidden; border: 1px solid var(--lmo-line); border-radius: 18px; background: var(--lmo-panel); text-align: left; cursor: pointer; transition: .2s ease; }\n.lmo-building-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb,var(--building-accent) 44%,var(--lmo-line)); box-shadow: 0 15px 35px rgba(82,47,67,.1); }\n.lmo-building-visual { min-height: 172px; position: relative; overflow: hidden; display: grid; place-items: center; background: linear-gradient(145deg,color-mix(in srgb,var(--building-accent) 19%,var(--lmo-panel-soft)),var(--lmo-panel-soft)); }\n.lmo-building-visual::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg,transparent 49%,color-mix(in srgb,var(--building-accent) 15%,transparent) 50%,transparent 51%),linear-gradient(0deg,transparent 49%,color-mix(in srgb,var(--building-accent) 15%,transparent) 50%,transparent 51%); background-size:20px 20px; }\n.lmo-building-type { display: inline-flex; width: fit-content; padding: 4px 8px; border-radius: 99px; color: var(--building-accent); background: color-mix(in srgb,var(--building-accent) 10%,var(--lmo-panel)); font-size: 9px; font-weight: 700; }\n.lmo-building-visual > .lmo-building-type { position:absolute; left:10px; top:10px; }\n.lmo-building-glyph { position:relative; width:56px; height:56px; padding:14px; border-radius:18px; color:white; background:var(--building-accent); box-shadow:0 12px 25px color-mix(in srgb,var(--building-accent) 32%,transparent); transform:rotate(-4deg); }\n.lmo-building-glyph .lmo-icon { width:100%; height:100%; }\n.lmo-building-visual > i { position:absolute; bottom:16px; width:12px; height:20px; border-radius:3px 3px 0 0; background:color-mix(in srgb,var(--building-accent) 25%,var(--lmo-panel)); }\n.lmo-building-visual > i:nth-last-child(3) { left:29px; height:31px; }.lmo-building-visual > i:nth-last-child(2){left:48px;height:22px}.lmo-building-visual > i:last-child{left:67px;height:39px}\n.lmo-building-copy { min-width:0; padding:15px 16px; display:flex; flex-direction:column; }\n.lmo-card-title { display:flex; align-items:start; justify-content:space-between; gap:8px; }\n.lmo-card-title > div { min-width:0; display:grid; gap:3px; }.lmo-card-title strong{font-size:14px}.lmo-card-title span{font-size:9px;color:var(--lmo-muted)}\n.lmo-badge { flex:0 0 auto; padding:4px 7px; border-radius:99px; background:rgba(246,193,119,.13); color:#b98532!important; font-size:9px!important; }.lmo-badge.owned{background:rgba(70,169,142,.12);color:var(--lmo-positive)!important}\n.lmo-building-copy > p { margin:10px 0; color:var(--lmo-muted); font-size:10px; line-height:1.55; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }\n.lmo-card-metrics { margin-top:auto; padding-top:10px; display:flex; gap:9px; border-top:1px solid var(--lmo-line); align-items:center; }\n.lmo-card-metrics span { color:var(--lmo-muted); font-size:8px; }.lmo-card-metrics b{color:var(--lmo-text);font-size:10px}.lmo-card-metrics em{margin-left:auto;display:flex;align-items:center;gap:3px;color:var(--building-accent);font-size:9px;font-style:normal;font-weight:700}.lmo-card-metrics em .lmo-icon{width:12px;height:12px}\n.lmo-dashboard-row { display:grid; grid-template-columns:1.2fr .8fr; gap:14px; }.lmo-panel{padding:18px;border:1px solid var(--lmo-line);border-radius:17px;background:var(--lmo-panel)}\n.lmo-panel-title > div{display:flex;align-items:center;gap:10px}.lmo-panel-title .lmo-icon{width:27px;height:27px;padding:6px;border-radius:9px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-panel-title span{display:grid;gap:2px}.lmo-panel-title strong{font-size:12px}.lmo-panel-title small{font-size:8px;color:var(--lmo-muted)}\n.lmo-mini-timeline{display:grid;margin-top:15px}.lmo-mini-timeline>div{display:grid;grid-template-columns:10px 1fr auto;gap:9px;padding:8px 0;border-top:1px solid var(--lmo-line)}.lmo-mini-timeline i{width:7px;height:7px;margin-top:4px;border-radius:50%;background:var(--active-accent)}.lmo-mini-timeline span{display:grid;gap:3px}.lmo-mini-timeline strong{font-size:10px}.lmo-mini-timeline small,.lmo-mini-timeline time{color:var(--lmo-muted);font-size:8px}.lmo-world-card>p{margin:14px 0;color:var(--lmo-muted);font-size:10px;line-height:1.65}\n.lmo-tags{display:flex;flex-wrap:wrap;gap:5px}.lmo-tags span{padding:4px 7px;border:1px solid color-mix(in srgb,var(--active-accent) 20%,var(--lmo-line));border-radius:99px;background:color-mix(in srgb,var(--active-accent) 7%,transparent);color:var(--active-accent);font-size:8px}\n.lmo-empty{min-height:130px;padding:22px;display:grid;place-items:center;align-content:center;gap:6px;text-align:center;color:var(--lmo-muted)}.lmo-empty .lmo-icon{width:27px;height:27px;color:var(--active-accent)}.lmo-empty strong{color:var(--lmo-text);font-size:12px}.lmo-empty p{max-width:330px;margin:0;font-size:9px;line-height:1.5}\n.lmo-building-banner{padding:22px 24px;display:flex;align-items:end;justify-content:space-between;gap:20px;border:1px solid color-mix(in srgb,var(--building-accent) 24%,var(--lmo-line));border-radius:19px;background:linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 12%,var(--lmo-panel)),var(--lmo-panel))}.lmo-building-banner span{color:var(--building-accent);font-size:9px;font-weight:700;letter-spacing:.1em}.lmo-building-banner h2{margin:5px 0;font:750 28px/1.15 Georgia,"Songti SC",serif}.lmo-building-banner p{max-width:590px;margin:0;color:var(--lmo-muted);font-size:10px;line-height:1.55}.lmo-banner-actions{display:flex;gap:8px;flex:0 0 auto}\n.lmo-metric-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-metric-strip>div{padding:14px 17px;display:grid;gap:4px;border-right:1px solid var(--lmo-line)}.lmo-metric-strip>div:last-child{border:0}.lmo-metric-strip span{color:var(--lmo-muted);font-size:8px}.lmo-metric-strip strong{font:700 20px/1 Georgia,serif}.lmo-metric-strip small{font:500 9px sans-serif;color:var(--lmo-muted)}\n.lmo-floor-list{display:grid;gap:14px}.lmo-floor{overflow:hidden;border:1px solid var(--lmo-line);border-radius:18px;background:var(--lmo-panel)}.lmo-floor>header{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--lmo-line);background:var(--lmo-panel-soft)}.lmo-floor>header>div{display:flex;align-items:center;gap:11px}.lmo-floor>header>div>span{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:var(--active-accent);color:white;font:700 10px Georgia,serif}.lmo-floor>header div div{display:grid;gap:2px}.lmo-floor>header strong{font-size:11px}.lmo-floor>header small,.lmo-floor>header em{color:var(--lmo-muted);font-size:8px;font-style:normal}\n.lmo-space-grid{padding:13px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.lmo-space-card{grid-column:span 2;min-height:112px;padding:12px;border:1px solid var(--lmo-line);border-radius:13px;background:var(--lmo-surface);text-align:left;cursor:pointer;transition:.17s}.lmo-space-card.size-\u5927\u578B{grid-column:span 3}.lmo-space-card.size-\u8D85\u5927\u578B{grid-column:span 4}.lmo-space-card.size-\u5C0F\u578B,.lmo-space-card.size-\u5FAE\u578B{grid-column:span 1}.lmo-space-card:hover{border-color:var(--active-accent);transform:translateY(-2px)}.lmo-space-card>div{display:flex;justify-content:space-between;gap:6px}.lmo-space-type,.lmo-space-status{font-size:7px;color:var(--lmo-muted)}.lmo-space-status{padding:2px 5px;border-radius:99px;background:var(--lmo-panel-soft)}.lmo-space-status.status-\u7A7A\u7F6E{color:#b98532;background:rgba(246,193,119,.12)}.lmo-space-card>strong{display:block;margin:9px 0 3px;font-size:11px}.lmo-space-card>p{margin:0;color:var(--lmo-muted);font-size:8px}.lmo-space-card footer{margin-top:12px;padding-top:7px;display:flex;justify-content:space-between;gap:5px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:7px}\n.lmo-workflow-steps{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px}.lmo-workflow-steps span{display:flex;align-items:center;gap:6px;color:var(--lmo-muted);font-size:9px}.lmo-workflow-steps b{width:23px;height:23px;display:grid;place-items:center;border:1px solid var(--lmo-line);border-radius:50%;font-size:9px}.lmo-workflow-steps span.done{color:var(--lmo-text)}.lmo-workflow-steps span.done b{background:var(--active-accent);border-color:var(--active-accent);color:white}.lmo-workflow-steps>i{width:45px;height:1px;background:var(--lmo-line)}\n.lmo-workflow-intro{padding:20px 22px;border-radius:18px;border:1px solid color-mix(in srgb,var(--building-accent) 24%,var(--lmo-line));background:linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 10%,var(--lmo-panel)),var(--lmo-panel))}.lmo-text-button{padding:0;border:0;background:transparent;display:flex;align-items:center;gap:4px;color:var(--lmo-muted);font-size:9px;cursor:pointer}.lmo-text-button .lmo-icon{width:14px;height:14px}.lmo-workflow-intro>div:nth-child(2){margin-top:15px}.lmo-workflow-intro h2{margin:7px 0 5px;font:700 24px Georgia,"Songti SC",serif}.lmo-workflow-intro p{margin:0;max-width:650px;color:var(--lmo-muted);font-size:10px;line-height:1.6}.lmo-facts{margin-top:16px!important;display:flex;gap:8px}.lmo-facts span{padding:7px 10px;border-radius:9px;background:color-mix(in srgb,var(--lmo-panel) 72%,transparent);font-size:8px;color:var(--lmo-muted)}.lmo-facts b{color:var(--lmo-text);font-size:10px}\n.lmo-generation-callout{min-height:100px;padding:16px 18px;display:flex;align-items:center;gap:13px;border:1px dashed color-mix(in srgb,var(--active-accent) 36%,var(--lmo-line));border-radius:16px;background:color-mix(in srgb,var(--active-accent) 5%,var(--lmo-panel))}.lmo-generation-callout>.lmo-icon{width:38px;height:38px;padding:9px;border-radius:12px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-generation-callout>div{margin-right:auto}.lmo-generation-callout strong{font-size:12px}.lmo-generation-callout p{margin:4px 0 0;color:var(--lmo-muted);font-size:9px}.lmo-generation-callout.compact{min-height:82px}\n.lmo-option-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.lmo-option-card{position:relative;padding:18px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.18s}.lmo-option-card:hover,.lmo-option-card.selected{border-color:var(--active-accent);transform:translateY(-2px);box-shadow:0 12px 28px rgba(82,47,67,.09)}.lmo-option-card>span{color:var(--active-accent);font-size:8px;font-weight:700;letter-spacing:.1em}.lmo-option-card h3{margin:7px 0;font:700 16px Georgia,"Songti SC",serif}.lmo-option-card>p{min-height:62px;margin:0 0 10px;color:var(--lmo-muted);font-size:9px;line-height:1.55}.lmo-option-card ul{margin:12px 0 0;padding:10px 0 0 15px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:8px;line-height:1.8}.lmo-option-check{position:absolute;right:10px;top:10px;width:20px;height:20px;padding:3px;border-radius:50%;color:white;background:var(--active-accent)}.lmo-option-check:empty{background:transparent;border:1px solid var(--lmo-line)}.lmo-option-check .lmo-icon{width:100%;height:100%}\n.lmo-confirm-bar{position:sticky;bottom:-26px;z-index:2;margin-top:4px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid var(--lmo-line);border-radius:15px;background:color-mix(in srgb,var(--lmo-surface) 92%,transparent);backdrop-filter:blur(16px);box-shadow:0 -8px 28px rgba(82,47,67,.08)}.lmo-confirm-bar>div{display:grid;gap:3px}.lmo-confirm-bar strong{font-size:10px}.lmo-confirm-bar span{color:var(--lmo-muted);font-size:8px}\n.lmo-two-column{display:grid;grid-template-columns:220px minmax(0,1fr);gap:15px;align-items:start}.lmo-selector,.lmo-placement{padding:16px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-selector h2{margin:6px 0 14px;font:700 17px Georgia,"Songti SC",serif}.lmo-compact-list{display:grid;gap:6px;max-height:470px;overflow:auto}.lmo-compact-space{padding:9px 10px;display:grid;gap:3px;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-surface);text-align:left;cursor:pointer}.lmo-compact-space:hover,.lmo-compact-space.selected{border-color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel))}.lmo-compact-space span,.lmo-compact-space small{color:var(--lmo-muted);font-size:7px}.lmo-compact-space strong{font-size:10px}\n.lmo-workspace{min-width:0}.lmo-preview-room{min-height:360px;padding:27px;display:flex;flex-direction:column;align-items:start;border:1px solid var(--lmo-line);border-radius:18px;background:radial-gradient(circle at 90% 10%,color-mix(in srgb,var(--active-accent) 13%,transparent),transparent 35%),var(--lmo-panel)}.lmo-preview-room>span{color:var(--active-accent);font-size:8px;font-weight:700;letter-spacing:.08em}.lmo-preview-room h2{margin:10px 0 7px;font:750 27px Georgia,"Songti SC",serif}.lmo-preview-room>p{max-width:510px;margin:0;color:var(--lmo-muted);font-size:10px;line-height:1.6}.lmo-current-style{min-width:220px;margin:26px 0;padding:14px;display:grid;gap:4px;border:1px solid var(--lmo-line);border-radius:12px;background:var(--lmo-panel-soft)}.lmo-current-style small,.lmo-current-style span{font-size:8px;color:var(--lmo-muted)}.lmo-current-style strong{font-size:12px}\n.lmo-renovation-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.lmo-renovation-card{padding:13px;border:1px solid var(--lmo-line);border-radius:14px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.17s}.lmo-renovation-card:hover,.lmo-renovation-card.selected{border-color:var(--active-accent);transform:translateY(-2px)}.lmo-palette{height:57px;margin:-6px -6px 12px;display:flex;overflow:hidden;border-radius:10px}.lmo-palette i{flex:1;background:var(--swatch)}.lmo-renovation-card>span{color:var(--active-accent);font-size:7px;font-weight:700}.lmo-renovation-card h3{margin:5px 0;font:700 14px Georgia,"Songti SC",serif}.lmo-renovation-card>p{min-height:38px;margin:0 0 9px;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-renovation-card>small{display:block;margin-top:10px;padding-top:8px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:7px}\n.lmo-recruit-layout{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:14px;align-items:start}.lmo-candidate-list{display:grid;gap:9px}.lmo-candidate{position:relative;padding:14px;display:grid;grid-template-columns:48px 1fr;gap:12px;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.17s}.lmo-candidate:hover,.lmo-candidate.selected{border-color:var(--person-accent);transform:translateX(2px);box-shadow:0 10px 25px color-mix(in srgb,var(--person-accent) 10%,transparent)}.lmo-avatar{width:48px;height:48px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(135deg,var(--person-accent),color-mix(in srgb,var(--person-accent) 55%,#c4a7e7));color:white;font:700 18px Georgia,serif;box-shadow:0 8px 18px color-mix(in srgb,var(--person-accent) 22%,transparent)}.lmo-candidate>div:nth-child(2)>span{color:var(--person-accent);font-size:7px;font-weight:700}.lmo-candidate h3{margin:4px 0;font:700 14px Georgia,"Songti SC",serif}.lmo-candidate p{margin:0;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-candidate blockquote{margin:8px 0;padding:7px 9px;border-left:2px solid var(--person-accent);border-radius:0 8px 8px 0;background:var(--lmo-panel-soft);color:var(--lmo-muted);font-size:8px;font-style:italic}.lmo-candidate .lmo-tags span{color:var(--person-accent);border-color:color-mix(in srgb,var(--person-accent) 22%,var(--lmo-line));background:color-mix(in srgb,var(--person-accent) 6%,transparent)}.lmo-placement{position:sticky;top:0}.lmo-placement h3{margin:6px 0;font:700 15px Georgia,"Songti SC",serif}.lmo-placement>p{margin:0 0 13px;color:var(--lmo-muted);font-size:8px;line-height:1.5}\n.lmo-event-timeline{display:grid;gap:9px}.lmo-event-timeline article{padding:15px 17px;display:grid;grid-template-columns:38px 1fr auto;gap:13px;align-items:start;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel)}.lmo-event-mark{width:38px;height:38px;padding:9px;border-radius:12px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-event-mark .lmo-icon{width:100%;height:100%}.lmo-event-timeline article>div:nth-child(2){display:grid;gap:3px}.lmo-event-timeline span,.lmo-event-timeline small{color:var(--lmo-muted);font-size:8px}.lmo-event-timeline h3{margin:1px 0;font-size:11px}.lmo-event-timeline p{margin:0;color:var(--lmo-muted);font-size:9px}.lmo-event-timeline em{padding:4px 7px;border-radius:99px;background:rgba(70,169,142,.1);color:var(--lmo-positive);font-size:8px;font-style:normal}\n@keyframes lmo-fade-in{from{opacity:0}to{opacity:1}}@keyframes lmo-rise{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}@keyframes lmo-content-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}@keyframes lmo-spin{to{transform:rotate(360deg)}}\n@media(max-width:820px){.lmo-backdrop{padding:9px}.lmo-shell{width:100%;height:96vh;grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);border-radius:20px}.lmo-sidebar{padding:12px 14px;display:grid;grid-template-columns:auto 1fr;border-right:0;border-bottom:1px solid var(--lmo-line);gap:12px}.lmo-brand{padding:0}.lmo-sidebar nav{display:flex;overflow:auto;gap:4px}.lmo-nav-item{width:auto;min-height:38px;padding:0 10px;white-space:nowrap}.lmo-sidebar-summary,.lmo-mode{display:none}.lmo-main{grid-template-rows:62px minmax(0,1fr)}.lmo-header{padding:0 16px}.lmo-header h1{font-size:16px}.lmo-scroll{padding:16px 14px 34px}.lmo-building-grid,.lmo-dashboard-row{grid-template-columns:1fr}.lmo-building-card{grid-template-columns:110px 1fr}.lmo-section-heading>p{display:none}.lmo-two-column,.lmo-recruit-layout{grid-template-columns:1fr}.lmo-selector,.lmo-placement{position:static}.lmo-compact-list{grid-template-columns:repeat(2,1fr);max-height:220px}.lmo-option-grid,.lmo-renovation-plans{grid-template-columns:1fr}.lmo-space-grid{grid-template-columns:repeat(2,1fr)}.lmo-space-card,.lmo-space-card.size-\u5927\u578B,.lmo-space-card.size-\u8D85\u5927\u578B,.lmo-space-card.size-\u5C0F\u578B,.lmo-space-card.size-\u5FAE\u578B{grid-column:span 1}.lmo-hero{grid-template-columns:1fr;min-height:190px}.lmo-hero-orbit{display:none}.lmo-building-banner{align-items:start;flex-direction:column}.lmo-banner-actions{width:100%}.lmo-banner-actions button{flex:1}.lmo-metric-strip{grid-template-columns:repeat(2,1fr)}.lmo-metric-strip>div:nth-child(2){border-right:0}.lmo-metric-strip>div:nth-child(-n+2){border-bottom:1px solid var(--lmo-line)}.lmo-generation-callout{align-items:start;flex-wrap:wrap}.lmo-generation-callout button{width:100%}.lmo-confirm-bar{bottom:-16px}.lmo-workflow-steps{gap:5px}.lmo-workflow-steps>i{width:16px}.lmo-workflow-steps span{font-size:8px}}\n@media(max-width:520px){.lmo-brand div:last-child{display:none}.lmo-nav-item>span:last-child{display:none}.lmo-nav-item{padding:0 9px}.lmo-header-actions .lmo-status-dot{display:none}.lmo-building-card{grid-template-columns:90px 1fr}.lmo-building-visual{min-height:165px}.lmo-card-metrics span:nth-child(3){display:none}.lmo-facts{display:grid;grid-template-columns:1fr 1fr}.lmo-confirm-bar{align-items:stretch;flex-direction:column}.lmo-confirm-bar button{width:100%}.lmo-candidate{grid-template-columns:40px 1fr}.lmo-avatar{width:40px;height:40px}.lmo-event-timeline article{grid-template-columns:34px 1fr}.lmo-event-timeline article>em{display:none}}\n@media(prefers-reduced-motion:reduce){.lmo-backdrop,.lmo-shell,.lmo-view,.lmo-hero-orbit::before,.lmo-hero-orbit::after{animation:none!important}.lmo-backdrop *{scroll-behavior:auto!important;transition:none!important}}\n';
+  }
+});
+
+// scripts/modules/landlord-console/index.js
+var landlord_console_exports = {};
+__export(landlord_console_exports, {
+  activate: () => activate3
+});
+function activate3(context) {
+  const store = context.services.require("landlord.store");
+  const tasks = context.services.require("landlord.tasks");
+  const compiler = context.services.require("building.compiler");
+  const style = context.document.createElement("style");
+  style.id = styleId2;
+  style.textContent = styles_default;
+  context.document.head.appendChild(style);
+  const consoleUi = createLandlordConsole({
+    document: context.document,
+    store,
+    tasks,
+    compiler,
+    logger: context.logger
+  });
+  const floatingMenu = context.legacy.get("FloatingMenuManager");
+  let fallbackButton = null;
+  if (floatingMenu?.registerButton) {
+    floatingMenu.registerButton({
+      id: buttonId,
+      icon: buttonIcon,
+      label: "\u623F\u4E1C\u7ECF\u8425\u4E2D\u67A2",
+      onClick: () => consoleUi.open(),
+      color: "linear-gradient(135deg, #FF9EAA 0%, #7C6CE7 100%)",
+      order: 1
+    });
+  } else {
+    fallbackButton = context.document.createElement("button");
+    fallbackButton.type = "button";
+    fallbackButton.title = "\u623F\u4E1C\u7ECF\u8425\u4E2D\u67A2";
+    fallbackButton.innerHTML = buttonIcon;
+    fallbackButton.style.cssText = "position:fixed;right:22px;bottom:92px;z-index:2147482000;width:52px;height:52px;border:3px solid white;border-radius:18px;background:linear-gradient(135deg,#FF9EAA,#7C6CE7);box-shadow:0 10px 25px rgba(82,47,67,.28);cursor:pointer;";
+    fallbackButton.addEventListener("click", consoleUi.open);
+    context.document.body.appendChild(fallbackButton);
+  }
+  context.services.register("landlord.console", consoleUi, { legacyGlobal: "LandlordConsole" });
+  return () => {
+    floatingMenu?.unregisterButton?.(buttonId);
+    if (fallbackButton) {
+      fallbackButton.removeEventListener("click", consoleUi.open);
+      fallbackButton.remove();
+    }
+    consoleUi.dispose();
+    style.remove();
+  };
+}
+var buttonId, styleId2, buttonIcon;
+var init_landlord_console = __esm({
+  "scripts/modules/landlord-console/index.js"() {
+    init_controller();
+    init_styles();
+    buttonId = "landlord-console";
+    styleId2 = "landlord-console-styles";
+    buttonIcon = `<svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M8 7h4M8 11h4M8 15h4M2 21h20M16 9h2a2 2 0 0 1 2 2v10"/></svg>`;
+  }
+});
+
 // scripts/src/core/host.js
 function getHostWindow() {
   if (typeof window === "undefined") return globalThis;
@@ -19009,7 +20434,20 @@ function createTavernHelperService() {
 }
 
 // scripts/src/mvu-service.js
-var latestMessage = Object.freeze({ type: "message", message_id: -1 });
+function latestMessageTarget() {
+  return { type: "message", message_id: "latest" };
+}
+function clone(value) {
+  if (typeof structuredClone === "function") return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+}
+function requireMvu(method) {
+  const mvu = getHostGlobal("Mvu");
+  if (typeof mvu?.[method] !== "function") {
+    throw new Error(`MVU \u63A5\u53E3 ${method} \u4E0D\u53EF\u7528\uFF0C\u8BF7\u68C0\u67E5 MVU \u662F\u5426\u5DF2\u7ECF\u5B8C\u6210\u521D\u59CB\u5316`);
+  }
+  return mvu;
+}
 function createMvuService() {
   return Object.freeze({
     isAvailable() {
@@ -19018,7 +20456,7 @@ function createMvuService() {
     getLatestSnapshot() {
       const mvu = getHostGlobal("Mvu");
       if (typeof mvu?.getMvuData !== "function") return null;
-      return mvu.getMvuData(latestMessage) ?? null;
+      return mvu.getMvuData(latestMessageTarget()) ?? null;
     },
     getLatestState() {
       return this.getLatestSnapshot()?.stat_data ?? {};
@@ -19031,6 +20469,23 @@ function createMvuService() {
         value = value[segment];
       }
       return value;
+    },
+    async replaceLatestSnapshot(snapshot) {
+      if (!snapshot || typeof snapshot !== "object") throw new TypeError("MVU \u5FEB\u7167\u5FC5\u987B\u662F\u5BF9\u8C61");
+      await requireMvu("replaceMvuData").replaceMvuData(snapshot, latestMessageTarget());
+    },
+    async transaction(update, { validate } = {}) {
+      if (typeof update !== "function") throw new TypeError("MVU \u4E8B\u52A1\u5FC5\u987B\u63D0\u4F9B\u66F4\u65B0\u51FD\u6570");
+      const current = this.getLatestSnapshot();
+      if (!current) throw new Error("\u5F53\u524D\u6D88\u606F\u5C1A\u672A\u521D\u59CB\u5316 MVU \u6570\u636E");
+      const before = clone(current);
+      const draft = clone(current);
+      if (!draft.stat_data || typeof draft.stat_data !== "object") draft.stat_data = {};
+      const result = await update(draft.stat_data, draft);
+      const validated = typeof validate === "function" ? await validate(draft) : draft;
+      if (!validated || typeof validated !== "object") throw new Error("MVU \u4E8B\u52A1\u6821\u9A8C\u6CA1\u6709\u8FD4\u56DE\u6709\u6548\u5FEB\u7167");
+      await this.replaceLatestSnapshot(validated);
+      return Object.freeze({ before, after: clone(validated), result });
     }
   });
 }
@@ -19541,6 +20996,39 @@ var modules = [
     provides: ["content.workshop"],
     legacyRequires: ["setChatMessages", "eventEmit"],
     load: () => Promise.resolve().then(() => (init_main(), main_exports))
+  },
+  {
+    id: "landlord-schema-v2",
+    name: "\u623F\u4E1C\u7CFB\u7EDF\u53D8\u91CF\u7ED3\u6784 2.0",
+    critical: false,
+    afterLoad: null,
+    cleanup: [],
+    requires: ["mvu.framework"],
+    provides: ["landlord.schema"],
+    legacyRequires: [],
+    load: () => init_landlord_schema2().then(() => landlord_schema_exports)
+  },
+  {
+    id: "landlord-core",
+    name: "\u623F\u4E1C\u7ECF\u8425\u6838\u5FC3\u670D\u52A1",
+    critical: false,
+    afterLoad: null,
+    cleanup: [],
+    requires: ["landlord.schema"],
+    provides: ["landlord.store", "landlord.tasks", "building.compiler"],
+    legacyRequires: [],
+    load: () => Promise.resolve().then(() => (init_landlord_core(), landlord_core_exports))
+  },
+  {
+    id: "landlord-console",
+    name: "\u623F\u4E1C\u7ECF\u8425\u4E2D\u67A2",
+    critical: false,
+    afterLoad: null,
+    cleanup: [],
+    requires: ["landlord.store", "landlord.tasks", "building.compiler", "ui.floatingMenu"],
+    provides: ["landlord.console"],
+    legacyRequires: ["FloatingMenuManager"],
+    load: () => Promise.resolve().then(() => (init_landlord_console(), landlord_console_exports))
   }
 ];
-await startLandlordRuntime({ version: "0.1.0-preview.6", modules });
+await startLandlordRuntime({ version: "0.2.0-preview.3", modules });

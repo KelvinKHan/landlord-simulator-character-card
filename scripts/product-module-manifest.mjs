@@ -1,0 +1,37 @@
+export const productModuleManifest = [
+  {
+    id: 'landlord-schema-v2',
+    name: '房东系统变量结构 2.0',
+    entry: 'scripts/modules/landlord-schema/index.js',
+    critical: false,
+    requires: ['mvu.framework'],
+    provides: ['landlord.schema'],
+    features: ['注册官方 Zod 4 写法的房东系统变量结构', '提供安全解析与默认值补全', '保持模拟模式为默认值'],
+  },
+  {
+    id: 'landlord-core',
+    name: '房东经营核心服务',
+    entry: 'scripts/modules/landlord-core/index.js',
+    critical: false,
+    requires: ['landlord.schema'],
+    provides: ['landlord.store', 'landlord.tasks', 'building.compiler'],
+    features: ['MVU 事务写入', '多建筑编译', '本地模拟任务', '接管、装修与招募的确认写入'],
+  },
+  {
+    id: 'landlord-console',
+    name: '房东经营中枢',
+    entry: 'scripts/modules/landlord-console/index.js',
+    critical: false,
+    requires: ['landlord.store', 'landlord.tasks', 'building.compiler', 'ui.floatingMenu'],
+    provides: ['landlord.console'],
+    legacyRequires: ['FloatingMenuManager'],
+    features: [
+      '多建筑资产总览与建筑切换',
+      '楼层和空间编译视图',
+      '本地模拟的接管、装修、招募预览与确认',
+      '经营事件时间线',
+      '糖果明亮主题与 Rose Pine 暗色主题',
+      '桌面与窄屏响应式布局',
+    ],
+  },
+];

@@ -5,10 +5,12 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { moduleManifest } from '../scripts/module-manifest.mjs';
+import { productModuleManifest } from '../scripts/product-module-manifest.mjs';
 
 const toolDirectory = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(toolDirectory, '..');
-const adapterModules = moduleManifest.filter(module => module.entry);
+const allModules = [...moduleManifest, ...productModuleManifest];
+const adapterModules = allModules.filter(module => module.entry);
 const faithfulSourceModules = moduleManifest.filter(module => !module.entry);
 const entries = new Set();
 const serviceProviders = new Map();
@@ -25,7 +27,7 @@ async function listJavaScriptFiles(directory) {
   return files.flat();
 }
 
-for (const module of moduleManifest) {
+for (const module of allModules) {
   for (const requirement of module.requires ?? []) {
     assert.ok(
       availableServices.has(requirement),
