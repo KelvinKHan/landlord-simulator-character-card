@@ -1,6 +1,11 @@
+var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
 };
 
 // pinned-upstream:mvuFramework
@@ -248,7 +253,7 @@ var init__2 = __esm({
       };
       function injectStyles2() {
         if (parentDocument2.getElementById("floating-menu-manager-styles")) return;
-        const styles3 = `
+        const styles4 = `
 <style id="floating-menu-manager-styles">
 /* \u4E3B\u60AC\u6D6E\u7403 */
 .fmm-main-fab {
@@ -362,7 +367,7 @@ var init__2 = __esm({
 }
 </style>
         `;
-        parentDocument2.head.insertAdjacentHTML("beforeend", styles3);
+        parentDocument2.head.insertAdjacentHTML("beforeend", styles4);
       }
       function createMainFab() {
         const fab = parentDocument2.createElement("div");
@@ -684,8 +689,8 @@ var init__2 = __esm({
           parentDocument2.querySelectorAll(".fmm-sub-container").forEach(function(el) {
             el.remove();
           });
-          const styles3 = parentDocument2.getElementById("floating-menu-manager-styles");
-          if (styles3) styles3.remove();
+          const styles4 = parentDocument2.getElementById("floating-menu-manager-styles");
+          if (styles4) styles4.remove();
           state.elements.subs = [];
           state.buttons = [];
           state.isExpanded = false;
@@ -4419,672 +4424,564 @@ var init__4 = __esm({
   }
 });
 
-// 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/07-聊天数据库/index.js
-var __exports5 = {};
-var init__5 = __esm({
-  "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/07-\u804A\u5929\u6570\u636E\u5E93/index.js"() {
-    (function() {
-      "use strict";
-      const DB_NAME2 = "TenantChatDB";
-      const DB_VERSION2 = 1;
-      const ChatDB = {
-        db: null,
-        currentChatId: null,
-        // 初始化数据库
-        init: async function(chatId) {
-          this.currentChatId = chatId;
-          return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME2, DB_VERSION2);
-            request.onerror = (event) => {
-              console.error("[ChatDB] \u6570\u636E\u5E93\u6253\u5F00\u5931\u8D25:", event.target.error);
-              reject(event.target.error);
-            };
-            request.onsuccess = (event) => {
-              this.db = event.target.result;
-              console.log("[ChatDB] \u6570\u636E\u5E93\u5DF2\u8FDE\u63A5");
-              resolve(this.db);
-            };
-            request.onupgradeneeded = (event) => {
-              const db = event.target.result;
-              if (!db.objectStoreNames.contains("conversations")) {
-                const convStore = db.createObjectStore("conversations", { keyPath: "id" });
-                convStore.createIndex("chatId", "chatId", { unique: false });
-                convStore.createIndex("type", "type", { unique: false });
-                convStore.createIndex("chatId_type", ["chatId", "type"], { unique: false });
-              }
-              if (!db.objectStoreNames.contains("messages")) {
-                const msgStore = db.createObjectStore("messages", { keyPath: "id" });
-                msgStore.createIndex("conversationId", "conversationId", { unique: false });
-                msgStore.createIndex("createdAt", "createdAt", { unique: false });
-                msgStore.createIndex("conv_time", ["conversationId", "createdAt"], { unique: false });
-              }
-              console.log("[ChatDB] \u6570\u636E\u5E93\u7ED3\u6784\u5DF2\u521B\u5EFA/\u66F4\u65B0");
-            };
-          });
-        },
-        // 生成唯一ID
-        generateId: function(prefix) {
-          return prefix + "_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
-        },
-        // ==================== 会话操作 ====================
-        // 创建会话
-        createConversation: async function(options) {
-          const { type, name, members } = options;
-          const conversation = {
-            id: this.generateId("conv"),
-            chatId: this.currentChatId,
-            type,
-            // 'private' 或 'group'
-            name,
-            members: members || [],
-            createdAt: this.getGameTime(),
-            updatedAt: this.getGameTime(),
-            lastMessage: null
-          };
-          return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(["conversations"], "readwrite");
-            const store = transaction.objectStore("conversations");
-            const request = store.add(conversation);
-            request.onsuccess = () => {
-              console.log("[ChatDB] \u4F1A\u8BDD\u5DF2\u521B\u5EFA:", conversation.name);
-              resolve(conversation);
-            };
-            request.onerror = (e) => reject(e.target.error);
-          });
-        },
-        // 获取当前聊天的所有会话
-        getConversations: async function() {
-          return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(["conversations"], "readonly");
-            const store = transaction.objectStore("conversations");
-            const index = store.index("chatId");
-            const request = index.getAll(this.currentChatId);
-            request.onsuccess = () => resolve(request.result || []);
-            request.onerror = (e) => reject(e.target.error);
-          });
-        },
-        // 获取单个会话
-        getConversation: async function(convId) {
-          return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(["conversations"], "readonly");
-            const store = transaction.objectStore("conversations");
-            const request = store.get(convId);
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = (e) => reject(e.target.error);
-          });
-        },
-        // 获取或创建群聊会话
-        getOrCreateGroupChat: async function(groupName) {
-          const conversations = await this.getConversations();
-          let groupConv = conversations.find((c) => c.type === "group" && c.name === groupName);
-          if (!groupConv) {
-            const members = this.getTenantList();
-            groupConv = await this.createConversation({
-              type: "group",
-              name: groupName,
-              members
-            });
-          }
-          return groupConv;
-        },
-        // 获取或创建私聊会话
-        getOrCreatePrivateChat: async function(tenantName) {
-          const conversations = await this.getConversations();
-          let privateConv = conversations.find((c) => c.type === "private" && c.members.includes(tenantName));
-          if (!privateConv) {
-            privateConv = await this.createConversation({
-              type: "private",
-              name: tenantName,
-              members: [tenantName]
-            });
-          }
-          return privateConv;
-        },
-        // 更新会话（如更新成员列表）
-        updateConversation: async function(convId, updates) {
-          const conv = await this.getConversation(convId);
-          if (!conv) return null;
-          const updated = { ...conv, ...updates, updatedAt: this.getGameTime() };
-          return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(["conversations"], "readwrite");
-            const store = transaction.objectStore("conversations");
-            const request = store.put(updated);
-            request.onsuccess = () => resolve(updated);
-            request.onerror = (e) => reject(e.target.error);
-          });
-        },
-        // 同步群聊成员（根据当前租客列表）
-        syncGroupMembers: async function(convId) {
-          const currentTenants = this.getTenantList();
-          return this.updateConversation(convId, { members: currentTenants });
-        },
-        // ==================== 消息操作 ====================
-        // 添加消息
-        addMessage: async function(conversationId, sender, content, options = {}) {
-          const message = {
-            id: this.generateId("msg"),
-            conversationId,
-            sender,
-            // 租客名 或 '<user>'
-            content,
-            gameTime: this.getGameTime(),
-            syncedToLore: false,
-            isImportant: options.isImportant || false,
-            createdAt: Date.now(),
-            ...options.stickerImage ? { stickerImage: options.stickerImage } : {}
-          };
-          this.updateConversation(conversationId, {
-            lastMessage: { sender, content, gameTime: message.gameTime }
-          });
-          return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(["messages"], "readwrite");
-            const store = transaction.objectStore("messages");
-            const request = store.add(message);
-            request.onsuccess = () => resolve(message);
-            request.onerror = (e) => reject(e.target.error);
-          });
-        },
-        // 获取会话的消息列表
-        getMessages: async function(conversationId, limit = 100) {
-          return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(["messages"], "readonly");
-            const store = transaction.objectStore("messages");
-            const index = store.index("conversationId");
-            const request = index.getAll(conversationId);
-            request.onsuccess = () => {
-              let messages = request.result || [];
-              messages.sort((a, b) => a.createdAt - b.createdAt);
-              if (messages.length > limit) {
-                messages = messages.slice(-limit);
-              }
-              resolve(messages);
-            };
-            request.onerror = (e) => reject(e.target.error);
-          });
-        },
-        // 获取最近N条消息（用于AI上下文）
-        getRecentMessages: async function(conversationId, count = 20) {
-          const messages = await this.getMessages(conversationId, count);
-          return messages;
-        },
-        // 标记消息为已同步到Lore
-        markAsSynced: async function(messageId) {
-          return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(["messages"], "readwrite");
-            const store = transaction.objectStore("messages");
-            const getRequest = store.get(messageId);
-            getRequest.onsuccess = () => {
-              const message = getRequest.result;
-              if (message) {
-                message.syncedToLore = true;
-                const putRequest = store.put(message);
-                putRequest.onsuccess = () => resolve(message);
-                putRequest.onerror = (e) => reject(e.target.error);
-              } else {
-                resolve(null);
-              }
-            };
-            getRequest.onerror = (e) => reject(e.target.error);
-          });
-        },
-        // 删除单条消息
-        deleteMessage: async function(messageId) {
-          return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(["messages"], "readwrite");
-            const store = transaction.objectStore("messages");
-            const request = store.delete(messageId);
-            request.onsuccess = () => {
-              console.log("[ChatDB] \u6D88\u606F\u5DF2\u5220\u9664:", messageId);
-              resolve(true);
-            };
-            request.onerror = (e) => reject(e.target.error);
-          });
-        },
-        // 删除会话的最后N条消息（用于撤回功能）
-        deleteLastMessages: async function(conversationId, count = 1) {
-          const messages = await this.getMessages(conversationId, Infinity);
-          if (messages.length === 0) return [];
-          const toDelete = messages.slice(-count);
-          const deletedIds = [];
-          return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(["messages", "conversations"], "readwrite");
-            const msgStore = transaction.objectStore("messages");
-            for (const msg of toDelete) {
-              msgStore.delete(msg.id);
-              deletedIds.push(msg.id);
-            }
-            const remaining = messages.slice(0, -count);
-            if (remaining.length > 0) {
-              const lastMsg = remaining[remaining.length - 1];
-              const convStore = transaction.objectStore("conversations");
-              const getRequest = convStore.get(conversationId);
-              getRequest.onsuccess = () => {
-                const conv = getRequest.result;
-                if (conv) {
-                  conv.lastMessage = {
-                    sender: lastMsg.sender,
-                    content: lastMsg.content,
-                    gameTime: lastMsg.gameTime
-                  };
-                  conv.updatedAt = this.getGameTime();
-                  convStore.put(conv);
-                }
-              };
-            } else {
-              const convStore = transaction.objectStore("conversations");
-              const getRequest = convStore.get(conversationId);
-              getRequest.onsuccess = () => {
-                const conv = getRequest.result;
-                if (conv) {
-                  conv.lastMessage = null;
-                  conv.updatedAt = this.getGameTime();
-                  convStore.put(conv);
-                }
-              };
-            }
-            transaction.oncomplete = () => {
-              console.log("[ChatDB] \u5DF2\u5220\u9664\u6700\u540E", count, "\u6761\u6D88\u606F:", deletedIds);
-              resolve(toDelete);
-            };
-            transaction.onerror = (e) => reject(e.target.error);
-          });
-        },
-        // 删除会话及其消息
-        deleteConversation: async function(convId) {
-          const messages = await this.getMessages(convId, Infinity);
-          return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(["conversations", "messages"], "readwrite");
-            const msgStore = transaction.objectStore("messages");
-            messages.forEach((msg) => msgStore.delete(msg.id));
-            const convStore = transaction.objectStore("conversations");
-            convStore.delete(convId);
-            transaction.oncomplete = () => {
-              console.log("[ChatDB] \u4F1A\u8BDD\u5DF2\u5220\u9664:", convId);
-              resolve(true);
-            };
-            transaction.onerror = (e) => reject(e.target.error);
-          });
-        },
-        // ==================== 工具方法 ====================
-        // 获取游戏内时间
-        getGameTime: function() {
-          try {
-            if (window.parent.Mvu && window.parent.Mvu.getMvuData) {
-              const mvuData = window.parent.Mvu.getMvuData({ type: "message", message_id: -1 });
-              if (mvuData && mvuData.stat_data && mvuData.stat_data.\u4E16\u754C) {
-                return { ...mvuData.stat_data.\u4E16\u754C };
-              }
-            }
-          } catch (e) {
-            console.warn("[ChatDB] \u83B7\u53D6\u6E38\u620F\u65F6\u95F4\u5931\u8D25:", e);
-          }
-          return { \u5E74\u4EFD: "\u672A\u77E5", \u65E5\u671F: "\u672A\u77E5", \u661F\u671F: "\u672A\u77E5", \u65F6\u95F4: "\u672A\u77E5" };
-        },
-        // 格式化游戏时间显示
-        formatGameTime: function(gameTime) {
-          if (!gameTime) return "\u672A\u77E5\u65F6\u95F4";
-          return `${gameTime.\u65E5\u671F} ${gameTime.\u661F\u671F} ${gameTime.\u65F6\u95F4}`;
-        },
-        // 获取租客列表
-        getTenantList: function() {
-          try {
-            if (window.parent.Mvu && window.parent.Mvu.getMvuData) {
-              const mvuData = window.parent.Mvu.getMvuData({ type: "message", message_id: -1 });
-              if (mvuData && mvuData.stat_data && mvuData.stat_data.\u79DF\u5BA2\u5217\u8868) {
-                return Object.keys(mvuData.stat_data.\u79DF\u5BA2\u5217\u8868);
-              }
-            }
-          } catch (e) {
-            console.warn("[ChatDB] \u83B7\u53D6\u79DF\u5BA2\u5217\u8868\u5931\u8D25:", e);
-          }
+// scripts/src/chat/chat-database.js
+function requestResult(request) {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = (event) => reject(event.target.error);
+  });
+}
+function transactionDone(transaction) {
+  return new Promise((resolve, reject) => {
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = (event) => reject(event.target.error);
+    transaction.onabort = (event) => reject(event.target.error ?? transaction.error);
+  });
+}
+function clone(value) {
+  return structuredClone(value);
+}
+function assertImportData(data) {
+  if (data?.version !== 1) throw new Error("\u4E0D\u652F\u6301\u7684\u6570\u636E\u7248\u672C");
+  if (!Array.isArray(data.conversations) || !Array.isArray(data.messages)) {
+    throw new Error("\u804A\u5929\u6570\u636E\u7F3A\u5C11 conversations \u6216 messages \u6570\u7EC4");
+  }
+}
+var DATABASE_NAME, DATABASE_VERSION, CONVERSATIONS, MESSAGES, ChatDatabase;
+var init_chat_database = __esm({
+  "scripts/src/chat/chat-database.js"() {
+    DATABASE_NAME = "TenantChatDB";
+    DATABASE_VERSION = 1;
+    CONVERSATIONS = "conversations";
+    MESSAGES = "messages";
+    ChatDatabase = class {
+      constructor({ databaseFactory, getGameState, now = () => Date.now(), random = Math.random, logger = console }) {
+        if (!databaseFactory?.open) throw new Error("\u6D4F\u89C8\u5668 IndexedDB \u4E0D\u53EF\u7528");
+        this.databaseFactory = databaseFactory;
+        this.getGameState = getGameState;
+        this.now = now;
+        this.random = random;
+        this.logger = logger;
+        this.db = null;
+        this.currentChatId = null;
+        this.opening = null;
+      }
+      async init(chatId) {
+        this.currentChatId = chatId ?? "default";
+        if (this.db) return this.db;
+        if (!this.opening) this.opening = this.#open();
+        try {
+          this.db = await this.opening;
+          return this.db;
+        } finally {
+          this.opening = null;
+        }
+      }
+      generateId(prefix) {
+        return `${prefix}_${this.now()}_${this.random().toString(36).slice(2, 11)}`;
+      }
+      async createConversation({ type, name, members = [] }) {
+        const gameTime = this.getGameTime();
+        const conversation = {
+          id: this.generateId("conv"),
+          chatId: this.currentChatId,
+          type,
+          name,
+          members,
+          createdAt: gameTime,
+          updatedAt: gameTime,
+          lastMessage: null
+        };
+        await this.#write(CONVERSATIONS, (store) => store.add(conversation));
+        return conversation;
+      }
+      async getConversations() {
+        const transaction = this.#transaction(CONVERSATIONS);
+        const result = await requestResult(transaction.objectStore(CONVERSATIONS).index("chatId").getAll(this.currentChatId));
+        return result ?? [];
+      }
+      async getConversation(conversationId) {
+        const transaction = this.#transaction(CONVERSATIONS);
+        return requestResult(transaction.objectStore(CONVERSATIONS).get(conversationId));
+      }
+      async getOrCreateGroupChat(groupName) {
+        const existing = (await this.getConversations()).find(
+          (conversation) => conversation.type === "group" && conversation.name === groupName
+        );
+        return existing ?? this.createConversation({ type: "group", name: groupName, members: this.getTenantList() });
+      }
+      async getOrCreatePrivateChat(tenantName) {
+        const existing = (await this.getConversations()).find(
+          (conversation) => conversation.type === "private" && conversation.members.includes(tenantName)
+        );
+        return existing ?? this.createConversation({ type: "private", name: tenantName, members: [tenantName] });
+      }
+      async updateConversation(conversationId, updates) {
+        const conversation = await this.getConversation(conversationId);
+        if (!conversation) return null;
+        const updated = { ...conversation, ...updates, updatedAt: this.getGameTime() };
+        await this.#write(CONVERSATIONS, (store) => store.put(updated));
+        return updated;
+      }
+      async syncGroupMembers(conversationId) {
+        return this.updateConversation(conversationId, { members: this.getTenantList() });
+      }
+      async addMessage(conversationId, sender, content, options = {}) {
+        const gameTime = this.getGameTime();
+        const message = {
+          id: this.generateId("msg"),
+          conversationId,
+          sender,
+          content,
+          gameTime,
+          syncedToLore: false,
+          isImportant: options.isImportant ?? false,
+          createdAt: this.now(),
+          ...options.stickerImage ? { stickerImage: options.stickerImage } : {}
+        };
+        const transaction = this.#transaction([CONVERSATIONS, MESSAGES], "readwrite");
+        const done = transactionDone(transaction);
+        const conversationStore = transaction.objectStore(CONVERSATIONS);
+        const conversation = await requestResult(conversationStore.get(conversationId));
+        if (conversation) {
+          conversation.lastMessage = { sender, content, gameTime };
+          conversation.updatedAt = gameTime;
+          conversationStore.put(conversation);
+        }
+        transaction.objectStore(MESSAGES).add(message);
+        await done;
+        return message;
+      }
+      async getMessages(conversationId, limit = 100) {
+        const transaction = this.#transaction(MESSAGES);
+        const result = await requestResult(
+          transaction.objectStore(MESSAGES).index("conversationId").getAll(conversationId)
+        );
+        const messages = (result ?? []).sort((left, right) => left.createdAt - right.createdAt);
+        return messages.length > limit ? messages.slice(-limit) : messages;
+      }
+      getRecentMessages(conversationId, count = 20) {
+        return this.getMessages(conversationId, count);
+      }
+      async markAsSynced(messageId) {
+        const transaction = this.#transaction(MESSAGES, "readwrite");
+        const done = transactionDone(transaction);
+        const store = transaction.objectStore(MESSAGES);
+        const message = await requestResult(store.get(messageId));
+        if (!message) {
+          await done;
+          return null;
+        }
+        message.syncedToLore = true;
+        store.put(message);
+        await done;
+        return message;
+      }
+      async deleteMessage(messageId) {
+        await this.#write(MESSAGES, (store) => store.delete(messageId));
+        return true;
+      }
+      async deleteLastMessages(conversationId, count = 1) {
+        const messages = await this.getMessages(conversationId, Infinity);
+        const deleteCount = Math.max(0, Number(count) || 0);
+        if (messages.length === 0 || deleteCount === 0) return [];
+        const removed = messages.slice(-deleteCount);
+        const remaining = messages.slice(0, -deleteCount);
+        const transaction = this.#transaction([MESSAGES, CONVERSATIONS], "readwrite");
+        const done = transactionDone(transaction);
+        const messageStore = transaction.objectStore(MESSAGES);
+        const conversationStore = transaction.objectStore(CONVERSATIONS);
+        for (const message of removed) messageStore.delete(message.id);
+        const conversation = await requestResult(conversationStore.get(conversationId));
+        if (conversation) {
+          const lastMessage = remaining.at(-1);
+          conversation.lastMessage = lastMessage ? { sender: lastMessage.sender, content: lastMessage.content, gameTime: lastMessage.gameTime } : null;
+          conversation.updatedAt = this.getGameTime();
+          conversationStore.put(conversation);
+        }
+        await done;
+        return removed;
+      }
+      async deleteConversation(conversationId) {
+        const messages = await this.getMessages(conversationId, Infinity);
+        const transaction = this.#transaction([CONVERSATIONS, MESSAGES], "readwrite");
+        const done = transactionDone(transaction);
+        const messageStore = transaction.objectStore(MESSAGES);
+        for (const message of messages) messageStore.delete(message.id);
+        transaction.objectStore(CONVERSATIONS).delete(conversationId);
+        await done;
+        return true;
+      }
+      getGameTime() {
+        try {
+          const world = this.getGameState?.()?.\u4E16\u754C;
+          if (world && typeof world === "object") return { ...world };
+        } catch (error) {
+          this.logger.warn("\u83B7\u53D6\u6E38\u620F\u65F6\u95F4\u5931\u8D25", error);
+        }
+        return { \u5E74\u4EFD: "\u672A\u77E5", \u65E5\u671F: "\u672A\u77E5", \u661F\u671F: "\u672A\u77E5", \u65F6\u95F4: "\u672A\u77E5" };
+      }
+      formatGameTime(gameTime) {
+        if (!gameTime) return "\u672A\u77E5\u65F6\u95F4";
+        return `${gameTime.\u65E5\u671F} ${gameTime.\u661F\u671F} ${gameTime.\u65F6\u95F4}`;
+      }
+      getTenantList() {
+        try {
+          const tenants = this.getGameState?.()?.\u79DF\u5BA2\u5217\u8868;
+          return tenants && typeof tenants === "object" ? Object.keys(tenants) : [];
+        } catch (error) {
+          this.logger.warn("\u83B7\u53D6\u79DF\u5BA2\u5217\u8868\u5931\u8D25", error);
           return [];
-        },
-        // ==================== 导入导出 ====================
-        // 导出当前聊天的所有数据
-        exportData: async function() {
-          const conversations = await this.getConversations();
-          const allMessages = [];
-          for (const conv of conversations) {
-            const messages = await this.getMessages(conv.id, Infinity);
-            allMessages.push(...messages);
-          }
-          const exportData = {
+        }
+      }
+      async exportData() {
+        const conversations = await this.getConversations();
+        const messages = (await Promise.all(conversations.map((item) => this.getMessages(item.id, Infinity)))).flat();
+        return JSON.stringify(
+          {
             version: 1,
             chatId: this.currentChatId,
-            exportedAt: (/* @__PURE__ */ new Date()).toISOString(),
+            exportedAt: new Date(this.now()).toISOString(),
             conversations,
-            messages: allMessages
-          };
-          return JSON.stringify(exportData, null, 2);
-        },
-        // 导入数据
-        importData: async function(jsonString, options = {}) {
-          const { merge = false } = options;
-          try {
-            const data = JSON.parse(jsonString);
-            if (data.version !== 1) {
-              throw new Error("\u4E0D\u652F\u6301\u7684\u6570\u636E\u7248\u672C");
-            }
-            if (!merge) {
-              await this.clearCurrentChatData();
-            }
-            const transaction = this.db.transaction(["conversations", "messages"], "readwrite");
-            const convStore = transaction.objectStore("conversations");
-            const msgStore = transaction.objectStore("messages");
-            for (const conv of data.conversations) {
-              conv.chatId = this.currentChatId;
-              if (merge) {
-                const oldId = conv.id;
-                conv.id = this.generateId("conv");
-                data.messages.forEach((msg) => {
-                  if (msg.conversationId === oldId) {
-                    msg.conversationId = conv.id;
-                  }
-                });
-              }
-              convStore.put(conv);
-            }
-            for (const msg of data.messages) {
-              if (merge) {
-                msg.id = this.generateId("msg");
-              }
-              msgStore.put(msg);
-            }
-            return new Promise((resolve, reject) => {
-              transaction.oncomplete = () => {
-                console.log("[ChatDB] \u6570\u636E\u5BFC\u5165\u5B8C\u6210");
-                resolve({
-                  conversations: data.conversations.length,
-                  messages: data.messages.length
-                });
-              };
-              transaction.onerror = (e) => reject(e.target.error);
-            });
-          } catch (e) {
-            console.error("[ChatDB] \u5BFC\u5165\u5931\u8D25:", e);
-            throw e;
+            messages
+          },
+          null,
+          2
+        );
+      }
+      async importData(jsonString, { merge = false } = {}) {
+        const data = JSON.parse(jsonString);
+        assertImportData(data);
+        if (!merge) await this.clearCurrentChatData();
+        const conversations = clone(data.conversations);
+        const messages = clone(data.messages);
+        const remappedConversationIds = /* @__PURE__ */ new Map();
+        const shouldRemapIds = merge || data.chatId !== this.currentChatId;
+        for (const conversation of conversations) {
+          conversation.chatId = this.currentChatId;
+          if (shouldRemapIds) {
+            const oldId = conversation.id;
+            conversation.id = this.generateId("conv");
+            remappedConversationIds.set(oldId, conversation.id);
           }
-        },
-        // 清空当前聊天的数据
-        clearCurrentChatData: async function() {
-          const conversations = await this.getConversations();
-          for (const conv of conversations) {
-            await this.deleteConversation(conv.id);
-          }
-          console.log("[ChatDB] \u5F53\u524D\u804A\u5929\u6570\u636E\u5DF2\u6E05\u7A7A");
-        },
-        // 获取数据库统计信息
-        getStats: async function() {
-          const conversations = await this.getConversations();
-          let totalMessages = 0;
-          for (const conv of conversations) {
-            const messages = await this.getMessages(conv.id, Infinity);
-            totalMessages += messages.length;
-          }
-          return {
-            chatId: this.currentChatId,
-            conversationCount: conversations.length,
-            messageCount: totalMessages
-          };
         }
-      };
-      window.parent.ChatDB = ChatDB;
-      console.log("\u2705 ChatDB \u6A21\u5757\u5DF2\u52A0\u8F7D");
-    })();
+        for (const message of messages) {
+          message.conversationId = remappedConversationIds.get(message.conversationId) ?? message.conversationId;
+          if (shouldRemapIds) message.id = this.generateId("msg");
+        }
+        const transaction = this.#transaction([CONVERSATIONS, MESSAGES], "readwrite");
+        const done = transactionDone(transaction);
+        const conversationStore = transaction.objectStore(CONVERSATIONS);
+        const messageStore = transaction.objectStore(MESSAGES);
+        for (const conversation of conversations) conversationStore.put(conversation);
+        for (const message of messages) messageStore.put(message);
+        await done;
+        return { conversations: conversations.length, messages: messages.length };
+      }
+      async clearCurrentChatData() {
+        for (const conversation of await this.getConversations()) {
+          await this.deleteConversation(conversation.id);
+        }
+      }
+      async getStats() {
+        const conversations = await this.getConversations();
+        const messageGroups = await Promise.all(conversations.map((item) => this.getMessages(item.id, Infinity)));
+        return {
+          chatId: this.currentChatId,
+          conversationCount: conversations.length,
+          messageCount: messageGroups.reduce((total, messages) => total + messages.length, 0)
+        };
+      }
+      dispose() {
+        this.db?.close();
+        this.db = null;
+        this.opening = null;
+        this.currentChatId = null;
+      }
+      #transaction(stores, mode = "readonly") {
+        if (!this.db) throw new Error("ChatDatabase \u5C1A\u672A\u521D\u59CB\u5316");
+        return this.db.transaction(stores, mode);
+      }
+      async #write(storeName, operation) {
+        const transaction = this.#transaction(storeName, "readwrite");
+        const done = transactionDone(transaction);
+        operation(transaction.objectStore(storeName));
+        await done;
+      }
+      #open() {
+        return new Promise((resolve, reject) => {
+          const request = this.databaseFactory.open(DATABASE_NAME, DATABASE_VERSION);
+          request.onerror = (event) => reject(event.target.error);
+          request.onsuccess = (event) => resolve(event.target.result);
+          request.onupgradeneeded = (event) => {
+            const database = event.target.result;
+            if (!database.objectStoreNames.contains(CONVERSATIONS)) {
+              const store = database.createObjectStore(CONVERSATIONS, { keyPath: "id" });
+              store.createIndex("chatId", "chatId", { unique: false });
+              store.createIndex("type", "type", { unique: false });
+              store.createIndex("chatId_type", ["chatId", "type"], { unique: false });
+            }
+            if (!database.objectStoreNames.contains(MESSAGES)) {
+              const store = database.createObjectStore(MESSAGES, { keyPath: "id" });
+              store.createIndex("conversationId", "conversationId", { unique: false });
+              store.createIndex("createdAt", "createdAt", { unique: false });
+              store.createIndex("conv_time", ["conversationId", "createdAt"], { unique: false });
+            }
+          };
+        });
+      }
+    };
   }
 });
 
-// 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/08-分析调度器/index.js
-var __exports6 = {};
-var init__6 = __esm({
-  "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/08-\u5206\u6790\u8C03\u5EA6\u5668/index.js"() {
-    (function() {
-      "use strict";
-      const TASK_TYPES = {
-        NEWS: "news",
-        // 新闻生成
-        TENANT_ANALYZE: "tenant_analyze",
-        // 租客分析
-        TENANT_SYNC: "tenant_sync",
-        // 租客同步到ChatLore
-        CUSTOM: "custom"
-        // 自定义任务
-      };
-      const PRIORITY = {
-        HIGH: 1,
-        // 用户手动触发
-        NORMAL: 2,
-        // 自动触发
-        LOW: 3
-        // 后台同步
-      };
-      const TASK_STATUS = {
-        PENDING: "pending",
-        RUNNING: "running",
-        COMPLETED: "completed",
-        FAILED: "failed",
-        CANCELLED: "cancelled"
-      };
-      const AnalysisScheduler = {
-        // 任务队列
-        queue: [],
-        // 已完成任务历史（最多保留50条）
-        history: [],
-        historyLimit: 50,
-        // 当前状态
-        isProcessing: false,
-        currentTask: null,
-        // 事件监听器
-        eventListeners: /* @__PURE__ */ new Map(),
-        // ============ 初始化 ============
-        init: function() {
-          console.log("[\u8C03\u5EA6\u5668] \u5206\u6790\u8C03\u5EA6\u5668\u521D\u59CB\u5316");
-          this.queue = [];
-          this.history = [];
-          this.isProcessing = false;
-          this.currentTask = null;
-          return this;
-        },
-        // ============ 添加任务 ============
-        addTask: function(options) {
-          var task = {
-            id: this.generateTaskId(),
-            type: options.type || TASK_TYPES.CUSTOM,
-            name: options.name || "\u672A\u547D\u540D\u4EFB\u52A1",
-            priority: options.priority || PRIORITY.NORMAL,
-            data: options.data || {},
-            execute: options.execute,
-            // 执行函数，返回Promise
-            status: TASK_STATUS.PENDING,
-            createdAt: /* @__PURE__ */ new Date(),
-            startedAt: null,
-            completedAt: null,
-            result: null,
-            error: null
-          };
-          var insertIndex = this.queue.findIndex(function(t) {
-            return t.priority > task.priority;
-          });
-          if (insertIndex === -1) {
-            this.queue.push(task);
-          } else {
-            this.queue.splice(insertIndex, 0, task);
-          }
-          console.log("[\u8C03\u5EA6\u5668] \u6DFB\u52A0\u4EFB\u52A1:", task.name, "\u4F18\u5148\u7EA7:", task.priority, "\u961F\u5217\u957F\u5EA6:", this.queue.length);
-          this.emit("task-added", task);
-          this.emit("queue-updated", this.getQueueStatus());
-          this.processNext();
-          return task.id;
-        },
-        // ============ 处理队列 ============
-        processNext: async function() {
-          var self = this;
-          if (self.isProcessing || self.queue.length === 0) {
-            return;
-          }
-          self.isProcessing = true;
-          self.currentTask = self.queue.shift();
-          self.currentTask.status = TASK_STATUS.RUNNING;
-          self.currentTask.startedAt = /* @__PURE__ */ new Date();
-          console.log("[\u8C03\u5EA6\u5668] \u5F00\u59CB\u6267\u884C:", self.currentTask.name);
-          self.emit("task-started", self.currentTask);
-          self.emit("queue-updated", self.getQueueStatus());
+// scripts/modules/chat-database.js
+var chat_database_exports = {};
+__export(chat_database_exports, {
+  activate: () => activate
+});
+function activate(context) {
+  const database = new ChatDatabase({
+    databaseFactory: context.host.indexedDB,
+    getGameState: () => context.mvu.getLatestState(),
+    logger: context.logger
+  });
+  context.services.register("chat.database", database, { legacyGlobal: "ChatDB" });
+  context.logger.info("\u804A\u5929\u6570\u636E\u5E93\u670D\u52A1\u5DF2\u5C31\u7EEA");
+  return () => database.dispose();
+}
+var init_chat_database2 = __esm({
+  "scripts/modules/chat-database.js"() {
+    init_chat_database();
+  }
+});
+
+// scripts/src/core/event-bus.js
+var EventBus;
+var init_event_bus = __esm({
+  "scripts/src/core/event-bus.js"() {
+    EventBus = class {
+      #listeners = /* @__PURE__ */ new Map();
+      on(type, listener) {
+        const listeners = this.#listeners.get(type) ?? /* @__PURE__ */ new Set();
+        listeners.add(listener);
+        this.#listeners.set(type, listeners);
+        return () => this.off(type, listener);
+      }
+      off(type, listener) {
+        const listeners = this.#listeners.get(type);
+        if (!listeners) return;
+        listeners.delete(listener);
+        if (listeners.size === 0) this.#listeners.delete(type);
+      }
+      emit(type, payload) {
+        for (const listener of this.#listeners.get(type) ?? []) {
           try {
-            if (typeof self.currentTask.execute === "function") {
-              self.currentTask.result = await self.currentTask.execute(self.currentTask.data);
-            }
-            self.currentTask.status = TASK_STATUS.COMPLETED;
-            console.log("[\u8C03\u5EA6\u5668] \u4EFB\u52A1\u5B8C\u6210:", self.currentTask.name);
-            self.emit("task-completed", self.currentTask);
-          } catch (e) {
-            self.currentTask.status = TASK_STATUS.FAILED;
-            self.currentTask.error = e.message || String(e);
-            console.error("[\u8C03\u5EA6\u5668] \u4EFB\u52A1\u5931\u8D25:", self.currentTask.name, e);
-            self.emit("task-failed", self.currentTask);
+            listener(payload);
+          } catch (error) {
+            console.error(`[\u623F\u4E1C\u6A21\u62DF\u5668] \u4E8B\u4EF6\u300C${type}\u300D\u5904\u7406\u5931\u8D25`, error);
           }
-          self.currentTask.completedAt = /* @__PURE__ */ new Date();
-          self.history.unshift(self.currentTask);
-          if (self.history.length > self.historyLimit) {
-            self.history.pop();
-          }
-          self.currentTask = null;
-          self.isProcessing = false;
-          self.emit("queue-updated", self.getQueueStatus());
-          self.processNext();
-        },
-        // ============ 取消任务 ============
-        cancelTask: function(taskId) {
-          var index = this.queue.findIndex(function(t) {
-            return t.id === taskId;
-          });
-          if (index !== -1) {
-            var task = this.queue.splice(index, 1)[0];
-            task.status = TASK_STATUS.CANCELLED;
-            task.completedAt = /* @__PURE__ */ new Date();
-            this.history.unshift(task);
-            console.log("[\u8C03\u5EA6\u5668] \u53D6\u6D88\u4EFB\u52A1:", task.name);
-            this.emit("task-cancelled", task);
-            this.emit("queue-updated", this.getQueueStatus());
-            return true;
-          }
-          return false;
-        },
-        // ============ 取消特定类型的所有任务 ============
-        cancelTasksByType: function(type) {
-          var self = this;
-          var cancelled = [];
-          self.queue = self.queue.filter(function(task) {
-            if (task.type === type) {
-              task.status = TASK_STATUS.CANCELLED;
-              task.completedAt = /* @__PURE__ */ new Date();
-              self.history.unshift(task);
-              cancelled.push(task);
-              return false;
-            }
-            return true;
-          });
-          if (cancelled.length > 0) {
-            console.log("[\u8C03\u5EA6\u5668] \u53D6\u6D88\u4E86", cancelled.length, "\u4E2A", type, "\u7C7B\u578B\u7684\u4EFB\u52A1");
-            self.emit("queue-updated", self.getQueueStatus());
-          }
-          return cancelled;
-        },
-        // ============ 清空队列 ============
-        clearQueue: function() {
-          var self = this;
-          self.queue.forEach(function(task) {
-            task.status = TASK_STATUS.CANCELLED;
-            task.completedAt = /* @__PURE__ */ new Date();
-            self.history.unshift(task);
-          });
-          self.queue = [];
-          console.log("[\u8C03\u5EA6\u5668] \u961F\u5217\u5DF2\u6E05\u7A7A");
-          self.emit("queue-updated", self.getQueueStatus());
-        },
-        // ============ 获取队列状态 ============
-        getQueueStatus: function() {
-          return {
-            isProcessing: this.isProcessing,
-            currentTask: this.currentTask ? {
-              id: this.currentTask.id,
-              type: this.currentTask.type,
-              name: this.currentTask.name,
-              startedAt: this.currentTask.startedAt
-            } : null,
-            queueLength: this.queue.length,
-            queue: this.queue.map(function(t) {
-              return {
-                id: t.id,
-                type: t.type,
-                name: t.name,
-                priority: t.priority,
-                createdAt: t.createdAt
-              };
-            })
-          };
-        },
-        // ============ 获取历史记录 ============
-        getHistory: function(limit) {
-          limit = limit || 20;
-          return this.history.slice(0, limit).map(function(t) {
-            return {
-              id: t.id,
-              type: t.type,
-              name: t.name,
-              status: t.status,
-              createdAt: t.createdAt,
-              completedAt: t.completedAt,
-              error: t.error,
-              duration: t.completedAt && t.startedAt ? (t.completedAt.getTime() - t.startedAt.getTime()) / 1e3 : null
-            };
-          });
-        },
-        // ============ 事件系统 ============
-        on: function(event, callback) {
-          if (!this.eventListeners.has(event)) {
-            this.eventListeners.set(event, []);
-          }
-          this.eventListeners.get(event).push(callback);
-        },
-        off: function(event, callback) {
-          if (this.eventListeners.has(event)) {
-            var listeners = this.eventListeners.get(event);
-            var index = listeners.indexOf(callback);
-            if (index !== -1) {
-              listeners.splice(index, 1);
-            }
-          }
-        },
-        emit: function(event, data) {
-          if (this.eventListeners.has(event)) {
-            this.eventListeners.get(event).forEach(function(callback) {
-              try {
-                callback(data);
-              } catch (e) {
-                console.error("[\u8C03\u5EA6\u5668] \u4E8B\u4EF6\u56DE\u8C03\u9519\u8BEF:", e);
-              }
-            });
-          }
-        },
-        // ============ 工具方法 ============
-        generateTaskId: function() {
-          return "task_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
-        },
-        // ============ 常量导出 ============
-        TASK_TYPES,
-        PRIORITY,
-        TASK_STATUS
-      };
-      var targetWindow = window.parent || window;
-      targetWindow.AnalysisScheduler = AnalysisScheduler;
-      console.log("[\u8C03\u5EA6\u5668] \u6A21\u5757\u52A0\u8F7D\u5B8C\u6210");
-    })();
+        }
+      }
+      clear() {
+        this.#listeners.clear();
+      }
+    };
+  }
+});
+
+// scripts/src/core/task-scheduler.js
+function createTask(options, id) {
+  return {
+    id,
+    type: options.type ?? TASK_TYPES.CUSTOM,
+    name: options.name ?? "\u672A\u547D\u540D\u4EFB\u52A1",
+    priority: options.priority ?? TASK_PRIORITY.NORMAL,
+    data: options.data ?? {},
+    execute: options.execute,
+    status: TASK_STATUS.PENDING,
+    createdAt: /* @__PURE__ */ new Date(),
+    startedAt: null,
+    completedAt: null,
+    result: null,
+    error: null
+  };
+}
+var TASK_TYPES, TASK_PRIORITY, TASK_STATUS, TaskScheduler;
+var init_task_scheduler = __esm({
+  "scripts/src/core/task-scheduler.js"() {
+    init_event_bus();
+    TASK_TYPES = Object.freeze({
+      NEWS: "news",
+      TENANT_ANALYZE: "tenant_analyze",
+      TENANT_SYNC: "tenant_sync",
+      CUSTOM: "custom"
+    });
+    TASK_PRIORITY = Object.freeze({
+      HIGH: 1,
+      NORMAL: 2,
+      LOW: 3
+    });
+    TASK_STATUS = Object.freeze({
+      PENDING: "pending",
+      RUNNING: "running",
+      COMPLETED: "completed",
+      FAILED: "failed",
+      CANCELLED: "cancelled"
+    });
+    TaskScheduler = class {
+      constructor({ historyLimit = 50 } = {}) {
+        this.historyLimit = historyLimit;
+        this.queue = [];
+        this.history = [];
+        this.isProcessing = false;
+        this.currentTask = null;
+        this.events = new EventBus();
+        this.TASK_TYPES = TASK_TYPES;
+        this.PRIORITY = TASK_PRIORITY;
+        this.TASK_STATUS = TASK_STATUS;
+      }
+      init() {
+        this.clearQueue();
+        this.history = [];
+        return this;
+      }
+      addTask(options = {}) {
+        const task = createTask(options, this.#generateTaskId());
+        const insertionIndex = this.queue.findIndex((item) => item.priority > task.priority);
+        if (insertionIndex === -1) this.queue.push(task);
+        else this.queue.splice(insertionIndex, 0, task);
+        this.events.emit("task-added", task);
+        this.#emitQueueUpdate();
+        void this.#processNext();
+        return task.id;
+      }
+      cancelTask(taskId) {
+        const index = this.queue.findIndex((task2) => task2.id === taskId);
+        if (index === -1) return false;
+        const [task] = this.queue.splice(index, 1);
+        this.#finishCancelledTask(task);
+        this.#emitQueueUpdate();
+        return true;
+      }
+      cancelTasksByType(type) {
+        const cancelled = this.queue.filter((task) => task.type === type);
+        this.queue = this.queue.filter((task) => task.type !== type);
+        for (const task of cancelled) this.#finishCancelledTask(task);
+        if (cancelled.length > 0) this.#emitQueueUpdate();
+        return cancelled;
+      }
+      clearQueue() {
+        for (const task of this.queue) this.#finishCancelledTask(task);
+        this.queue = [];
+        this.#emitQueueUpdate();
+      }
+      getQueueStatus() {
+        return {
+          isProcessing: this.isProcessing,
+          currentTask: this.currentTask ? {
+            id: this.currentTask.id,
+            type: this.currentTask.type,
+            name: this.currentTask.name,
+            startedAt: this.currentTask.startedAt
+          } : null,
+          queueLength: this.queue.length,
+          queue: this.queue.map(({ id, type, name, priority, createdAt }) => ({ id, type, name, priority, createdAt }))
+        };
+      }
+      getHistory(limit = 20) {
+        return this.history.slice(0, limit).map((task) => ({
+          id: task.id,
+          type: task.type,
+          name: task.name,
+          status: task.status,
+          createdAt: task.createdAt,
+          completedAt: task.completedAt,
+          error: task.error,
+          duration: task.completedAt && task.startedAt ? (task.completedAt.getTime() - task.startedAt.getTime()) / 1e3 : null
+        }));
+      }
+      on(type, listener) {
+        return this.events.on(type, listener);
+      }
+      off(type, listener) {
+        this.events.off(type, listener);
+      }
+      emit(type, payload) {
+        this.events.emit(type, payload);
+      }
+      dispose() {
+        this.clearQueue();
+        this.events.clear();
+      }
+      async #processNext() {
+        if (this.isProcessing || this.queue.length === 0) return;
+        const task = this.queue.shift();
+        this.currentTask = task;
+        this.isProcessing = true;
+        task.status = TASK_STATUS.RUNNING;
+        task.startedAt = /* @__PURE__ */ new Date();
+        this.events.emit("task-started", task);
+        this.#emitQueueUpdate();
+        try {
+          if (typeof task.execute === "function") task.result = await task.execute(task.data);
+          task.status = TASK_STATUS.COMPLETED;
+          this.events.emit("task-completed", task);
+        } catch (error) {
+          task.status = TASK_STATUS.FAILED;
+          task.error = error instanceof Error ? error.message : String(error);
+          console.error(`[\u623F\u4E1C\u6A21\u62DF\u5668] \u540E\u53F0\u4EFB\u52A1\u300C${task.name}\u300D\u5931\u8D25`, error);
+          this.events.emit("task-failed", task);
+        } finally {
+          task.completedAt = /* @__PURE__ */ new Date();
+          this.#remember(task);
+          this.currentTask = null;
+          this.isProcessing = false;
+          this.#emitQueueUpdate();
+          void this.#processNext();
+        }
+      }
+      #finishCancelledTask(task) {
+        task.status = TASK_STATUS.CANCELLED;
+        task.completedAt = /* @__PURE__ */ new Date();
+        this.#remember(task);
+        this.events.emit("task-cancelled", task);
+      }
+      #remember(task) {
+        this.history.unshift(task);
+        if (this.history.length > this.historyLimit) this.history.length = this.historyLimit;
+      }
+      #emitQueueUpdate() {
+        this.events.emit("queue-updated", this.getQueueStatus());
+      }
+      #generateTaskId() {
+        return `task_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+      }
+    };
+  }
+});
+
+// scripts/modules/analysis-scheduler.js
+var analysis_scheduler_exports = {};
+__export(analysis_scheduler_exports, {
+  activate: () => activate2
+});
+function activate2(context) {
+  const scheduler = new TaskScheduler();
+  context.services.register("analysis.scheduler", scheduler, {
+    legacyGlobal: "AnalysisScheduler"
+  });
+  context.logger.info("\u5206\u6790\u8C03\u5EA6\u5668\u5DF2\u5C31\u7EEA");
+  return () => scheduler.dispose();
+}
+var init_analysis_scheduler = __esm({
+  "scripts/modules/analysis-scheduler.js"() {
+    init_task_scheduler();
   }
 });
 
 // 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/09-租客分析系统/index.js
-var __exports7 = {};
-var init__7 = __esm({
+var __exports5 = {};
+var init__5 = __esm({
   "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/09-\u79DF\u5BA2\u5206\u6790\u7CFB\u7EDF/index.js"() {
     (function() {
       "use strict";
@@ -5665,301 +5562,134 @@ ${tenantName}\u76EE\u524D[\u63CF\u8FF0\u5F53\u524D\u7684\u76EE\u6807\u3001\u613F
   }
 });
 
-// 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/10-分析队列组件/index.js
-var __exports8 = {};
-var init__8 = __esm({
-  "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/10-\u5206\u6790\u961F\u5217\u7EC4\u4EF6/index.js"() {
-    (function() {
-      "use strict";
-      const WIDGET_STYLES = `
-        .queue-widget {
-            position: fixed;
-            bottom: 120px;
-            right: 20px;
-            background: rgba(26, 26, 46, 0.95);
-            border-radius: 12px;
-            padding: 12px 16px;
-            min-width: 200px;
-            max-width: 280px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #fff;
-            z-index: 9998;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .queue-widget.hidden {
-            opacity: 0;
-            transform: translateY(20px) scale(0.9);
-            pointer-events: none;
-        }
-        
-        .queue-widget.minimized {
-            min-width: auto;
-            padding: 8px 12px;
-        }
-        
-        .queue-widget-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        
-        .queue-widget-title {
-            font-size: 12px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .queue-widget-badge {
-            background: #3b82f6;
-            color: #fff;
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-size: 10px;
-            font-weight: 600;
-        }
-        
-        .queue-widget-toggle {
-            width: 20px;
-            height: 20px;
-            border: none;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .queue-widget-toggle:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .queue-widget-content {
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        
-        .queue-widget.minimized .queue-widget-content {
-            max-height: 0;
-            margin: 0;
-        }
-        
-        .queue-widget-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 0;
-            font-size: 11px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        
-        .queue-widget-item:last-child {
-            border-bottom: none;
-        }
-        
-        .queue-widget-item.current {
-            color: #4ade80;
-        }
-        
-        .queue-widget-spinner {
-            width: 12px;
-            height: 12px;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-top-color: #4ade80;
-            border-radius: 50%;
-            animation: queue-spin 0.8s linear infinite;
-        }
-        
-        @keyframes queue-spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .queue-widget-icon {
-            opacity: 0.5;
-        }
-        
-        .queue-widget-name {
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .queue-widget-empty {
-            font-size: 11px;
-            color: rgba(255,255,255,0.5);
-            text-align: center;
-            padding: 8px 0;
-        }
-    `;
-      const QueueWidget = {
-        element: null,
-        isMinimized: false,
-        isVisible: false,
-        // 初始化
-        init: function() {
-          var self = this;
-          self.injectStyles();
-          self.createElement();
-          if (window.AnalysisScheduler) {
-            window.AnalysisScheduler.on("queue-updated", function(status) {
-              self.update(status);
-            });
-          }
-          console.log("[\u961F\u5217\u5C0F\u7EC4\u4EF6] \u521D\u59CB\u5316\u5B8C\u6210");
-          return self;
-        },
-        // 注入样式
-        injectStyles: function() {
-          var style = document.createElement("style");
-          style.id = "queue-widget-styles";
-          style.textContent = WIDGET_STYLES;
-          document.head.appendChild(style);
-        },
-        // 创建元素
-        createElement: function() {
-          var self = this;
-          self.element = document.createElement("div");
-          self.element.className = "queue-widget hidden";
-          self.element.innerHTML = `
-                <div class="queue-widget-header">
-                    <div class="queue-widget-title">
-                        \u23F3 \u5206\u6790\u961F\u5217 <span class="queue-widget-badge">0</span>
-                    </div>
-                    <button class="queue-widget-toggle">\u2212</button>
-                </div>
-                <div class="queue-widget-content">
-                    <div class="queue-widget-empty">\u6682\u65E0\u4EFB\u52A1</div>
-                </div>
-            `;
-          document.body.appendChild(self.element);
-          self.element.querySelector(".queue-widget-toggle").addEventListener("click", function() {
-            self.toggleMinimize();
-          });
-        },
-        // 更新显示
-        update: function(status) {
-          var self = this;
-          if (!self.element) return;
-          var hasItems = status.isProcessing || status.queueLength > 0;
-          if (hasItems && !self.isVisible) {
-            self.show();
-          } else if (!hasItems && self.isVisible) {
-            self.hide();
-          }
-          var totalCount = status.queueLength + (status.isProcessing ? 1 : 0);
-          self.element.querySelector(".queue-widget-badge").textContent = totalCount;
-          var content = self.element.querySelector(".queue-widget-content");
-          if (!hasItems) {
-            content.innerHTML = '<div class="queue-widget-empty">\u6682\u65E0\u4EFB\u52A1</div>';
-            return;
-          }
-          var html2 = "";
-          if (status.currentTask) {
-            html2 += `
-                    <div class="queue-widget-item current">
-                        <div class="queue-widget-spinner"></div>
-                        <span class="queue-widget-name">${self.escapeHtml(status.currentTask.name)}</span>
-                    </div>
-                `;
-          }
-          var displayQueue = status.queue.slice(0, 3);
-          displayQueue.forEach(function(task) {
-            html2 += `
-                    <div class="queue-widget-item">
-                        <span class="queue-widget-icon">\u23F8</span>
-                        <span class="queue-widget-name">${self.escapeHtml(task.name)}</span>
-                    </div>
-                `;
-          });
-          if (status.queueLength > 3) {
-            html2 += `
-                    <div class="queue-widget-item">
-                        <span class="queue-widget-icon">...</span>
-                        <span class="queue-widget-name">\u8FD8\u6709 ${status.queueLength - 3} \u4E2A\u4EFB\u52A1</span>
-                    </div>
-                `;
-          }
-          content.innerHTML = html2;
-        },
-        // 显示
-        show: function() {
-          this.isVisible = true;
-          this.element.classList.remove("hidden");
-        },
-        // 隐藏
-        hide: function() {
-          var self = this;
-          self.isVisible = false;
-          self.element.classList.add("hidden");
-        },
-        // 切换最小化
-        toggleMinimize: function() {
-          var self = this;
-          self.isMinimized = !self.isMinimized;
-          self.element.classList.toggle("minimized", self.isMinimized);
-          self.element.querySelector(".queue-widget-toggle").textContent = self.isMinimized ? "+" : "\u2212";
-        },
-        // HTML转义
-        escapeHtml: function(text) {
-          var div = document.createElement("div");
-          div.textContent = text;
-          return div.innerHTML;
-        }
-      };
-      var targetWindow = window.parent || window;
-      var targetDocument = targetWindow.document;
-      targetWindow.QueueWidget = QueueWidget;
-      function initInParent() {
-        if (!targetDocument.getElementById("queue-widget-styles")) {
-          var style = targetDocument.createElement("style");
-          style.id = "queue-widget-styles";
-          style.textContent = WIDGET_STYLES;
-          targetDocument.head.appendChild(style);
-        }
-        if (!targetDocument.querySelector(".queue-widget")) {
-          QueueWidget.element = targetDocument.createElement("div");
-          QueueWidget.element.className = "queue-widget hidden";
-          QueueWidget.element.innerHTML = `
-                <div class="queue-widget-header">
-                    <div class="queue-widget-title">
-                        \u23F3 \u5206\u6790\u961F\u5217 <span class="queue-widget-badge">0</span>
-                    </div>
-                    <button class="queue-widget-toggle">\u2212</button>
-                </div>
-                <div class="queue-widget-content">
-                    <div class="queue-widget-empty">\u6682\u65E0\u4EFB\u52A1</div>
-                </div>
-            `;
-          targetDocument.body.appendChild(QueueWidget.element);
-          QueueWidget.element.querySelector(".queue-widget-toggle").addEventListener("click", function() {
-            QueueWidget.toggleMinimize();
-          });
-        }
-        if (targetWindow.AnalysisScheduler) {
-          targetWindow.AnalysisScheduler.on("queue-updated", function(status) {
-            QueueWidget.update(status);
-          });
-        }
-        console.log("[\u961F\u5217\u5C0F\u7EC4\u4EF6] \u521D\u59CB\u5316\u5B8C\u6210");
+// scripts/modules/analysis-queue-widget.js
+var analysis_queue_widget_exports = {};
+__export(analysis_queue_widget_exports, {
+  AnalysisQueueWidget: () => AnalysisQueueWidget,
+  activate: () => activate3
+});
+function activate3(context) {
+  const scheduler = context.services.require("analysis.scheduler");
+  const widget = new AnalysisQueueWidget(context.document, scheduler).mount();
+  context.services.register("analysis.queueWidget", widget, { legacyGlobal: "QueueWidget" });
+  context.logger.info("\u5206\u6790\u961F\u5217\u5C0F\u7EC4\u4EF6\u5DF2\u5C31\u7EEA");
+  return () => widget.dispose();
+}
+var STYLE_ID, WIDGET_CLASS, styles3, AnalysisQueueWidget;
+var init_analysis_queue_widget = __esm({
+  "scripts/modules/analysis-queue-widget.js"() {
+    STYLE_ID = "queue-widget-styles";
+    WIDGET_CLASS = "queue-widget";
+    styles3 = `
+  .queue-widget { position:fixed; bottom:120px; right:20px; z-index:9998; min-width:200px; max-width:280px;
+    padding:12px 16px; border:1px solid rgba(255,255,255,.1); border-radius:12px; color:#fff;
+    background:rgba(26,26,46,.95); box-shadow:0 4px 20px rgba(0,0,0,.4); font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    transition:opacity .3s ease,transform .3s ease; }
+  .queue-widget.hidden { opacity:0; transform:translateY(20px) scale(.9); pointer-events:none; }
+  .queue-widget.minimized { min-width:auto; padding:8px 12px; }
+  .queue-widget-header,.queue-widget-item { display:flex; align-items:center; gap:8px; }
+  .queue-widget-header { justify-content:space-between; margin-bottom:8px; }
+  .queue-widget-title { display:flex; align-items:center; gap:6px; font-weight:600; }
+  .queue-widget-badge { padding:2px 6px; border-radius:8px; background:#3b82f6; font-size:10px; }
+  .queue-widget-toggle { display:grid; place-items:center; width:20px; height:20px; border:0; border-radius:4px;
+    color:#fff; background:rgba(255,255,255,.1); cursor:pointer; }
+  .queue-widget-toggle:hover { background:rgba(255,255,255,.2); }
+  .queue-widget.minimized .queue-widget-content { display:none; }
+  .queue-widget-item { padding:6px 0; border-bottom:1px solid rgba(255,255,255,.05); font-size:11px; }
+  .queue-widget-item:last-child { border-bottom:0; }
+  .queue-widget-item.current { color:#4ade80; }
+  .queue-widget-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .queue-widget-empty { padding:8px 0; color:rgba(255,255,255,.5); font-size:11px; text-align:center; }
+  .queue-widget-spinner { width:10px; height:10px; border:2px solid rgba(255,255,255,.2); border-top-color:#4ade80;
+    border-radius:50%; animation:queue-spin .8s linear infinite; }
+  @keyframes queue-spin { to { transform:rotate(360deg); } }
+`;
+    AnalysisQueueWidget = class {
+      constructor(document2, scheduler) {
+        this.document = document2;
+        this.scheduler = scheduler;
+        this.element = null;
+        this.isMinimized = false;
+        this.isVisible = false;
+        this.unsubscribe = null;
       }
-      setTimeout(initInParent, 500);
-      console.log("[\u961F\u5217\u5C0F\u7EC4\u4EF6] \u6A21\u5757\u52A0\u8F7D\u5B8C\u6210");
-    })();
+      mount() {
+        this.#injectStyles();
+        this.document.querySelector(`.${WIDGET_CLASS}`)?.remove();
+        this.element = this.document.createElement("div");
+        this.element.className = `${WIDGET_CLASS} hidden`;
+        this.element.innerHTML = `
+      <div class="queue-widget-header">
+        <div class="queue-widget-title">\u23F3 \u5206\u6790\u961F\u5217 <span class="queue-widget-badge">0</span></div>
+        <button class="queue-widget-toggle" type="button" aria-label="\u6298\u53E0\u5206\u6790\u961F\u5217">\u2212</button>
+      </div>
+      <div class="queue-widget-content"><div class="queue-widget-empty">\u6682\u65E0\u4EFB\u52A1</div></div>`;
+        this.document.body.appendChild(this.element);
+        this.element.querySelector(".queue-widget-toggle").addEventListener("click", () => this.toggleMinimize());
+        this.unsubscribe = this.scheduler.on("queue-updated", (status) => this.update(status));
+        this.update(this.scheduler.getQueueStatus());
+        return this;
+      }
+      update(status) {
+        if (!this.element) return;
+        const hasTasks = status.isProcessing || status.queueLength > 0;
+        this.isVisible = hasTasks;
+        this.element.classList.toggle("hidden", !hasTasks);
+        this.element.querySelector(".queue-widget-badge").textContent = String(
+          status.queueLength + (status.isProcessing ? 1 : 0)
+        );
+        const rows = [];
+        if (status.currentTask) {
+          rows.push(`<div class="queue-widget-item current"><span class="queue-widget-spinner"></span><span class="queue-widget-name">${this.#escape(status.currentTask.name)}</span></div>`);
+        }
+        for (const task of status.queue.slice(0, 3)) {
+          rows.push(`<div class="queue-widget-item"><span>\u23F8</span><span class="queue-widget-name">${this.#escape(task.name)}</span></div>`);
+        }
+        if (status.queueLength > 3) {
+          rows.push(`<div class="queue-widget-item"><span>\u2026</span><span class="queue-widget-name">\u8FD8\u6709 ${status.queueLength - 3} \u4E2A\u4EFB\u52A1</span></div>`);
+        }
+        this.element.querySelector(".queue-widget-content").innerHTML = rows.join("") || '<div class="queue-widget-empty">\u6682\u65E0\u4EFB\u52A1</div>';
+      }
+      show() {
+        this.isVisible = true;
+        this.element?.classList.remove("hidden");
+      }
+      hide() {
+        this.isVisible = false;
+        this.element?.classList.add("hidden");
+      }
+      toggleMinimize() {
+        this.isMinimized = !this.isMinimized;
+        this.element?.classList.toggle("minimized", this.isMinimized);
+        const button = this.element?.querySelector(".queue-widget-toggle");
+        if (button) button.textContent = this.isMinimized ? "+" : "\u2212";
+      }
+      dispose() {
+        this.unsubscribe?.();
+        this.unsubscribe = null;
+        this.element?.remove();
+        this.element = null;
+        this.document.getElementById(STYLE_ID)?.remove();
+      }
+      #injectStyles() {
+        if (this.document.getElementById(STYLE_ID)) return;
+        const style = this.document.createElement("style");
+        style.id = STYLE_ID;
+        style.textContent = styles3;
+        this.document.head.appendChild(style);
+      }
+      #escape(value) {
+        const element = this.document.createElement("div");
+        element.textContent = String(value ?? "");
+        return element.innerHTML;
+      }
+    };
   }
 });
 
 // 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/11-聊天核心/index.js
-var __exports9 = {};
-var init__9 = __esm({
+var __exports6 = {};
+var init__6 = __esm({
   "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/11-\u804A\u5929\u6838\u5FC3/index.js"() {
     (function() {
       "use strict";
@@ -6585,8 +6315,8 @@ ${userMessage}
 });
 
 // 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/12-聊天正文联动/index.js
-var __exports10 = {};
-var init__10 = __esm({
+var __exports7 = {};
+var init__7 = __esm({
   "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/12-\u804A\u5929\u6B63\u6587\u8054\u52A8/index.js"() {
     (function() {
       "use strict";
@@ -9654,8 +9384,8 @@ var init_APP2 = __esm({
 });
 
 // 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/15-提示词-控制台查看器/index.js
-var __exports11 = {};
-var init__11 = __esm({
+var __exports8 = {};
+var init__8 = __esm({
   "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/15-\u63D0\u793A\u8BCD-\u63A7\u5236\u53F0\u67E5\u770B\u5668/index.js"() {
     (function() {
       "use strict";
@@ -10449,8 +10179,8 @@ ${escapeHtml(content)}`;
 });
 
 // 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/16-地图/index.js
-var __exports12 = {};
-var init__12 = __esm({
+var __exports9 = {};
+var init__9 = __esm({
   "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/16-\u5730\u56FE/index.js"() {
     (function() {
       "use strict";
@@ -10769,8 +10499,8 @@ var init__12 = __esm({
 });
 
 // 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/17-音乐/index.js
-var __exports13 = {};
-var init__13 = __esm({
+var __exports10 = {};
+var init__10 = __esm({
   "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/17-\u97F3\u4E50/index.js"() {
     (function() {
       "use strict";
@@ -11796,8 +11526,8 @@ var init__13 = __esm({
 });
 
 // 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/18-世界地图/index.js
-var __exports14 = {};
-var init__14 = __esm({
+var __exports11 = {};
+var init__11 = __esm({
   "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/18-\u4E16\u754C\u5730\u56FE/index.js"() {
     (function() {
       "use strict";
@@ -13423,8 +13153,8 @@ var init_APP3 = __esm({
 });
 
 // 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/20-新闻/index.js
-var __exports15 = {};
-var init__15 = __esm({
+var __exports12 = {};
+var init__12 = __esm({
   "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/20-\u65B0\u95FB/index.js"() {
     (function() {
       "use strict";
@@ -13780,8 +13510,8 @@ var init__15 = __esm({
 });
 
 // 角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/21-和欧欧聊天吧!/index.js
-var __exports16 = {};
-var init__16 = __esm({
+var __exports13 = {};
+var init__13 = __esm({
   "\u89D2\u8272\u5361/\u5DE5\u4F5C\u533A/Z5.20/\u6269\u5C55/\u9152\u9986\u52A9\u624B/\u811A\u672C/21-\u548C\u6B27\u6B27\u804A\u5929\u5427!/index.js"() {
     (function() {
       "use strict";
@@ -18918,10 +18648,21 @@ var init_main = __esm({
   }
 });
 
+// scripts/src/core/host.js
+function getHostWindow() {
+  if (typeof window === "undefined") return globalThis;
+  return window.parent ?? window;
+}
+function getHostDocument() {
+  return getHostWindow().document ?? globalThis.document;
+}
+function getHostGlobal(name) {
+  return globalThis[name] ?? getHostWindow()[name];
+}
+
 // scripts/src/tavern-helper-service.js
 function findApi(name) {
-  const parentWindow2 = window.parent ?? window;
-  const value = globalThis[name] ?? parentWindow2[name];
+  const value = getHostGlobal(name);
   return typeof value === "function" ? value : null;
 }
 function requireApi(name) {
@@ -18986,31 +18727,52 @@ function createTavernHelperService() {
   };
 }
 
+// scripts/src/mvu-service.js
+var latestMessage = Object.freeze({ type: "message", message_id: -1 });
+function createMvuService() {
+  return Object.freeze({
+    isAvailable() {
+      return typeof getHostGlobal("Mvu")?.getMvuData === "function";
+    },
+    getLatestSnapshot() {
+      const mvu = getHostGlobal("Mvu");
+      if (typeof mvu?.getMvuData !== "function") return null;
+      return mvu.getMvuData(latestMessage) ?? null;
+    },
+    getLatestState() {
+      return this.getLatestSnapshot()?.stat_data ?? {};
+    },
+    read(path, fallback = void 0) {
+      const segments = Array.isArray(path) ? path : String(path).split(".").filter(Boolean);
+      let value = this.getLatestState();
+      for (const segment of segments) {
+        if (value == null || typeof value !== "object" || !(segment in value)) return fallback;
+        value = value[segment];
+      }
+      return value;
+    }
+  });
+}
+
 // scripts/src/runtime.js
 var RUNTIME_KEY = "LandlordSimulator";
-function parentWindow() {
-  return window.parent ?? window;
-}
-function findGlobal(name) {
-  return globalThis[name] ?? parentWindow()[name];
-}
 function notifyError(message) {
-  const toast = findGlobal("toastr");
+  const toast = getHostGlobal("toastr");
   if (toast?.error) toast.error(message);
 }
 function notifyWarning(message) {
-  const toast = findGlobal("toastr");
+  const toast = getHostGlobal("toastr");
   if (toast?.warning) toast.warning(message);
 }
 async function waitForMvu() {
-  const wait = findGlobal("waitGlobalInitialized");
+  const wait = getHostGlobal("waitGlobalInitialized");
   if (typeof wait !== "function") {
     throw new Error("waitGlobalInitialized \u4E0D\u53EF\u7528\uFF0C\u65E0\u6CD5\u6309 MVU \u5B98\u65B9\u65B9\u5F0F\u7B49\u5F85\u521D\u59CB\u5316");
   }
   await wait("Mvu");
 }
 async function waitForDomReady() {
-  const jquery = findGlobal("$");
+  const jquery = getHostGlobal("$");
   if (typeof jquery === "function") {
     await new Promise((resolve) => jquery(resolve));
     return;
@@ -19024,11 +18786,41 @@ var LandlordRuntime = class {
     this.version = version;
     this.status = "created";
     this.modules = /* @__PURE__ */ new Map();
-    this.services = {
-      tavern: createTavernHelperService()
-    };
+    this.moduleDisposers = /* @__PURE__ */ new Map();
+    this.services = /* @__PURE__ */ Object.create(null);
+    this.services.tavern = createTavernHelperService();
+    this.services.mvu = createMvuService();
+    this.legacyServiceGlobals = /* @__PURE__ */ new Map();
     this.listeners = /* @__PURE__ */ new Map();
     this.externalSubscriptions = [];
+  }
+  registerService(name, service, { legacyGlobal = null } = {}) {
+    if (Object.hasOwn(this.services, name)) throw new Error(`\u8FD0\u884C\u65F6\u670D\u52A1\u91CD\u590D\u6CE8\u518C\uFF1A${name}`);
+    this.services[name] = service;
+    if (legacyGlobal) {
+      const host = getHostWindow();
+      host[legacyGlobal] = service;
+      this.legacyServiceGlobals.set(name, { legacyGlobal, service });
+    }
+    let active = true;
+    return () => {
+      if (!active) return;
+      active = false;
+      if (this.services[name] === service) delete this.services[name];
+      const legacy = this.legacyServiceGlobals.get(name);
+      if (legacy?.service === service) {
+        if (getHostWindow()[legacy.legacyGlobal] === service) delete getHostWindow()[legacy.legacyGlobal];
+        this.legacyServiceGlobals.delete(name);
+      }
+    };
+  }
+  getService(name) {
+    return this.services[name] ?? null;
+  }
+  requireService(name, requester = "\u672A\u77E5\u6A21\u5757") {
+    const service = this.getService(name);
+    if (!service) throw new Error(`\u6A21\u5757\u300C${requester}\u300D\u7F3A\u5C11\u8FD0\u884C\u65F6\u670D\u52A1\uFF1A${name}`);
+    return service;
   }
   on(type, listener) {
     const bucket = this.listeners.get(type) ?? /* @__PURE__ */ new Set();
@@ -19042,8 +18834,8 @@ var LandlordRuntime = class {
     await Promise.allSettled([...bucket].map((listener) => listener(payload)));
   }
   bindTavernEvents() {
-    const eventOnApi = findGlobal("eventOn");
-    const events = findGlobal("tavern_events");
+    const eventOnApi = getHostGlobal("eventOn");
+    const events = getHostGlobal("tavern_events");
     if (typeof eventOnApi !== "function" || !events?.CHAT_CHANGED) return;
     const subscription = eventOnApi(events.CHAT_CHANGED, (chatId) => {
       void this.emit("chat:changed", { chatId });
@@ -19051,6 +18843,7 @@ var LandlordRuntime = class {
     if (subscription?.stop) this.externalSubscriptions.push(subscription);
   }
   async loadModule(definition) {
+    const disposers = [];
     const state = {
       id: definition.id,
       name: definition.name,
@@ -19061,18 +18854,69 @@ var LandlordRuntime = class {
     };
     this.modules.set(definition.id, state);
     try {
-      await definition.load();
+      const loadedModule3 = await definition.load();
+      if (typeof loadedModule3?.activate === "function") {
+        const context = this.createModuleContext(definition, disposers);
+        const activation = await loadedModule3.activate(context);
+        if (typeof activation === "function") disposers.push(activation);
+        else if (typeof activation?.dispose === "function") disposers.push(() => activation.dispose());
+      } else if (typeof loadedModule3?.dispose === "function") {
+        disposers.push(loadedModule3.dispose);
+      }
+      if (disposers.length > 0) this.moduleDisposers.set(definition.id, disposers);
       if (definition.afterLoad === "wait-for-mvu") await waitForMvu();
       if (definition.afterLoad === "wait-for-dom-ready") await waitForDomReady();
       state.status = "loaded";
       await this.emit("module:loaded", { ...state });
     } catch (error) {
+      await this.disposeCallbacks(disposers, definition.name);
       state.status = "failed";
       state.error = error instanceof Error ? error.message : String(error);
       console.error(`[\u623F\u4E1C\u6A21\u62DF\u5668] \u6A21\u5757\u300C${definition.name}\u300D\u52A0\u8F7D\u5931\u8D25`, error);
       await this.emit("module:failed", { ...state });
       if (state.critical) throw error;
     }
+  }
+  createModuleContext(definition, disposers) {
+    const registerDisposer = (disposer) => {
+      if (typeof disposer !== "function") throw new TypeError(`\u6A21\u5757\u300C${definition.name}\u300D\u6CE8\u518C\u4E86\u65E0\u6548\u6E05\u7406\u51FD\u6570`);
+      disposers.push(disposer);
+      return disposer;
+    };
+    const logger = Object.freeze({
+      debug: (...args) => console.debug(`[\u623F\u4E1C\u6A21\u62DF\u5668:${definition.id}]`, ...args),
+      info: (...args) => console.info(`[\u623F\u4E1C\u6A21\u62DF\u5668:${definition.id}]`, ...args),
+      warn: (...args) => console.warn(`[\u623F\u4E1C\u6A21\u62DF\u5668:${definition.id}]`, ...args),
+      error: (...args) => console.error(`[\u623F\u4E1C\u6A21\u62DF\u5668:${definition.id}]`, ...args)
+    });
+    return Object.freeze({
+      module: Object.freeze({ id: definition.id, name: definition.name }),
+      host: getHostWindow(),
+      document: getHostDocument(),
+      logger,
+      tavern: this.requireService("tavern", definition.name),
+      mvu: this.requireService("mvu", definition.name),
+      services: Object.freeze({
+        get: (name) => this.getService(name),
+        require: (name) => this.requireService(name, definition.name),
+        register: (name, service, options) => registerDisposer(this.registerService(name, service, options))
+      }),
+      events: Object.freeze({
+        on: (type, listener) => registerDisposer(this.on(type, listener)),
+        emit: (type, payload) => this.emit(type, payload)
+      }),
+      lifecycle: Object.freeze({ onDispose: registerDisposer })
+    });
+  }
+  async disposeCallbacks(disposers, moduleName) {
+    for (const dispose of [...disposers].reverse()) {
+      try {
+        await dispose();
+      } catch (error) {
+        console.warn(`[\u623F\u4E1C\u6A21\u62DF\u5668] \u5378\u8F7D ${moduleName} \u5931\u8D25`, error);
+      }
+    }
+    disposers.length = 0;
   }
   async boot(definitions) {
     this.status = "loading";
@@ -19101,6 +18945,7 @@ var LandlordRuntime = class {
       loadedCount: modules2.filter((module2) => module2.status === "loaded").length,
       failedCount: failedModules.length,
       failedModules: failedModules.map((module2) => module2.id),
+      services: Object.keys(this.services),
       modules: modules2
     };
   }
@@ -19116,8 +18961,10 @@ var LandlordRuntime = class {
     }
     const loadedModules = [...this.modules.values()].reverse();
     for (const module2 of loadedModules) {
+      const moduleDisposers = this.moduleDisposers.get(module2.id) ?? [];
+      await this.disposeCallbacks(moduleDisposers, module2.name);
       for (const cleanupName of module2.cleanup) {
-        const cleanup = findGlobal(cleanupName);
+        const cleanup = getHostGlobal(cleanupName);
         if (typeof cleanup !== "function") continue;
         try {
           await cleanup();
@@ -19126,13 +18973,19 @@ var LandlordRuntime = class {
         }
       }
     }
+    this.moduleDisposers.clear();
+    for (const [name, { legacyGlobal, service }] of this.legacyServiceGlobals) {
+      if (getHostWindow()[legacyGlobal] === service) delete getHostWindow()[legacyGlobal];
+      delete this.services[name];
+    }
+    this.legacyServiceGlobals.clear();
     this.listeners.clear();
     this.status = "disposed";
     console.info(`[\u623F\u4E1C\u6A21\u62DF\u5668] \u591A\u5408\u4E00\u8FD0\u884C\u65F6\u5DF2\u5378\u8F7D\uFF1A${reason}`);
   }
 };
 async function startLandlordRuntime({ version, modules: modules2 }) {
-  const host = parentWindow();
+  const host = getHostWindow();
   const previous = host[RUNTIME_KEY];
   if (previous?.dispose) await previous.dispose("bundle-reload");
   const runtime = new LandlordRuntime(version);
@@ -19140,6 +18993,7 @@ async function startLandlordRuntime({ version, modules: modules2 }) {
   try {
     return await runtime.boot(modules2);
   } catch (error) {
+    await runtime.dispose("boot-failed");
     runtime.status = "failed";
     notifyError("\u623F\u4E1C\u6A21\u62DF\u5668\u6838\u5FC3\u6A21\u5757\u52A0\u8F7D\u5931\u8D25\uFF0C\u8BF7\u67E5\u770B\u63A7\u5236\u53F0");
     throw error;
@@ -19154,6 +19008,8 @@ var modules = [
     critical: true,
     afterLoad: "wait-for-mvu",
     cleanup: [],
+    requires: [],
+    provides: [],
     load: () => init_MVU_zod().then(() => MVU_zod_exports)
   },
   {
@@ -19162,6 +19018,8 @@ var modules = [
     critical: true,
     afterLoad: "wait-for-dom-ready",
     cleanup: [],
+    requires: [],
+    provides: [],
     load: () => init__().then(() => __exports)
   },
   {
@@ -19170,6 +19028,8 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
+    requires: [],
+    provides: [],
     load: () => Promise.resolve().then(() => (init__2(), __exports2))
   },
   {
@@ -19178,6 +19038,8 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: ["cleanupApartmentPlugin"],
+    requires: [],
+    provides: [],
     load: () => Promise.resolve().then(() => (init__3(), __exports3))
   },
   {
@@ -19186,6 +19048,8 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: ["cleanupPhone"],
+    requires: [],
+    provides: [],
     load: () => Promise.resolve().then(() => (init__4(), __exports4))
   },
   {
@@ -19194,7 +19058,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__5(), __exports5))
+    requires: ["mvu"],
+    provides: ["chat.database"],
+    load: () => Promise.resolve().then(() => (init_chat_database2(), chat_database_exports))
   },
   {
     id: "analysis-scheduler",
@@ -19202,7 +19068,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__6(), __exports6))
+    requires: [],
+    provides: ["analysis.scheduler"],
+    load: () => Promise.resolve().then(() => (init_analysis_scheduler(), analysis_scheduler_exports))
   },
   {
     id: "tenant-analysis",
@@ -19210,7 +19078,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__7(), __exports7))
+    requires: [],
+    provides: [],
+    load: () => Promise.resolve().then(() => (init__5(), __exports5))
   },
   {
     id: "analysis-queue",
@@ -19218,7 +19088,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__8(), __exports8))
+    requires: ["analysis.scheduler"],
+    provides: ["analysis.queueWidget"],
+    load: () => Promise.resolve().then(() => (init_analysis_queue_widget(), analysis_queue_widget_exports))
   },
   {
     id: "chat-core",
@@ -19226,7 +19098,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__9(), __exports9))
+    requires: [],
+    provides: [],
+    load: () => Promise.resolve().then(() => (init__6(), __exports6))
   },
   {
     id: "chat-story-bridge",
@@ -19234,7 +19108,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__10(), __exports10))
+    requires: [],
+    provides: [],
+    load: () => Promise.resolve().then(() => (init__7(), __exports7))
   },
   {
     id: "chat-app",
@@ -19242,6 +19118,8 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
+    requires: [],
+    provides: [],
     load: () => Promise.resolve().then(() => (init_APP(), APP_exports))
   },
   {
@@ -19250,6 +19128,8 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
+    requires: [],
+    provides: [],
     load: () => Promise.resolve().then(() => (init_APP2(), APP_exports2))
   },
   {
@@ -19258,7 +19138,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__11(), __exports11))
+    requires: [],
+    provides: [],
+    load: () => Promise.resolve().then(() => (init__8(), __exports8))
   },
   {
     id: "map",
@@ -19266,7 +19148,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__12(), __exports12))
+    requires: [],
+    provides: [],
+    load: () => Promise.resolve().then(() => (init__9(), __exports9))
   },
   {
     id: "music",
@@ -19274,7 +19158,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__13(), __exports13))
+    requires: [],
+    provides: [],
+    load: () => Promise.resolve().then(() => (init__10(), __exports10))
   },
   {
     id: "world-map",
@@ -19282,7 +19168,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__14(), __exports14))
+    requires: [],
+    provides: [],
+    load: () => Promise.resolve().then(() => (init__11(), __exports11))
   },
   {
     id: "weather",
@@ -19290,6 +19178,8 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
+    requires: [],
+    provides: [],
     load: () => Promise.resolve().then(() => (init_APP3(), APP_exports3))
   },
   {
@@ -19298,7 +19188,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__15(), __exports15))
+    requires: [],
+    provides: [],
+    load: () => Promise.resolve().then(() => (init__12(), __exports12))
   },
   {
     id: "author-chat",
@@ -19306,7 +19198,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    load: () => Promise.resolve().then(() => (init__16(), __exports16))
+    requires: [],
+    provides: [],
+    load: () => Promise.resolve().then(() => (init__13(), __exports13))
   },
   {
     id: "theme",
@@ -19314,6 +19208,8 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
+    requires: [],
+    provides: [],
     load: () => Promise.resolve().then(() => (init_by_jovial_dolphin_19209(), by_jovial_dolphin_19209_exports))
   },
   {
@@ -19322,7 +19218,9 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: ["cleanupWorkshopPlugin"],
+    requires: [],
+    provides: [],
     load: () => Promise.resolve().then(() => (init_main(), main_exports))
   }
 ];
-await startLandlordRuntime({ version: "0.1.0-preview.1", modules });
+await startLandlordRuntime({ version: "0.1.0-preview.2", modules });

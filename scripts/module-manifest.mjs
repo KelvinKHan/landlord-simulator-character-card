@@ -34,11 +34,16 @@ export const moduleManifest = [
     id: 'chat-database',
     name: '聊天数据库',
     source: '角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/07-聊天数据库/index.js',
+    entry: 'scripts/modules/chat-database.js',
+    requires: ['mvu'],
+    provides: ['chat.database'],
   },
   {
     id: 'analysis-scheduler',
     name: '分析调度器',
     source: '角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/08-分析调度器/index.js',
+    entry: 'scripts/modules/analysis-scheduler.js',
+    provides: ['analysis.scheduler'],
   },
   {
     id: 'tenant-analysis',
@@ -49,6 +54,9 @@ export const moduleManifest = [
     id: 'analysis-queue',
     name: '分析队列组件',
     source: '角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/10-分析队列组件/index.js',
+    entry: 'scripts/modules/analysis-queue-widget.js',
+    requires: ['analysis.scheduler'],
+    provides: ['analysis.queueWidget'],
   },
   {
     id: 'chat-core',

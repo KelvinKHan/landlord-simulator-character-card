@@ -54,6 +54,7 @@ test('按清单顺序加载，并在非核心模块失败后继续', async () =>
     loadedCount: 2,
     failedCount: 1,
     failedModules: ['optional'],
+    services: ['tavern', 'mvu'],
     modules: [
       { id: 'first', name: '第一项', status: 'loaded', critical: false, cleanup: [], error: null },
       { id: 'optional', name: '非核心项', status: 'failed', critical: false, cleanup: [], error: 'expected' },
@@ -62,13 +63,49 @@ test('按清单顺序加载，并在非核心模块失败后继续', async () =>
   });
 });
 
+test('标准模块通过上下文声明服务，并在卸载时自动回收', async () => {
+  const cleanupOrder = [];
+  const service = { value: 42 };
+  const runtime = await startLandlordRuntime({
+    version: 'test',
+    modules: [
+      {
+        id: 'modern',
+        name: '标准模块',
+        load: async () => ({
+          activate(context) {
+            assert.equal(context.module.id, 'modern');
+            assert.equal(typeof context.tavern.has, 'function');
+            context.services.register('example.service', service, { legacyGlobal: 'ExampleService' });
+            context.lifecycle.onDispose(() => cleanupOrder.push('lifecycle'));
+            return () => cleanupOrder.push('activation');
+          },
+        }),
+      },
+    ],
+  });
+
+  assert.equal(runtime.getService('example.service'), service);
+  assert.equal(host.ExampleService, service);
+  await runtime.dispose('test');
+  assert.deepEqual(cleanupOrder, ['activation', 'lifecycle']);
+  assert.equal(runtime.getService('example.service'), null);
+  assert.equal(host.ExampleService, undefined);
+});
+
 test('核心模块失败时停止后续加载并标记运行时失败', async () => {
+  const cleanupOrder = [];
   let reachedLaterModule = false;
   await assert.rejects(
     silenceExpectedErrors(() =>
       startLandlordRuntime({
         version: 'test',
         modules: [
+          {
+            id: 'started',
+            name: '已启动模块',
+            load: async () => ({ activate: () => () => cleanupOrder.push('started-cleanup') }),
+          },
           { id: 'critical', name: '核心项', critical: true, load: async () => Promise.reject(new Error('stop')) },
           { id: 'later', name: '不应加载', load: async () => (reachedLaterModule = true) },
         ],
@@ -78,7 +115,32 @@ test('核心模块失败时停止后续加载并标记运行时失败', async ()
   );
 
   assert.equal(reachedLaterModule, false);
+  assert.deepEqual(cleanupOrder, ['started-cleanup']);
   assert.equal(host.LandlordSimulator.status, 'failed');
+});
+
+test('模块启动到一半失败时回滚已经注册的服务', async () => {
+  const runtime = await silenceExpectedErrors(() =>
+    startLandlordRuntime({
+      version: 'test',
+      modules: [
+        {
+          id: 'broken',
+          name: '半成品模块',
+          load: async () => ({
+            activate(context) {
+              context.services.register('temporary.service', {}, { legacyGlobal: 'TemporaryService' });
+              throw new Error('activation failed');
+            },
+          }),
+        },
+      ],
+    }),
+  );
+
+  assert.equal(runtime.getService('temporary.service'), null);
+  assert.equal(host.TemporaryService, undefined);
+  assert.equal(runtime.getStatus().failedCount, 1);
 });
 
 test('卸载时取消酒馆事件，并按模块逆序清理', async () => {

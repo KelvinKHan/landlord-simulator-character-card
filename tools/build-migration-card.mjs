@@ -14,8 +14,8 @@ const cardDirectory = path.join(projectRoot, '角色卡/构建产物');
 const baseCardPath = path.join(cardDirectory, '房东模拟器Z5.20.json');
 const bundlePath = path.join(projectRoot, 'dist/landlord-simulator.bundle.js');
 const loaderPath = path.join(projectRoot, releaseConfig.loaderPath);
-const onlineCardPath = path.join(cardDirectory, '房东模拟器Z5.20-多合一在线预览版.json');
-const offlineCardPath = path.join(cardDirectory, '房东模拟器Z5.20-多合一离线预览版.json');
+const onlineCardPath = path.join(cardDirectory, releaseConfig.identities.online.artifactFile);
+const offlineCardPath = path.join(cardDirectory, releaseConfig.identities.offline.artifactFile);
 const checkOnly = process.argv.includes('--check');
 
 const SCRIPT_ID = releaseConfig.scriptId;
@@ -50,7 +50,7 @@ function createCombinedScript(content, buttons, mode) {
   return {
     type: 'script',
     enabled: true,
-    name: `房东模拟器·多合一（${mode}预览）`,
+    name: `房东模拟器·多合一（${mode}预览 ${releaseConfig.gitTag}）`,
     id: SCRIPT_ID,
     content,
     info: `Z5.20 多合一迁移预览 ${releaseConfig.gitTag}；大富翁和原卡已禁用二改版暂未迁移。`,
@@ -131,4 +131,5 @@ await Promise.all([
 console.log(`${checkOnly ? '迁移预览检查通过' : '迁移预览构建完成'}：在线版和离线版均只有 1 个酒馆助手脚本`);
 console.log(`在线版：${releaseIdentities.online.cardName} / ${releaseIdentities.online.worldbookName}`);
 console.log(`离线版：${releaseIdentities.offline.cardName} / ${releaseIdentities.offline.worldbookName}`);
+console.log(`产物文件：${path.basename(onlineCardPath)} / ${path.basename(offlineCardPath)}`);
 console.log(`合并脚本按钮：${buttons.map(button => button.name).join('、')}`);

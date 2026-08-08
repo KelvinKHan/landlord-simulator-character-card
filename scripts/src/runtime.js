@@ -1,27 +1,21 @@
 import { createTavernHelperService } from './tavern-helper-service.js';
+import { createMvuService } from './mvu-service.js';
+import { getHostDocument, getHostGlobal, getHostWindow } from './core/host.js';
 
 const RUNTIME_KEY = 'LandlordSimulator';
 
-function parentWindow() {
-  return window.parent ?? window;
-}
-
-function findGlobal(name) {
-  return globalThis[name] ?? parentWindow()[name];
-}
-
 function notifyError(message) {
-  const toast = findGlobal('toastr');
+  const toast = getHostGlobal('toastr');
   if (toast?.error) toast.error(message);
 }
 
 function notifyWarning(message) {
-  const toast = findGlobal('toastr');
+  const toast = getHostGlobal('toastr');
   if (toast?.warning) toast.warning(message);
 }
 
 async function waitForMvu() {
-  const wait = findGlobal('waitGlobalInitialized');
+  const wait = getHostGlobal('waitGlobalInitialized');
   if (typeof wait !== 'function') {
     throw new Error('waitGlobalInitialized 不可用，无法按 MVU 官方方式等待初始化');
   }
@@ -29,7 +23,7 @@ async function waitForMvu() {
 }
 
 async function waitForDomReady() {
-  const jquery = findGlobal('$');
+  const jquery = getHostGlobal('$');
   if (typeof jquery === 'function') {
     await new Promise(resolve => jquery(resolve));
     return;
@@ -44,11 +38,46 @@ class LandlordRuntime {
     this.version = version;
     this.status = 'created';
     this.modules = new Map();
-    this.services = {
-      tavern: createTavernHelperService(),
-    };
+    this.moduleDisposers = new Map();
+    this.services = Object.create(null);
+    this.services.tavern = createTavernHelperService();
+    this.services.mvu = createMvuService();
+    this.legacyServiceGlobals = new Map();
     this.listeners = new Map();
     this.externalSubscriptions = [];
+  }
+
+  registerService(name, service, { legacyGlobal = null } = {}) {
+    if (Object.hasOwn(this.services, name)) throw new Error(`运行时服务重复注册：${name}`);
+    this.services[name] = service;
+
+    if (legacyGlobal) {
+      const host = getHostWindow();
+      host[legacyGlobal] = service;
+      this.legacyServiceGlobals.set(name, { legacyGlobal, service });
+    }
+
+    let active = true;
+    return () => {
+      if (!active) return;
+      active = false;
+      if (this.services[name] === service) delete this.services[name];
+      const legacy = this.legacyServiceGlobals.get(name);
+      if (legacy?.service === service) {
+        if (getHostWindow()[legacy.legacyGlobal] === service) delete getHostWindow()[legacy.legacyGlobal];
+        this.legacyServiceGlobals.delete(name);
+      }
+    };
+  }
+
+  getService(name) {
+    return this.services[name] ?? null;
+  }
+
+  requireService(name, requester = '未知模块') {
+    const service = this.getService(name);
+    if (!service) throw new Error(`模块「${requester}」缺少运行时服务：${name}`);
+    return service;
   }
 
   on(type, listener) {
@@ -65,8 +94,8 @@ class LandlordRuntime {
   }
 
   bindTavernEvents() {
-    const eventOnApi = findGlobal('eventOn');
-    const events = findGlobal('tavern_events');
+    const eventOnApi = getHostGlobal('eventOn');
+    const events = getHostGlobal('tavern_events');
     if (typeof eventOnApi !== 'function' || !events?.CHAT_CHANGED) return;
 
     const subscription = eventOnApi(events.CHAT_CHANGED, chatId => {
@@ -76,6 +105,7 @@ class LandlordRuntime {
   }
 
   async loadModule(definition) {
+    const disposers = [];
     const state = {
       id: definition.id,
       name: definition.name,
@@ -87,18 +117,72 @@ class LandlordRuntime {
     this.modules.set(definition.id, state);
 
     try {
-      await definition.load();
+      const loadedModule = await definition.load();
+      if (typeof loadedModule?.activate === 'function') {
+        const context = this.createModuleContext(definition, disposers);
+        const activation = await loadedModule.activate(context);
+        if (typeof activation === 'function') disposers.push(activation);
+        else if (typeof activation?.dispose === 'function') disposers.push(() => activation.dispose());
+      } else if (typeof loadedModule?.dispose === 'function') {
+        disposers.push(loadedModule.dispose);
+      }
+      if (disposers.length > 0) this.moduleDisposers.set(definition.id, disposers);
       if (definition.afterLoad === 'wait-for-mvu') await waitForMvu();
       if (definition.afterLoad === 'wait-for-dom-ready') await waitForDomReady();
       state.status = 'loaded';
       await this.emit('module:loaded', { ...state });
     } catch (error) {
+      await this.disposeCallbacks(disposers, definition.name);
       state.status = 'failed';
       state.error = error instanceof Error ? error.message : String(error);
       console.error(`[房东模拟器] 模块「${definition.name}」加载失败`, error);
       await this.emit('module:failed', { ...state });
       if (state.critical) throw error;
     }
+  }
+
+  createModuleContext(definition, disposers) {
+    const registerDisposer = disposer => {
+      if (typeof disposer !== 'function') throw new TypeError(`模块「${definition.name}」注册了无效清理函数`);
+      disposers.push(disposer);
+      return disposer;
+    };
+    const logger = Object.freeze({
+      debug: (...args) => console.debug(`[房东模拟器:${definition.id}]`, ...args),
+      info: (...args) => console.info(`[房东模拟器:${definition.id}]`, ...args),
+      warn: (...args) => console.warn(`[房东模拟器:${definition.id}]`, ...args),
+      error: (...args) => console.error(`[房东模拟器:${definition.id}]`, ...args),
+    });
+
+    return Object.freeze({
+      module: Object.freeze({ id: definition.id, name: definition.name }),
+      host: getHostWindow(),
+      document: getHostDocument(),
+      logger,
+      tavern: this.requireService('tavern', definition.name),
+      mvu: this.requireService('mvu', definition.name),
+      services: Object.freeze({
+        get: name => this.getService(name),
+        require: name => this.requireService(name, definition.name),
+        register: (name, service, options) => registerDisposer(this.registerService(name, service, options)),
+      }),
+      events: Object.freeze({
+        on: (type, listener) => registerDisposer(this.on(type, listener)),
+        emit: (type, payload) => this.emit(type, payload),
+      }),
+      lifecycle: Object.freeze({ onDispose: registerDisposer }),
+    });
+  }
+
+  async disposeCallbacks(disposers, moduleName) {
+    for (const dispose of [...disposers].reverse()) {
+      try {
+        await dispose();
+      } catch (error) {
+        console.warn(`[房东模拟器] 卸载 ${moduleName} 失败`, error);
+      }
+    }
+    disposers.length = 0;
   }
 
   async boot(definitions) {
@@ -131,6 +215,7 @@ class LandlordRuntime {
       loadedCount: modules.filter(module => module.status === 'loaded').length,
       failedCount: failedModules.length,
       failedModules: failedModules.map(module => module.id),
+      services: Object.keys(this.services),
       modules,
     };
   }
@@ -149,8 +234,10 @@ class LandlordRuntime {
 
     const loadedModules = [...this.modules.values()].reverse();
     for (const module of loadedModules) {
+      const moduleDisposers = this.moduleDisposers.get(module.id) ?? [];
+      await this.disposeCallbacks(moduleDisposers, module.name);
       for (const cleanupName of module.cleanup) {
-        const cleanup = findGlobal(cleanupName);
+        const cleanup = getHostGlobal(cleanupName);
         if (typeof cleanup !== 'function') continue;
         try {
           await cleanup();
@@ -160,6 +247,12 @@ class LandlordRuntime {
       }
     }
 
+    this.moduleDisposers.clear();
+    for (const [name, { legacyGlobal, service }] of this.legacyServiceGlobals) {
+      if (getHostWindow()[legacyGlobal] === service) delete getHostWindow()[legacyGlobal];
+      delete this.services[name];
+    }
+    this.legacyServiceGlobals.clear();
     this.listeners.clear();
     this.status = 'disposed';
     console.info(`[房东模拟器] 多合一运行时已卸载：${reason}`);
@@ -167,7 +260,7 @@ class LandlordRuntime {
 }
 
 export async function startLandlordRuntime({ version, modules }) {
-  const host = parentWindow();
+  const host = getHostWindow();
   const previous = host[RUNTIME_KEY];
   if (previous?.dispose) await previous.dispose('bundle-reload');
 
@@ -177,6 +270,7 @@ export async function startLandlordRuntime({ version, modules }) {
   try {
     return await runtime.boot(modules);
   } catch (error) {
+    await runtime.dispose('boot-failed');
     runtime.status = 'failed';
     notifyError('房东模拟器核心模块加载失败，请查看控制台');
     throw error;

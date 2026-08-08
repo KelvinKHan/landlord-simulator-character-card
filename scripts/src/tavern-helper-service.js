@@ -1,6 +1,7 @@
+import { getHostGlobal } from './core/host.js';
+
 function findApi(name) {
-  const parentWindow = window.parent ?? window;
-  const value = globalThis[name] ?? parentWindow[name];
+  const value = getHostGlobal(name);
   return typeof value === 'function' ? value : null;
 }
 

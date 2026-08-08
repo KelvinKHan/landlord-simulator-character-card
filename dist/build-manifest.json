@@ -1,16 +1,16 @@
 {
-  "version": "0.1.0-preview.1",
+  "version": "0.1.0-preview.2",
   "format": "esm",
   "entry": "landlord-simulator.bundle.js",
-  "bytes": 920185,
-  "sha256": "3140fb0e37dc1e0c9c661435e91f4c60c7c798d7992967a45cc562a5dabd920a",
+  "bytes": 917065,
+  "sha256": "48e8aea2f83c2fc38a70f9f5758384b1c0aba1058ff5baac793e7977a2c46269",
   "release": {
-    "tag": "v0.1.0-preview.1",
+    "tag": "v0.1.0-preview.2",
     "repository": "KelvinKHan/landlord-simulator-character-card",
     "loader": "landlord-simulator.loader.js",
     "sources": [
-      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.1/dist/landlord-simulator.bundle.js",
-      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.1/dist/landlord-simulator.bundle.js"
+      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.2/dist/landlord-simulator.bundle.js",
+      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.2/dist/landlord-simulator.bundle.js"
     ]
   },
   "upstreams": {
@@ -41,112 +41,210 @@
     {
       "id": "mvu-framework",
       "name": "MVU Zod",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/00-MVU zod(开)/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/00-MVU zod(开)/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/00-MVU zod(开)/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "mvu-schema",
       "name": "变量结构",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/01-变量结构(开)/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/01-变量结构(开)/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/01-变量结构(开)/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "floating-menu",
       "name": "悬浮球管理",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/02-悬浮球管理/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/02-悬浮球管理/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/02-悬浮球管理/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "apartment",
       "name": "公寓",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/04-公寓(开)/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/04-公寓(开)/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/04-公寓(开)/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "phone",
       "name": "小手机主程序",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/06-小手机主程序/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/06-小手机主程序/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/06-小手机主程序/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "chat-database",
       "name": "聊天数据库",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/07-聊天数据库/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/07-聊天数据库/index.js",
+      "entry": "scripts/modules/chat-database.js",
+      "implementation": "refactored",
+      "requires": [
+        "mvu"
+      ],
+      "provides": [
+        "chat.database"
+      ]
     },
     {
       "id": "analysis-scheduler",
       "name": "分析调度器",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/08-分析调度器/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/08-分析调度器/index.js",
+      "entry": "scripts/modules/analysis-scheduler.js",
+      "implementation": "refactored",
+      "requires": [],
+      "provides": [
+        "analysis.scheduler"
+      ]
     },
     {
       "id": "tenant-analysis",
       "name": "租客分析系统",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/09-租客分析系统/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/09-租客分析系统/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/09-租客分析系统/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "analysis-queue",
       "name": "分析队列组件",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/10-分析队列组件/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/10-分析队列组件/index.js",
+      "entry": "scripts/modules/analysis-queue-widget.js",
+      "implementation": "refactored",
+      "requires": [
+        "analysis.scheduler"
+      ],
+      "provides": [
+        "analysis.queueWidget"
+      ]
     },
     {
       "id": "chat-core",
       "name": "聊天核心",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/11-聊天核心/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/11-聊天核心/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/11-聊天核心/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "chat-story-bridge",
       "name": "聊天正文联动",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/12-聊天正文联动/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/12-聊天正文联动/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/12-聊天正文联动/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "chat-app",
       "name": "聊天 APP",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/13-聊天APP/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/13-聊天APP/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/13-聊天APP/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "tenant-profile",
       "name": "租客档案 APP",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/14-租客档案APP/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/14-租客档案APP/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/14-租客档案APP/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "prompt-console",
       "name": "提示词/控制台查看器",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/15-提示词-控制台查看器/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/15-提示词-控制台查看器/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/15-提示词-控制台查看器/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "map",
       "name": "地图",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/16-地图/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/16-地图/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/16-地图/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "music",
       "name": "音乐",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/17-音乐/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/17-音乐/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/17-音乐/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "world-map",
       "name": "世界地图",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/18-世界地图/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/18-世界地图/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/18-世界地图/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "weather",
       "name": "天气 APP",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/19-天气APP/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/19-天气APP/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/19-天气APP/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "news",
       "name": "新闻",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/20-新闻/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/20-新闻/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/20-新闻/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "author-chat",
       "name": "和欧欧聊天吧",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/21-和欧欧聊天吧!/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/21-和欧欧聊天吧!/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/21-和欧欧聊天吧!/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "theme",
       "name": "美化完整修复版",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/22-美化完整修复版 by jovial_dolphin_19209/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/22-美化完整修复版 by jovial_dolphin_19209/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/22-美化完整修复版 by jovial_dolphin_19209/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     },
     {
       "id": "workshop",
       "name": "创意工坊",
-      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/23-创意工坊main/index.js"
+      "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/23-创意工坊main/index.js",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/23-创意工坊main/index.js",
+      "implementation": "legacy",
+      "requires": [],
+      "provides": []
     }
   ],
   "deferred": [

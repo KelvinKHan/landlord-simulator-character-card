@@ -28,13 +28,15 @@ function toPosix(value) {
 
 function generatedEntry() {
   const definitions = moduleManifest.map(module => {
-    const source = `./${toPosix(module.source)}`;
+    const source = `./${toPosix(module.entry ?? module.source)}`;
     return `{
       id: ${JSON.stringify(module.id)},
       name: ${JSON.stringify(module.name)},
       critical: ${Boolean(module.critical)},
       afterLoad: ${JSON.stringify(module.afterLoad ?? null)},
       cleanup: ${JSON.stringify(module.cleanup ?? [])},
+      requires: ${JSON.stringify(module.requires ?? [])},
+      provides: ${JSON.stringify(module.provides ?? [])},
       load: () => import(${JSON.stringify(source)}),
     }`;
   });
@@ -53,6 +55,9 @@ async function validateManifest() {
   assert.ok(!moduleManifest.some(module => module.id.includes('monopoly')), '大富翁不应进入本阶段构建');
   assert.equal(packageJson.version, releaseConfig.version, 'package.json 与发布配置的版本号不一致');
 
+  const availableServices = new Set(['tavern', 'mvu']);
+  const serviceProviders = new Map();
+
   for (const module of moduleManifest) {
     const sourcePath = path.join(projectRoot, module.source);
     const stat = await fs.stat(sourcePath);
@@ -61,6 +66,20 @@ async function validateManifest() {
     const metadataPath = path.join(path.dirname(sourcePath), '元数据.json');
     const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf8'));
     assert.equal(metadata.enabled, true, `模块清单包含原卡中未启用的脚本：${module.name}`);
+
+    if (module.entry) {
+      const entryStat = await fs.stat(path.join(projectRoot, module.entry));
+      assert.ok(entryStat.isFile(), `重构模块入口不存在：${module.entry}`);
+    }
+
+    for (const service of module.requires ?? []) {
+      assert.ok(availableServices.has(service), `模块「${module.name}」依赖尚未提供的服务：${service}`);
+    }
+    for (const service of module.provides ?? []) {
+      assert.ok(!serviceProviders.has(service), `服务「${service}」被多个模块重复提供`);
+      serviceProviders.set(service, module.id);
+      availableServices.add(service);
+    }
   }
 
   const workspaceRoot = path.join(projectRoot, '角色卡/工作区/Z5.20');
@@ -180,8 +199,9 @@ const bundleText = bundle.toString('utf8');
 const bundledInputs = new Set(Object.keys(result.metafile.inputs).map(input => toPosix(input)));
 
 for (const module of moduleManifest) {
+  const bundledSource = module.entry ?? module.source;
   assert.ok(
-    [...bundledInputs].some(input => input.endsWith(toPosix(module.source))),
+    [...bundledInputs].some(input => input.endsWith(toPosix(bundledSource))),
     `构建产物缺少模块：${module.name}`,
   );
 }
@@ -230,7 +250,15 @@ const buildManifest = {
       },
     ]),
   ),
-  modules: moduleManifest.map(({ id, name, source }) => ({ id, name, source })),
+  modules: moduleManifest.map(({ id, name, source, entry, requires = [], provides = [] }) => ({
+    id,
+    name,
+    source,
+    entry: entry ?? source,
+    implementation: entry ? 'refactored' : 'legacy',
+    requires,
+    provides,
+  })),
   deferred: intentionallyDeferredModules,
 };
 
