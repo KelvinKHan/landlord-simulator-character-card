@@ -12,6 +12,7 @@ import {
   intentionallyExcludedEnabledSources,
   moduleManifest,
 } from '../scripts/module-manifest.mjs';
+import { migrationFeatureContract } from '../scripts/migration-feature-contract.mjs';
 import { jsDelivrSources, releaseConfig } from '../scripts/release-config.mjs';
 
 const toolDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -55,6 +56,7 @@ async function validateManifest() {
   assert.equal(new Set(moduleManifest.map(module => module.id)).size, moduleManifest.length, '模块 ID 存在重复');
   assert.ok(!moduleManifest.some(module => module.id.includes('monopoly')), '大富翁不应进入本阶段构建');
   assert.equal(packageJson.version, releaseConfig.version, 'package.json 与发布配置的版本号不一致');
+  assert.deepEqual(Object.keys(migrationFeatureContract), moduleManifest.map(module => module.id), '功能合同必须完整覆盖并按顺序对应模块清单');
 
   const availableServices = new Set(['tavern', 'mvu']);
   const serviceProviders = new Map();
@@ -257,10 +259,11 @@ const buildManifest = {
     name,
     source,
     entry: entry ?? source,
-    implementation: entry ? 'refactored' : 'legacy',
+    implementation: entry ? 'infrastructure-adapter' : 'faithful-source',
     requires,
     provides,
     legacyRequires,
+    features: migrationFeatureContract[id],
   })),
   deferred: intentionallyDeferredModules,
 };

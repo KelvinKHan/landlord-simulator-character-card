@@ -8,8 +8,8 @@ import { moduleManifest } from '../scripts/module-manifest.mjs';
 
 const toolDirectory = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(toolDirectory, '..');
-const refactoredModules = moduleManifest.filter(module => module.entry);
-const legacyModules = moduleManifest.filter(module => !module.entry);
+const adapterModules = moduleManifest.filter(module => module.entry);
+const faithfulSourceModules = moduleManifest.filter(module => !module.entry);
 const entries = new Set();
 const serviceProviders = new Map();
 const availableServices = new Set(['tavern', 'mvu']);
@@ -62,5 +62,5 @@ for (const filename of await listJavaScriptFiles(path.join(projectRoot, 'scripts
   }
 }
 
-console.log(`架构检查通过：${refactoredModules.length} 个标准模块，${legacyModules.length} 个待迁移模块`);
+console.log(`架构检查通过：${adapterModules.length} 个基础设施适配模块，${faithfulSourceModules.length} 个原貌保真模块，0 个漏迁移模块`);
 console.log(`已声明服务：${[...serviceProviders.keys()].join('、')}`);

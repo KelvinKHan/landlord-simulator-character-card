@@ -12,10 +12,13 @@ const toolDirectory = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(toolDirectory, '..');
 const cardDirectory = path.join(projectRoot, '角色卡/构建产物');
 const baseCardPath = path.join(cardDirectory, '房东模拟器Z5.20.json');
+const basePngPath = path.join(projectRoot, '角色卡/原始导出/房东模拟器Z5.20.png');
 const bundlePath = path.join(projectRoot, 'dist/landlord-simulator.bundle.js');
 const loaderPath = path.join(projectRoot, releaseConfig.loaderPath);
 const onlineCardPath = path.join(cardDirectory, releaseConfig.identities.online.artifactFile);
 const offlineCardPath = path.join(cardDirectory, releaseConfig.identities.offline.artifactFile);
+const onlinePngPath = onlineCardPath.replace(/\.json$/i, '.png');
+const offlinePngPath = offlineCardPath.replace(/\.json$/i, '.png');
 const checkOnly = process.argv.includes('--check');
 
 const SCRIPT_ID = releaseConfig.scriptId;
@@ -23,6 +26,73 @@ const releaseIdentities = releaseConfig.identities;
 
 function clone(value) {
   return structuredClone(value);
+}
+
+const crcTable = Array.from({ length: 256 }, (_, value) => {
+  let crc = value;
+  for (let bit = 0; bit < 8; bit++) crc = (crc & 1) ? (0xedb88320 ^ (crc >>> 1)) : (crc >>> 1);
+  return crc >>> 0;
+});
+
+function crc32(buffer) {
+  let crc = 0xffffffff;
+  for (const byte of buffer) crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function createPngChunk(type, data) {
+  const typeBuffer = Buffer.from(type, 'ascii');
+  const result = Buffer.allocUnsafe(data.length + 12);
+  result.writeUInt32BE(data.length, 0);
+  typeBuffer.copy(result, 4);
+  data.copy(result, 8);
+  result.writeUInt32BE(crc32(Buffer.concat([typeBuffer, data])), data.length + 8);
+  return result;
+}
+
+function embedCardInPng(source, card) {
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', '头像底图不是有效 PNG');
+  const encoded = Buffer.from(JSON.stringify(card), 'utf8').toString('base64');
+  const chunks = [source.subarray(0, 8)];
+  let offset = 8;
+  let replaced = 0;
+  while (offset + 12 <= source.length) {
+    const length = source.readUInt32BE(offset);
+    const type = source.toString('ascii', offset + 4, offset + 8);
+    const end = offset + length + 12;
+    assert.ok(end <= source.length, `PNG ${type} 数据块越界`);
+    let replacement = null;
+    if (type === 'tEXt') {
+      const data = source.subarray(offset + 8, offset + 8 + length);
+      const separator = data.indexOf(0);
+      const keyword = separator >= 0 ? data.toString('latin1', 0, separator).toLowerCase() : '';
+      if (keyword === 'chara' || keyword === 'ccv3') {
+        replacement = createPngChunk('tEXt', Buffer.from(`${keyword}\0${encoded}`, 'latin1'));
+        replaced += 1;
+      }
+    }
+    chunks.push(replacement ?? source.subarray(offset, end));
+    offset = end;
+    if (type === 'IEND') break;
+  }
+  assert.ok(replaced >= 1, '头像底图没有可替换的 chara/ccv3 数据块');
+  return Buffer.concat(chunks);
+}
+
+function readPngCard(source) {
+  let offset = 8;
+  while (offset + 12 <= source.length) {
+    const length = source.readUInt32BE(offset);
+    const type = source.toString('ascii', offset + 4, offset + 8);
+    const data = source.subarray(offset + 8, offset + 8 + length);
+    if (type === 'tEXt') {
+      const separator = data.indexOf(0);
+      const keyword = separator >= 0 ? data.toString('latin1', 0, separator).toLowerCase() : '';
+      if (keyword === 'ccv3' || keyword === 'chara') return JSON.parse(Buffer.from(data.toString('latin1', separator + 1), 'base64').toString('utf8'));
+    }
+    offset += length + 12;
+  }
+  throw new Error('生成 PNG 中没有角色卡数据');
 }
 
 async function readJson(filePath) {
@@ -99,8 +169,9 @@ async function validateCard(card, expectedContent, identity, baseCard) {
   });
 }
 
-const [baseCard, bundle, loader, buttons] = await Promise.all([
+const [baseCard, basePng, bundle, loader, buttons] = await Promise.all([
   readJson(baseCardPath),
+  fs.readFile(basePngPath),
   fs.readFile(bundlePath, 'utf8'),
   fs.readFile(loaderPath, 'utf8'),
   collectButtons(),
@@ -116,20 +187,27 @@ const offlineCard = createCard(
   createCombinedScript(bundle, buttons, '离线'),
   releaseIdentities.offline,
 );
+const onlinePng = embedCardInPng(basePng, onlineCard);
+const offlinePng = embedCardInPng(basePng, offlineCard);
 
 assert.notEqual(releaseIdentities.online.cardName, releaseIdentities.offline.cardName, '在线版和离线版角色卡名称不得相同');
 assert.notEqual(releaseIdentities.online.worldbookName, releaseIdentities.offline.worldbookName, '在线版和离线版世界书名称不得相同');
 await validateCard(onlineCard, loader, releaseIdentities.online, baseCard);
 await validateCard(offlineCard, bundle, releaseIdentities.offline, baseCard);
+assert.equal(readPngCard(onlinePng).data.name, releaseIdentities.online.cardName, '在线 PNG 内嵌角色卡名称错误');
+assert.equal(readPngCard(offlinePng).data.name, releaseIdentities.offline.cardName, '离线 PNG 内嵌角色卡名称错误');
 
 await fs.mkdir(cardDirectory, { recursive: true });
 await Promise.all([
   fs.writeFile(onlineCardPath, `${JSON.stringify(onlineCard, null, 2)}\n`, 'utf8'),
   fs.writeFile(offlineCardPath, `${JSON.stringify(offlineCard, null, 2)}\n`, 'utf8'),
+  fs.writeFile(onlinePngPath, onlinePng),
+  fs.writeFile(offlinePngPath, offlinePng),
 ]);
 
 console.log(`${checkOnly ? '迁移预览检查通过' : '迁移预览构建完成'}：在线版和离线版均只有 1 个酒馆助手脚本`);
 console.log(`在线版：${releaseIdentities.online.cardName} / ${releaseIdentities.online.worldbookName}`);
 console.log(`离线版：${releaseIdentities.offline.cardName} / ${releaseIdentities.offline.worldbookName}`);
 console.log(`产物文件：${path.basename(onlineCardPath)} / ${path.basename(offlineCardPath)}`);
+console.log(`PNG 角色卡：${path.basename(onlinePngPath)} / ${path.basename(offlinePngPath)}`);
 console.log(`合并脚本按钮：${buttons.map(button => button.name).join('、')}`);

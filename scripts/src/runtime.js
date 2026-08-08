@@ -125,6 +125,17 @@ class LandlordRuntime {
         else if (typeof activation?.dispose === 'function') disposers.push(() => activation.dispose());
       } else if (typeof loadedModule?.dispose === 'function') {
         disposers.push(loadedModule.dispose);
+      } else {
+        // 原卡脚本本身就是可直接执行的酒馆助手模块。这里不改写它的 UI、CSS
+        // 或事件逻辑，只为统一运行时登记能力，便于状态查看和依赖审计。
+        const capability = Object.freeze({
+          kind: 'faithful-source',
+          moduleId: definition.id,
+          moduleName: definition.name,
+        });
+        for (const serviceName of definition.provides ?? []) {
+          disposers.push(this.registerService(serviceName, capability));
+        }
       }
       if (disposers.length > 0) this.moduleDisposers.set(definition.id, disposers);
       if (definition.afterLoad === 'wait-for-mvu') await waitForMvu();

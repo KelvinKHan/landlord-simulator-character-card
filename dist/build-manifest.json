@@ -1,16 +1,16 @@
 {
-  "version": "0.1.0-preview.3",
+  "version": "0.1.0-preview.5",
   "format": "esm",
   "entry": "landlord-simulator.bundle.js",
-  "bytes": 896805,
-  "sha256": "2b1ca55f5ee1219ea9931408417c6b99fe63a4a6bf72c6676bebfe1f4b73bc66",
+  "bytes": 929253,
+  "sha256": "cdbad4773f02b87b8d9e973e74183b36f3233da9b2c09f24335aa7eabc822226",
   "release": {
-    "tag": "v0.1.0-preview.3",
+    "tag": "v0.1.0-preview.5",
     "repository": "KelvinKHan/landlord-simulator-character-card",
     "loader": "landlord-simulator.loader.js",
     "sources": [
-      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.3/dist/landlord-simulator.bundle.js",
-      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.3/dist/landlord-simulator.bundle.js"
+      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.5/dist/landlord-simulator.bundle.js",
+      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.5/dist/landlord-simulator.bundle.js"
     ]
   },
   "upstreams": {
@@ -43,127 +43,220 @@
       "name": "MVU Zod",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/00-MVU zod(开)/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/00-MVU zod(开)/index.js",
-      "implementation": "legacy",
+      "implementation": "faithful-source",
       "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "provides": [
+        "mvu.framework"
+      ],
+      "legacyRequires": [
+        "waitGlobalInitialized",
+        "Mvu"
+      ],
+      "features": [
+        "固定版本加载 MVU",
+        "等待 MVU 初始化",
+        "卸载时保留运行时边界"
+      ]
     },
     {
       "id": "mvu-schema",
       "name": "变量结构",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/01-变量结构(开)/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/01-变量结构(开)/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "mvu.framework"
+      ],
+      "provides": [
+        "mvu.schema"
+      ],
+      "legacyRequires": [
+        "z"
+      ],
+      "features": [
+        "官方 MVU Zod 注册",
+        "世界/公寓/租客结构",
+        "跨字段入住一致性校验"
+      ]
     },
     {
       "id": "floating-menu",
       "name": "悬浮球管理",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/02-悬浮球管理/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/02-悬浮球管理/index.js",
-      "implementation": "legacy",
+      "implementation": "faithful-source",
       "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "provides": [
+        "ui.floatingMenu"
+      ],
+      "legacyRequires": [],
+      "features": [
+        "统一悬浮入口",
+        "拖拽与位置记忆",
+        "按钮排序/更新/反注册"
+      ]
     },
     {
       "id": "apartment",
       "name": "公寓",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/04-公寓(开)/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/04-公寓(开)/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "ui.floatingMenu"
+      ],
+      "provides": [
+        "building.apartment"
+      ],
+      "legacyRequires": [
+        "SillyTavern"
+      ],
+      "features": [
+        "二维楼层与十格布局",
+        "观察/建造模式",
+        "加楼层/装修/拆除/驱逐/招募",
+        "租客资料与关系",
+        "缩放拖拽/主题/兼容全局接口"
+      ]
     },
     {
       "id": "phone",
       "name": "小手机主程序",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/06-小手机主程序/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/06-小手机主程序/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "ui.floatingMenu"
+      ],
+      "provides": [
+        "phone.system"
+      ],
+      "legacyRequires": [
+        "getCharacterName",
+        "toastr"
+      ],
+      "features": [
+        "手机桌面与设置",
+        "APP 注册/渲染/打开/返回",
+        "壁纸与模型列表",
+        "兼容外部 API",
+        "统一 APP 生命周期"
+      ]
     },
     {
       "id": "chat-database",
       "name": "聊天数据库",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/07-聊天数据库/index.js",
-      "entry": "scripts/modules/chat-database.js",
-      "implementation": "refactored",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/07-聊天数据库/index.js",
+      "implementation": "faithful-source",
       "requires": [
         "mvu"
       ],
       "provides": [
         "chat.database"
       ],
-      "legacyRequires": []
+      "legacyRequires": [],
+      "features": [
+        "按酒馆聊天隔离",
+        "会话/消息/撤回",
+        "导入导出/清空",
+        "表情消息字段"
+      ]
     },
     {
       "id": "analysis-scheduler",
       "name": "分析调度器",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/08-分析调度器/index.js",
-      "entry": "scripts/modules/analysis-scheduler.js",
-      "implementation": "refactored",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/08-分析调度器/index.js",
+      "implementation": "faithful-source",
       "requires": [],
       "provides": [
         "analysis.scheduler"
       ],
-      "legacyRequires": []
+      "legacyRequires": [],
+      "features": [
+        "串行任务队列",
+        "优先级",
+        "失败隔离",
+        "队列事件与统计"
+      ]
     },
     {
       "id": "tenant-analysis",
       "name": "租客分析系统",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/09-租客分析系统/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/09-租客分析系统/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "analysis.scheduler",
+        "phone.system"
+      ],
+      "provides": [
+        "analysis.tenant"
+      ],
+      "legacyRequires": [
+        "SillyTavern",
+        "eventSource"
+      ],
+      "features": [
+        "自动楼层触发",
+        "单人/全员手动分析",
+        "副 API 生成",
+        "动态 ChatLore",
+        "按聊天保存进度/日志"
+      ]
     },
     {
       "id": "analysis-queue",
       "name": "分析队列组件",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/10-分析队列组件/index.js",
-      "entry": "scripts/modules/analysis-queue-widget.js",
-      "implementation": "refactored",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/10-分析队列组件/index.js",
+      "implementation": "faithful-source",
       "requires": [
         "analysis.scheduler"
       ],
       "provides": [
         "analysis.queueWidget"
       ],
-      "legacyRequires": []
+      "legacyRequires": [],
+      "features": [
+        "队列状态浮层",
+        "运行/等待/失败统计",
+        "可清理订阅"
+      ]
     },
     {
       "id": "chat-core",
       "name": "聊天核心",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/11-聊天核心/index.js",
-      "entry": "scripts/modules/chat-core.js",
-      "implementation": "refactored",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/11-聊天核心/index.js",
+      "implementation": "faithful-source",
       "requires": [
         "chat.database",
-        "mvu"
+        "mvu",
+        "phone.system",
+        "analysis.tenant"
       ],
       "provides": [
         "chat.core"
       ],
       "legacyRequires": [
-        "PhoneSystem",
         "SillyTavern",
-        "TenantAnalyzer",
         "getRegexedString"
+      ],
+      "features": [
+        "私聊/群聊 AI 回复",
+        "剧情/角色/历史上下文",
+        "多角色回复解析",
+        "消息与同步协调"
       ]
     },
     {
       "id": "chat-story-bridge",
       "name": "聊天正文联动",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/12-聊天正文联动/index.js",
-      "entry": "scripts/modules/chat-sync.js",
-      "implementation": "refactored",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/12-聊天正文联动/index.js",
+      "implementation": "faithful-source",
       "requires": [
         "chat.database"
       ],
@@ -172,26 +265,39 @@
       ],
       "legacyRequires": [
         "SillyTavern"
+      ],
+      "features": [
+        "聊天记录写入 ChatLore",
+        "正文联动提示",
+        "按聊天切换缓存",
+        "删除/清空同步"
       ]
     },
     {
       "id": "chat-app",
       "name": "聊天 APP",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/13-聊天APP/index.js",
-      "entry": "scripts/modules/chat-app.js",
-      "implementation": "refactored",
+      "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/13-聊天APP/index.js",
+      "implementation": "faithful-source",
       "requires": [
         "chat.database",
         "chat.core",
-        "chat.sync"
+        "chat.sync",
+        "phone.system"
       ],
       "provides": [
         "chat.app"
       ],
       "legacyRequires": [
-        "PhoneSystem",
         "SillyTavern",
         "$"
+      ],
+      "features": [
+        "聊天列表与会话界面",
+        "发送/撤回/删除",
+        "表情包",
+        "导入导出",
+        "扩展插槽"
       ]
     },
     {
@@ -199,100 +305,234 @@
       "name": "租客档案 APP",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/14-租客档案APP/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/14-租客档案APP/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "phone.system",
+        "analysis.tenant",
+        "analysis.scheduler"
+      ],
+      "provides": [
+        "analysis.tenantProfile"
+      ],
+      "legacyRequires": [],
+      "features": [
+        "租客列表/状态",
+        "单人/全员分析",
+        "队列与日志",
+        "分析配置"
+      ]
     },
     {
       "id": "prompt-console",
       "name": "提示词/控制台查看器",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/15-提示词-控制台查看器/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/15-提示词-控制台查看器/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "phone.system",
+        "chat.core"
+      ],
+      "provides": [
+        "debug.console"
+      ],
+      "legacyRequires": [],
+      "features": [
+        "控制台捕获",
+        "手机/聊天 API 追踪",
+        "筛选与清空",
+        "卸载恢复原函数"
+      ]
     },
     {
       "id": "map",
       "name": "地图",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/16-地图/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/16-地图/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "phone.system"
+      ],
+      "provides": [
+        "phone.cityMap"
+      ],
+      "legacyRequires": [
+        "toastr"
+      ],
+      "features": [
+        "二维城市地图",
+        "拖拽与地点标记",
+        "同行者",
+        "出行指令填入正文"
+      ]
     },
     {
       "id": "music",
       "name": "音乐",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/17-音乐/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/17-音乐/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "phone.system"
+      ],
+      "provides": [
+        "media.music"
+      ],
+      "legacyRequires": [
+        "toastr"
+      ],
+      "features": [
+        "搜索与播放",
+        "歌词/进度/播放模式",
+        "收藏/历史/队列",
+        "跨 APP 持续音频"
+      ]
     },
     {
       "id": "world-map",
       "name": "世界地图",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/18-世界地图/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/18-世界地图/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "phone.system"
+      ],
+      "provides": [
+        "phone.worldMap"
+      ],
+      "legacyRequires": [
+        "toastr"
+      ],
+      "features": [
+        "Leaflet 世界地图",
+        "地名搜索",
+        "点击选点",
+        "同行者与出行指令",
+        "资源卸载"
+      ]
     },
     {
       "id": "weather",
       "name": "天气 APP",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/19-天气APP/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/19-天气APP/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "phone.system"
+      ],
+      "provides": [
+        "world.weather",
+        "world.weatherGenerator"
+      ],
+      "legacyRequires": [
+        "SillyTavern",
+        "executeSlashCommands"
+      ],
+      "features": [
+        "季节化确定性天气",
+        "逐时/七日预报",
+        "日期与小时联动",
+        "变化提示",
+        "按聊天持久化与变量同步"
+      ]
     },
     {
       "id": "news",
       "name": "新闻",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/20-新闻/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/20-新闻/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "phone.system"
+      ],
+      "provides": [
+        "phone.news"
+      ],
+      "legacyRequires": [
+        "SillyTavern",
+        "executeSlashCommands",
+        "toastr"
+      ],
+      "features": [
+        "世界状态与近期剧情上下文",
+        "AI 生成新闻",
+        "日期自动刷新",
+        "按聊天持久化与变量同步"
+      ]
     },
     {
       "id": "author-chat",
       "name": "和欧欧聊天吧",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/21-和欧欧聊天吧!/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/21-和欧欧聊天吧!/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "phone.system",
+        "chat.app"
+      ],
+      "provides": [
+        "chat.author"
+      ],
+      "legacyRequires": [
+        "SillyTavern",
+        "$"
+      ],
+      "features": [
+        "作者私聊入口",
+        "独立聊天存储",
+        "短回复 AI 生成",
+        "清空/删除/配置"
+      ]
     },
     {
       "id": "theme",
       "name": "美化完整修复版",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/22-美化完整修复版 by jovial_dolphin_19209/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/22-美化完整修复版 by jovial_dolphin_19209/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "building.apartment"
+      ],
+      "provides": [
+        "display.beautifier"
+      ],
+      "legacyRequires": [
+        "retrieveDisplayedMessage",
+        "getChatMessages"
+      ],
+      "features": [
+        "正文/思维链/变量尾部拆分",
+        "Markdown 与自定义标签",
+        "候选人招募交互",
+        "租客档案/入住交互",
+        "主题/深度设置与消息事件"
+      ]
     },
     {
       "id": "workshop",
       "name": "创意工坊",
       "source": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/23-创意工坊main/index.js",
       "entry": "角色卡/工作区/Z5.20/扩展/酒馆助手/脚本/23-创意工坊main/index.js",
-      "implementation": "legacy",
-      "requires": [],
-      "provides": [],
-      "legacyRequires": []
+      "implementation": "faithful-source",
+      "requires": [
+        "ui.floatingMenu",
+        "building.apartment"
+      ],
+      "provides": [
+        "content.workshop"
+      ],
+      "legacyRequires": [
+        "setChatMessages",
+        "eventEmit"
+      ],
+      "features": [
+        "本地角色/房间/世界/表情存储",
+        "旧数据迁移与导入导出",
+        "组合预设",
+        "角色招募/房间安装",
+        "世界书与开场白应用/新聊天注入",
+        "云端浏览/搜索/上传/下载/登录",
+        "云端管理员审核/编辑/删除/封禁"
+      ]
     }
   ],
   "deferred": [

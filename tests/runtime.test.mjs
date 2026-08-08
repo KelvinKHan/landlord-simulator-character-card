@@ -93,6 +93,33 @@ test('标准模块通过上下文声明服务，并在卸载时自动回收', as
   assert.equal(host.ExampleService, undefined);
 });
 
+test('原貌保真脚本不被改写，只登记清单中声明的能力', async () => {
+  let executed = false;
+  const runtime = await startLandlordRuntime({
+    version: 'test',
+    modules: [
+      {
+        id: 'faithful',
+        name: '原貌模块',
+        provides: ['example.faithful'],
+        load: async () => {
+          executed = true;
+          return {};
+        },
+      },
+    ],
+  });
+
+  assert.equal(executed, true);
+  assert.deepEqual(runtime.getService('example.faithful'), {
+    kind: 'faithful-source',
+    moduleId: 'faithful',
+    moduleName: '原貌模块',
+  });
+  await runtime.dispose('test');
+  assert.equal(runtime.getService('example.faithful'), null);
+});
+
 test('核心模块失败时停止后续加载并标记运行时失败', async () => {
   const cleanupOrder = [];
   let reachedLaterModule = false;
