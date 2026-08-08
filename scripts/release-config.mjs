@@ -1,22 +1,22 @@
 export const releaseConfig = Object.freeze({
-  version: '0.1.0-preview.2',
-  gitTag: 'v0.1.0-preview.2',
+  version: '0.1.0-preview.3',
+  gitTag: 'v0.1.0-preview.3',
   repository: 'KelvinKHan/landlord-simulator-character-card',
   bundlePath: 'dist/landlord-simulator.bundle.js',
   loaderPath: 'dist/landlord-simulator.loader.js',
   scriptId: '4fb9fe15-31ac-4d70-8bdd-b88658f1ad69',
   identities: {
     online: {
-      characterVersion: 'Z5.20-multibundle-online-preview.2',
-      cardName: '房东模拟器 Z5.20｜多合一在线预览 0.1.0-2',
-      worldbookName: '房东模拟器·世界书｜Z5.20-MB-在线预览-0.1.0-2',
-      artifactFile: '房东模拟器Z5.20-多合一在线预览版-v0.1.0-preview.2.json',
+      characterVersion: 'Z5.20-multibundle-online-preview.3',
+      cardName: '房东模拟器 Z5.20｜多合一在线预览 0.1.0-3',
+      worldbookName: '房东模拟器·世界书｜Z5.20-MB-在线预览-0.1.0-3',
+      artifactFile: '房东模拟器Z5.20-多合一在线预览版-v0.1.0-preview.3.json',
     },
     offline: {
-      characterVersion: 'Z5.20-multibundle-offline-preview.2',
-      cardName: '房东模拟器 Z5.20｜多合一离线预览 0.1.0-2',
-      worldbookName: '房东模拟器·世界书｜Z5.20-MB-离线预览-0.1.0-2',
-      artifactFile: '房东模拟器Z5.20-多合一离线预览版-v0.1.0-preview.2.json',
+      characterVersion: 'Z5.20-multibundle-offline-preview.3',
+      cardName: '房东模拟器 Z5.20｜多合一离线预览 0.1.0-3',
+      worldbookName: '房东模拟器·世界书｜Z5.20-MB-离线预览-0.1.0-3',
+      artifactFile: '房东模拟器Z5.20-多合一离线预览版-v0.1.0-preview.3.json',
     },
   },
   upstreams: {

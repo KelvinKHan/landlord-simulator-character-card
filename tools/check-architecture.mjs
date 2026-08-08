@@ -14,6 +14,17 @@ const entries = new Set();
 const serviceProviders = new Map();
 const availableServices = new Set(['tavern', 'mvu']);
 
+async function listJavaScriptFiles(directory) {
+  const entries = await fs.readdir(directory, { withFileTypes: true });
+  const files = await Promise.all(
+    entries.map(entry => {
+      const target = path.join(directory, entry.name);
+      return entry.isDirectory() ? listJavaScriptFiles(target) : target.endsWith('.js') ? [target] : [];
+    }),
+  );
+  return files.flat();
+}
+
 for (const module of moduleManifest) {
   for (const requirement of module.requires ?? []) {
     assert.ok(
@@ -35,12 +46,20 @@ for (const module of moduleManifest) {
   assert.ok((module.provides ?? []).length > 0, `重构模块必须声明 provides：${module.name}`);
 
   const source = await fs.readFile(path.join(projectRoot, module.entry), 'utf8');
-  const lineCount = source.split('\n').length;
-  assert.ok(lineCount <= 500, `重构模块超过 500 行，应继续拆分：${module.entry}（${lineCount} 行）`);
   assert.match(source, /export\s+(?:async\s+)?function\s+activate\s*\(/, `重构模块缺少 activate(context)：${module.entry}`);
   assert.doesNotMatch(source, /window\.(?:parent|top)/, `重构模块不得直接访问 window.parent/window.top：${module.entry}`);
   assert.doesNotMatch(source, /LandlordSimulator/, `重构模块不得反向读取运行时全局：${module.entry}`);
   assert.doesNotMatch(source, /runtime-access/, `重构模块不得使用服务定位器：${module.entry}`);
+}
+
+for (const filename of await listJavaScriptFiles(path.join(projectRoot, 'scripts/src'))) {
+  const source = await fs.readFile(filename, 'utf8');
+  const lineCount = source.split('\n').length;
+  const relative = path.relative(projectRoot, filename);
+  assert.ok(lineCount <= 500, `标准源码超过 500 行，应按职责继续拆分：${relative}（${lineCount} 行）`);
+  if (relative !== 'scripts/src/core/host.js') {
+    assert.doesNotMatch(source, /window\.(?:parent|top)/, `标准源码不得直接访问 window.parent/window.top：${relative}`);
+  }
 }
 
 console.log(`架构检查通过：${refactoredModules.length} 个标准模块，${legacyModules.length} 个待迁移模块`);

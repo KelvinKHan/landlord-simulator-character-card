@@ -170,6 +170,14 @@ class LandlordRuntime {
         on: (type, listener) => registerDisposer(this.on(type, listener)),
         emit: (type, payload) => this.emit(type, payload),
       }),
+      legacy: Object.freeze({
+        get: name => getHostGlobal(name) ?? null,
+        require: name => {
+          const value = getHostGlobal(name);
+          if (value == null) throw new Error(`模块「${definition.name}」缺少过渡期全局依赖：${name}`);
+          return value;
+        },
+      }),
       lifecycle: Object.freeze({ onDispose: registerDisposer }),
     });
   }

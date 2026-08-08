@@ -25,6 +25,16 @@ export class EventBus {
     }
   }
 
+  async emitAsync(type, payload) {
+    for (const listener of this.#listeners.get(type) ?? []) {
+      try {
+        await listener(payload);
+      } catch (error) {
+        console.error(`[房东模拟器] 异步事件「${type}」处理失败`, error);
+      }
+    }
+  }
+
   clear() {
     this.#listeners.clear();
   }

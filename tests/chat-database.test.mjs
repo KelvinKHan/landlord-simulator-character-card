@@ -61,6 +61,10 @@ test('聊天数据库覆盖会话、消息、撤回、聊天隔离和导入导�
     租客列表: { 小林: {}, 阿澄: {} },
   };
   const database = createDatabase(state);
+  const deletionEvents = [];
+  let clearEvents = 0;
+  database.on('conversation:deleting', ({ conversation }) => deletionEvents.push(conversation.id));
+  database.on('all:clearing', () => (clearEvents += 1));
 
   try {
     await database.init('chat-a');
@@ -88,10 +92,15 @@ test('聊天数据库覆盖会话、消息、撤回、聊天隔离和导入导�
       messageCount: 1,
     });
 
+    const temporary = await database.createConversation({ type: 'private', name: '临时', members: ['临时'] });
+    await database.deleteConversation(temporary.id);
+    assert.deepEqual(deletionEvents, [temporary.id]);
+
     const exported = await database.exportData();
     await database.init('chat-b');
     assert.deepEqual(await database.getConversations(), []);
     assert.deepEqual(await database.importData(exported), { conversations: 2, messages: 1 });
+    assert.equal(clearEvents, 1);
     assert.deepEqual(await database.getStats(), {
       chatId: 'chat-b',
       conversationCount: 2,
@@ -112,6 +121,10 @@ test('聊天数据库覆盖会话、消息、撤回、聊天隔离和导入导�
       conversationCount: 4,
       messageCount: 2,
     });
+
+    await database.clearCurrentChatData();
+    assert.equal(clearEvents, 2);
+    assert.deepEqual(deletionEvents, [temporary.id]);
   } finally {
     database.dispose();
     await deleteTestDatabase();

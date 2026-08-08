@@ -71,5 +71,19 @@ export function createTavernHelperService() {
       if (!binding?.primary) return [];
       return await requireApi('getWorldbook')(binding.primary);
     },
+
+    async getWorldbook(name) {
+      return await requireApi('getWorldbook')(name);
+    },
+
+    async updateWorldbook(name, updater) {
+      return await requireApi('updateWorldbookWith')(name, updater);
+    },
+
+    async getOrCreateChatWorldbook(scope = 'current') {
+      const api = findApi('getOrCreateChatWorldbook') ?? findApi('getOrCreateChatLorebook');
+      if (!api) return null;
+      return await api(scope);
+    },
   };
 }

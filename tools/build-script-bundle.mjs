@@ -37,6 +37,7 @@ function generatedEntry() {
       cleanup: ${JSON.stringify(module.cleanup ?? [])},
       requires: ${JSON.stringify(module.requires ?? [])},
       provides: ${JSON.stringify(module.provides ?? [])},
+      legacyRequires: ${JSON.stringify(module.legacyRequires ?? [])},
       load: () => import(${JSON.stringify(source)}),
     }`;
   });
@@ -180,6 +181,7 @@ const result = await build({
   format: 'esm',
   platform: 'browser',
   target: 'es2022',
+  loader: { '.css': 'text' },
   splitting: false,
   sourcemap: 'external',
   legalComments: 'none',
@@ -250,7 +252,7 @@ const buildManifest = {
       },
     ]),
   ),
-  modules: moduleManifest.map(({ id, name, source, entry, requires = [], provides = [] }) => ({
+  modules: moduleManifest.map(({ id, name, source, entry, requires = [], provides = [], legacyRequires = [] }) => ({
     id,
     name,
     source,
@@ -258,6 +260,7 @@ const buildManifest = {
     implementation: entry ? 'refactored' : 'legacy',
     requires,
     provides,
+    legacyRequires,
   })),
   deferred: intentionallyDeferredModules,
 };

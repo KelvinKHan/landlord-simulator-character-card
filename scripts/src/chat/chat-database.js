@@ -1,3 +1,5 @@
+import { EventBus } from '../core/event-bus.js';
+
 const DATABASE_NAME = 'TenantChatDB';
 const DATABASE_VERSION = 1;
 const CONVERSATIONS = 'conversations';
@@ -40,6 +42,7 @@ export class ChatDatabase {
     this.db = null;
     this.currentChatId = null;
     this.opening = null;
+    this.events = new EventBus();
   }
 
   async init(chatId) {
@@ -56,6 +59,10 @@ export class ChatDatabase {
 
   generateId(prefix) {
     return `${prefix}_${this.now()}_${this.random().toString(36).slice(2, 11)}`;
+  }
+
+  on(type, listener) {
+    return this.events.on(type, listener);
   }
 
   async createConversation({ type, name, members = [] }) {
@@ -200,7 +207,9 @@ export class ChatDatabase {
     return removed;
   }
 
-  async deleteConversation(conversationId) {
+  async deleteConversation(conversationId, { emit = true } = {}) {
+    const conversation = await this.getConversation(conversationId);
+    if (conversation && emit) await this.events.emitAsync('conversation:deleting', { conversation });
     const messages = await this.getMessages(conversationId, Infinity);
     const transaction = this.#transaction([CONVERSATIONS, MESSAGES], 'readwrite');
     const done = transactionDone(transaction);
@@ -285,8 +294,9 @@ export class ChatDatabase {
   }
 
   async clearCurrentChatData() {
+    await this.events.emitAsync('all:clearing', { chatId: this.currentChatId });
     for (const conversation of await this.getConversations()) {
-      await this.deleteConversation(conversation.id);
+      await this.deleteConversation(conversation.id, { emit: false });
     }
   }
 
@@ -305,6 +315,7 @@ export class ChatDatabase {
     this.db = null;
     this.opening = null;
     this.currentChatId = null;
+    this.events.clear();
   }
 
   #transaction(stores, mode = 'readonly') {
