@@ -1,0 +1,15 @@
+{
+  "id": "4b1ef125-5d8e-419f-aab3-bb9ca501abd8",
+  "scriptName": "租客档案状态栏",
+  "disabled": false,
+  "runOnEdit": false,
+  "trimStrings": [],
+  "placement": [
+    2
+  ],
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null,
+  "markdownOnly": true,
+  "promptOnly": false
+}

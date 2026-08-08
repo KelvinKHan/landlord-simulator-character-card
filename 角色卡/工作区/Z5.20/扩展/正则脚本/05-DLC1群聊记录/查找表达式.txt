@@ -1,0 +1,1 @@
+<group_chat>[\r\n\s]*([^\r\n]+)[\r\n]+((?:(?!<group_chat>)[\s\S])*?)[\r\n\s]*<\/group_chat>

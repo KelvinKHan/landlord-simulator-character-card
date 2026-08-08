@@ -1,0 +1,16 @@
+{
+  "type": "script",
+  "enabled": true,
+  "name": "聊天正文联动",
+  "id": "9f8c2429-102e-4b32-93a5-0eba1cc1d445",
+  "info": "",
+  "button": {
+    "enabled": true,
+    "buttons": []
+  },
+  "data": {},
+  "export_with": {
+    "data": true,
+    "button": true
+  }
+}

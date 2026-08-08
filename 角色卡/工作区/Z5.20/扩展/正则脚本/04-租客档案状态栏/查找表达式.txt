@@ -1,0 +1,1 @@
+/<TenantLore name="[^"]*">((?:(?!<TenantLore name=)[\s\S])*?)<\/TenantLore>/g

@@ -1,0 +1,16 @@
+{
+  "type": "script",
+  "enabled": false,
+  "name": "公寓（二改版）",
+  "id": "8ca027c3-9bc5-4f0c-9594-d39115523ee2",
+  "info": "",
+  "button": {
+    "enabled": true,
+    "buttons": []
+  },
+  "data": {},
+  "export_with": {
+    "data": true,
+    "button": true
+  }
+}

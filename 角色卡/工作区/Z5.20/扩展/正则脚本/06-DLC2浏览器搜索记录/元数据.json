@@ -1,0 +1,15 @@
+{
+  "id": "0787b7f7-0f27-42d4-b966-914d744154e7",
+  "scriptName": "DLC2浏览器搜索记录",
+  "disabled": false,
+  "runOnEdit": false,
+  "trimStrings": [],
+  "placement": [
+    2
+  ],
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null,
+  "markdownOnly": true,
+  "promptOnly": false
+}

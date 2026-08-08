@@ -1,0 +1,1 @@
+<live_stream>[\r\n\s]*\[直播画面\][：:]\s*((?:(?!<live_stream>)[\s\S]*?))[\r\n]+((?:(?!<live_stream>)[\s\S]*?))[\r\n\s]*<\/live_stream>

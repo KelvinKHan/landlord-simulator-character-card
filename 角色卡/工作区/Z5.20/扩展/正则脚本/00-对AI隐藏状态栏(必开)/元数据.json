@@ -1,0 +1,15 @@
+{
+  "id": "a065654d-ba93-431e-8509-253ea6008bb3",
+  "scriptName": "对AI隐藏状态栏（必开）",
+  "disabled": false,
+  "runOnEdit": false,
+  "trimStrings": [],
+  "placement": [
+    2
+  ],
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null,
+  "markdownOnly": true,
+  "promptOnly": true
+}

@@ -1,0 +1,1 @@
+<diary_entry>[\r\n\s]*([^\r\n]+)[\r\n]+((?:(?!<diary_entry>)[\s\S])*?)[\r\n\s]*<\/diary_entry>

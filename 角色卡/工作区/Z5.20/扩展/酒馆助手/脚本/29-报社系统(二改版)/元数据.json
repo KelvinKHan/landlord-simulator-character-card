@@ -1,0 +1,16 @@
+{
+  "type": "script",
+  "enabled": false,
+  "name": "报社系统（二改版）",
+  "id": "3a9f291b-b218-4cf1-a75e-605604eed606",
+  "info": "",
+  "button": {
+    "enabled": true,
+    "buttons": []
+  },
+  "data": {},
+  "export_with": {
+    "data": true,
+    "button": true
+  }
+}

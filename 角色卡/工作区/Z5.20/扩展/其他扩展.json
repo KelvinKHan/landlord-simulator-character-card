@@ -1,0 +1,13 @@
+{
+  "talkativeness": "0.5",
+  "fav": false,
+  "world": "房东模拟器Z5.20",
+  "depth_prompt": {
+    "prompt": "",
+    "depth": 4,
+    "role": "system"
+  },
+  "xiaobaix-tasks": {
+    "tasks": []
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "script",
+  "enabled": true,
+  "name": "创意工坊main",
+  "id": "1e9c32c7-b5f5-4f3a-920c-3c8c66f59439",
+  "info": "",
+  "button": {
+    "enabled": true,
+    "buttons": [
+      {
+        "name": "创意工坊",
+        "visible": true
+      }
+    ]
+  },
+  "data": {},
+  "export_with": {
+    "data": true,
+    "button": true
+  }
+}

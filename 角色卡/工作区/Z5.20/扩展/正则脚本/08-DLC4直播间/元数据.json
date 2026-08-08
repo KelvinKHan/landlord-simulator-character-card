@@ -1,0 +1,15 @@
+{
+  "id": "9a620278-b730-4150-9a48-e6f867632b77",
+  "scriptName": "DLC4直播间",
+  "disabled": false,
+  "runOnEdit": false,
+  "trimStrings": [],
+  "placement": [
+    2
+  ],
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null,
+  "markdownOnly": true,
+  "promptOnly": false
+}

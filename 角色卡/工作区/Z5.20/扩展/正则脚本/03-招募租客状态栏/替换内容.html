@@ -1,0 +1,212 @@
+```
+<html>
+<head>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: transparent;
+        color: #1e293b;
+        font-size: 14px;
+        line-height: normal;
+    }
+    .mac-window {
+        width: 100%; max-width: 500px; margin: 0 auto;
+        background: #fdfdfd;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(236, 72, 153, 0.15);
+        border: 4px solid #ffffff;
+        overflow: hidden;
+    }
+    .mac-title-bar {
+        height: 32px;
+        background: #ffe4e8;
+        border-bottom: 2px solid white;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        gap: 8px;
+    }
+    .window-controls { display: flex; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.red { background: #ff5f57; }
+    .dot.yellow { background: #febc2e; }
+    .dot.green { background: #28c840; }
+    .window-title {
+        flex: 1; text-align: center;
+        font-size: 13px; font-weight: 600;
+        color: #be185d; opacity: 0.8;
+        margin-right: 40px; 
+    }
+    .window-content {
+        padding: 15px;
+        display: flex; flex-direction: column; gap: 15px;
+    }
+    .candidate-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 12px;
+        border: 1px solid #fce7f3;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        transition: all 0.2s;
+        cursor: pointer;
+        position: relative;
+    }
+    .candidate-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(236, 72, 153, 0.1);
+        border-color: #E68A96;
+    }
+    .candidate-card.selected {
+        background: #fff1f2;
+        border-color: #E68A96;
+        box-shadow: 0 0 0 2px #E68A96;
+    }
+    .candidate-card.selected::after {
+        content: '✔';
+        position: absolute;
+        top: 10px; right: 10px;
+        color: white;
+        background: #E68A96;
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px;
+    }
+    .candidate-name {
+        font-size: 16px; font-weight: 700; color: #831843;
+        margin-bottom: 8px; border-bottom: 1px dashed #fbcfe8; padding-bottom: 5px;
+    }
+    .tags-container {
+        display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px;
+    }
+    .tag {
+        background: #fdf2f8; color: #db2777;
+        padding: 2px 8px; border-radius: 12px;
+        font-size: 11px; border: 1px solid #fbcfe8;
+    }
+    .details {
+        font-size: 13px; color: #64748b; line-height: 1.5;
+    }
+    .quote {
+        margin-top: 8px; padding: 8px;
+        background: #f8fafc; border-radius: 6px;
+        font-style: italic; color: #475569; font-size: 12px;
+        border-left: 3px solid #E68A96;
+    }
+    #confirm-button {
+        background: linear-gradient(135deg, #FF9EAA 0%, #E68A96 100%);
+        color: white; border: none; padding: 10px;
+        border-radius: 8px; font-weight: bold; font-size: 14px;
+        width: 100%; cursor: pointer;
+        box-shadow: 0 4px 10px rgba(236, 72, 153, 0.2);
+        transition: all 0.2s;
+    }
+    #confirm-button.disabled {
+        background: #e2e8f0; color: #94a3b8; box-shadow: none; cursor: not-allowed; pointer-events: none;
+    }
+    #confirm-button:hover:not(.disabled) {
+        transform: translateY(-2px);
+        filter: brightness(1.05);
+    }
+    .loading-text { text-align: center; color: #94a3b8; padding: 20px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div id="raw-data" style="display:none;">$1</div>
+<div class="mac-window">
+    <div class="mac-title-bar">
+        <div class="window-controls">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+        </div>
+        <div class="window-title">✨ 招募中心.app</div>
+    </div>
+    <div class="window-content">
+        <div id="candidates-container">
+            <p class="loading-text">正在分析简历...</p>
+        </div>
+        <button id="confirm-button" class="disabled">请先选择候选人</button>
+    </div>
+</div>
+<script>
+(function() {
+    const rawData = document.getElementById('raw-data').textContent;
+    const candidatesContainer = document.getElementById('candidates-container');
+    const confirmButton = document.getElementById('confirm-button');
+    let selectedCandidateNames = [];
+
+    if (!rawData || rawData.trim() === '') return;
+    candidatesContainer.innerHTML = '';
+
+    const candidates = rawData.split('候选人:').slice(1);
+    if (candidates.length === 0) {
+        candidatesContainer.innerHTML = '<p class="loading-text" style="color: #ec4899;">❓ 没有找到有效的候选人数据</p>';
+        return;
+    }
+
+    candidates.forEach(candidateText => {
+        const extract = (key) => { const regex = new RegExp(key + ': "([^"]+)"'); const match = candidateText.match(regex); return match ? match[1] : ''; };
+        const name = extract('名字');
+        if (!name) return;
+
+        const card = document.createElement('div');
+        card.className = 'candidate-card';
+        card.onclick = () => handleCardClick(card, name);
+        
+        let tagsHTML = '';
+        const tags = extract('标签');
+        if (tags) { tags.split('/').forEach(tag => { tagsHTML += '<span class="tag">' + tag.trim() + '</span>'; }); }
+
+        const brief = extract('简介');
+        card.innerHTML = '<div class="candidate-name">' + name + '</div>' +
+            '<div class="tags-container">' + tagsHTML + '</div>' +
+            '<div class="details"><div>🎂 ' + extract('年龄') + ' | 👗 ' + extract('常见穿搭') + '</div>' +
+            '<div style="margin-top:2px">❤️ ' + extract('情感状况') + '</div>' +
+            (brief ? '<div style="margin-top:4px">📝 ' + brief + '</div>' : '') + '</div>' +
+            '<div class="quote">"' + extract('代表性发言') + '"</div>';
+        candidatesContainer.appendChild(card);
+    });
+
+    function handleCardClick(clickedCard, candidateName) {
+        const isAlreadySelected = clickedCard.classList.contains('selected');
+        if (isAlreadySelected) {
+            clickedCard.classList.remove('selected');
+            selectedCandidateNames = selectedCandidateNames.filter(n => n !== candidateName);
+        } else {
+            if (selectedCandidateNames.length >= 2) { alert('最多入住2人哦！'); return; }
+            clickedCard.classList.add('selected');
+            selectedCandidateNames.push(candidateName);
+        }
+        updateConfirmButtonState();
+    }
+
+    function updateConfirmButtonState() {
+        if (selectedCandidateNames.length > 0) {
+            confirmButton.classList.remove('disabled');
+            confirmButton.textContent = '确认入住 (' + selectedCandidateNames.length + '/2)';
+        } else {
+            confirmButton.classList.add('disabled');
+            confirmButton.textContent = '请先选择候选人';
+        }
+    }
+
+    confirmButton.onclick = function() {
+        if (!this.classList.contains('disabled') && selectedCandidateNames.length > 0) {
+            const namesText = selectedCandidateNames.map(n => '"' + n + '"').join('和');
+            const message = '我选择 ' + namesText + ' 作为新租客。请为' + (selectedCandidateNames.length === 1 ? '这位租客' : '这些租客') + '生成详细的固定信息（性格、背景、爱好等不变的特征），用于添加到Chat Lore。';
+            if (typeof triggerSlash === 'function') {
+                triggerSlash('/send ' + message.trim() + '|/trigger');
+            } else {
+                alert('模拟发送：\n' + message);
+            }
+            this.textContent = '✅ 已提交申请';
+            this.classList.add('disabled');
+        }
+    };
+})();
+</script>
+</body>
+</html>
+```

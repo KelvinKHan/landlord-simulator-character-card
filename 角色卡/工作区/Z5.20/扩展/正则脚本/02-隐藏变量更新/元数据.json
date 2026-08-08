@@ -1,0 +1,16 @@
+{
+  "id": "37fe944f-fd13-449b-8ecb-83a36bdc3799",
+  "scriptName": "隐藏变量更新",
+  "disabled": false,
+  "runOnEdit": false,
+  "trimStrings": [],
+  "placement": [
+    1,
+    2
+  ],
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null,
+  "markdownOnly": false,
+  "promptOnly": true
+}

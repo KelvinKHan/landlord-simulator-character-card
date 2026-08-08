@@ -1,0 +1,1 @@
+/<search_history>[\r\n\s]*([^\r\n]+)[\r\n]+((?:(?!<search_history>)[\s\S])*?)[\r\n\s]*<\/search_history>/g

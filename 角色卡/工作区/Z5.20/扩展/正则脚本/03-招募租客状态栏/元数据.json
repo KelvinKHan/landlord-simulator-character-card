@@ -1,0 +1,15 @@
+{
+  "id": "a17fdf14-59ff-467b-ab96-f66f0b4914a9",
+  "scriptName": "招募租客状态栏",
+  "disabled": false,
+  "runOnEdit": false,
+  "trimStrings": [],
+  "placement": [
+    2
+  ],
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null,
+  "markdownOnly": true,
+  "promptOnly": false
+}

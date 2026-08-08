@@ -1,0 +1,1 @@
+<companion>((?:(?!<companion>)[\s\S])*?)<\/companion>

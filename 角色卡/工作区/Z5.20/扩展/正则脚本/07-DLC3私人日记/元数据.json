@@ -1,0 +1,15 @@
+{
+  "id": "cd8432ff-8cd5-466d-96fe-1b3f14641f58",
+  "scriptName": "DLC3私人日记",
+  "disabled": false,
+  "runOnEdit": false,
+  "trimStrings": [],
+  "placement": [
+    2
+  ],
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null,
+  "markdownOnly": true,
+  "promptOnly": false
+}

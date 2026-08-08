@@ -1,0 +1,16 @@
+{
+  "type": "script",
+  "enabled": false,
+  "name": "音乐（二改版）",
+  "id": "71706ea3-820a-42ca-bc37-1e0b95c40e3b",
+  "info": "",
+  "button": {
+    "enabled": true,
+    "buttons": []
+  },
+  "data": {},
+  "export_with": {
+    "data": true,
+    "button": true
+  }
+}

@@ -1,0 +1,74 @@
+```
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案一：修改 body 样式</title>
+<style>
+  /* 【核心修正】
+     我们只让 body 负责水平居中，去掉了垂直居中和最小高度的限制。
+  */
+  body {
+    display: flex;
+    justify-content: center; /* 只保留水平居中 */
+    margin: 0;
+    background: none; /* 确保背景是干净的 */
+  }
+
+  /* 整体容器样式 (小框本身) */
+  .search-history-widget {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: rgba(249, 250, 251, 0.9);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    width: 360px;
+    padding: 18px 22px;  
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    /* 为了效果更明显，加一个上边距，让它不紧贴顶部 */
+    margin-top: 20px;
+  }
+
+  /* 标题部分 */
+  .widget-header {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1f2328;
+    text-align: center;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  /* 搜索记录的内容区域 */
+  .widget-content {
+    color: #333c48;
+    font-size: 14px;
+    line-height: 1.7;  
+  }
+
+  .widget-content pre {
+    margin: 0;
+    padding: 0;
+    font-family: inherit;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+</style>
+</head>
+<body>
+
+<div class="search-history-widget">
+  <div class="widget-header">
+    $1
+  </div>
+  <div class="widget-content">
+    <pre>$2</pre>
+  </div>
+</div>
+
+</body>
+</html>
+```

@@ -1,0 +1,1 @@
+/<update(?:variable)?>\s*((?:(?!<update(?:variable)?>)[\s\S])*?)\s*<\/update(?:variable)?>/gsi

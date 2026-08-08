@@ -1,0 +1,16 @@
+{
+  "type": "script",
+  "enabled": false,
+  "name": "悬浮球示例（别开）",
+  "id": "45c60ad0-e918-4f7f-add4-c0e06f640ed9",
+  "info": "",
+  "button": {
+    "enabled": true,
+    "buttons": []
+  },
+  "data": {},
+  "export_with": {
+    "data": true,
+    "button": true
+  }
+}

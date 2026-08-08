@@ -1,0 +1,386 @@
+```
+<html>
+<head>
+<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: transparent;
+        color: #1e293b;
+        font-size: 14px;
+        line-height: normal;
+    }
+    .mac-window {
+        width: 100%; max-width: 500px; margin: 0 auto;
+        background: #fdfdfd;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(236, 72, 153, 0.15);
+        border: 4px solid #ffffff;
+        overflow: hidden;
+    }
+    .mac-title-bar {
+        height: 32px;
+        background: #ffe4e8;
+        border-bottom: 2px solid white;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        gap: 8px;
+    }
+    .window-controls { display: flex; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.red { background: #ff5f57; }
+    .dot.yellow { background: #febc2e; }
+    .dot.green { background: #28c840; }
+    .window-title {
+        flex: 1; text-align: center;
+        font-size: 13px; font-weight: 600;
+        color: #be185d; opacity: 0.8;
+        margin-right: 40px;
+    }
+    .window-content {
+        padding: 15px;
+        display: flex; flex-direction: column; gap: 15px;
+    }
+    .tenant-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 12px;
+        border: 1px solid #fce7f3;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        transition: all 0.2s;
+        margin-bottom: 12px;
+    }
+    .tenant-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(236, 72, 153, 0.1);
+        border-color: #E68A96;
+    }
+    .tenant-card:last-child {
+        margin-bottom: 0;
+    }
+    .tenant-name {
+        color: #831843; font-weight: 700; font-size: 16px;
+        margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .tenant-name i { color: #E68A96; }
+    .edit-area {
+        width: 100%;
+        min-height: 150px;
+        max-height: 600px;
+        overflow-y: auto;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.6;
+        font-family: inherit;
+        background: #f8fafc;
+        color: #334155;
+        transition: all 0.2s;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .edit-area:focus {
+        outline: none;
+        border-color: #E68A96;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(255, 158, 170, 0.2);
+    }
+    .hint-text {
+        font-size: 12px; color: #94a3b8; margin-top: 8px;
+        display: flex; align-items: center; gap: 5px;
+    }
+    .action-buttons {
+        display: flex; gap: 10px; margin-top: 5px;
+    }
+    .btn {
+        flex: 1; padding: 10px;
+        border-radius: 8px; font-weight: 600; font-size: 13px;
+        border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        transition: all 0.2s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .btn:hover:not(.disabled) { transform: translateY(-2px); filter: brightness(1.05); }
+    .btn:active:not(.disabled) { transform: translateY(0); }
+    .btn-primary {
+        background: linear-gradient(135deg, #FF9EAA 0%, #E68A96 100%);
+        color: white;
+        box-shadow: 0 4px 10px rgba(255, 158, 170, 0.3);
+    }
+    .btn-success {
+        background: linear-gradient(135deg, #a7f3d0 0%, #34d399 100%);
+        color: #064e3b;
+        box-shadow: 0 4px 10px rgba(52, 211, 153, 0.3);
+    }
+    .btn.disabled {
+        background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none; pointer-events: none;
+    }
+    .loading {
+        text-align: center; padding: 20px; color: #64748b;
+        background: #f8fafc; border-radius: 10px; border: 1px dashed #cbd5e1;
+    }
+    /* 房间选择器 */
+    .room-picker { display: none; margin-top: 10px; }
+    .room-picker.active { display: block; }
+    .room-picker-title {
+        font-size: 13px; font-weight: 600; color: #831843;
+        margin-bottom: 8px; display: flex; align-items: center; gap: 5px;
+    }
+    .room-grid {
+        display: flex; flex-wrap: wrap; gap: 6px;
+        max-height: 180px; overflow-y: auto; padding: 2px;
+    }
+    .room-card {
+        flex: 0 0 calc(50% - 3px);
+        padding: 8px 10px; border: 2px solid #e2e8f0;
+        border-radius: 10px; cursor: pointer;
+        transition: all 0.15s; text-align: left; background: #fff;
+    }
+    .room-card:hover { border-color: #E68A96; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.06); }
+    .room-card.rc-selected { border-color: #E68A96; background: #FFF0F5; box-shadow: 0 0 0 2px rgba(230,138,150,0.2); }
+    .room-card-name { font-weight: 600; font-size: 0.85em; color: #1e293b; }
+    .room-card-info { font-size: 0.7em; color: #6B7280; margin-top: 1px; }
+    .room-card-badge {
+        font-size: 0.65em; padding: 1px 5px; border-radius: 6px;
+        display: inline-block; margin-top: 3px;
+    }
+    .badge-empty { background: #dcfce7; color: #166534; }
+    .badge-occupied { background: #fef3c7; color: #92400e; }
+    .room-picker-none { text-align: center; padding: 12px; color: #EF4444; font-size: 13px; }
+    .room-picker-fallback { margin-top: 6px; }
+    .room-picker-fallback input {
+        width: 100%; padding: 8px 10px; border: 1px solid #e2e8f0;
+        border-radius: 8px; font-size: 13px; font-family: inherit;
+    }
+    .room-picker-fallback input:focus { outline: none; border-color: #E68A96; box-shadow: 0 0 0 2px rgba(255,158,170,0.2); }
+</style>
+</head>
+<body>
+<div id="raw-data" style="display:none;">$1</div>
+<div class="mac-window">
+    <div class="mac-title-bar">
+        <div class="window-controls">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+        </div>
+        <div class="window-title">📂 租客档案.app</div>
+    </div>
+    <div class="window-content">
+        <div id="tenants-container">
+            <div class="loading">
+                <i class="fa fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 10px; color: #E68A96;"></i>
+                <p>正在读取档案库...</p>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <button id="add-all-btn" class="btn btn-success disabled">
+                <i class="fa fa-plus-circle"></i> 添加常驻记忆
+            </button>
+            <button id="confirm-move-in-btn" class="btn btn-primary disabled">
+                <i class="fa fa-key"></i> 办理入住
+            </button>
+        </div>
+        <div id="room-picker" class="room-picker">
+            <div class="room-picker-title"><i class="fa fa-home"></i> 选择入住房间</div>
+            <div id="room-grid" class="room-grid"></div>
+            <div id="room-picker-fallback" class="room-picker-fallback" style="display:none;">
+                <input type="text" id="room-name-input" placeholder="输入房间名（如：卧室A）">
+            </div>
+            <div class="action-buttons" style="margin-top:8px;">
+                <button id="confirm-room-btn" class="btn btn-primary disabled">
+                    <i class="fa fa-check"></i> 确认入住
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+(function() {
+    const rawData = document.getElementById('raw-data').textContent;
+    const tenantsContainer = document.getElementById('tenants-container');
+    const addAllBtn = document.getElementById('add-all-btn');
+    const confirmMoveInBtn = document.getElementById('confirm-move-in-btn');
+    const tenantsData = [];
+
+    if (!rawData || rawData.trim() === '') return;
+
+    const nameRegex = /姓名[：:]\s*([^\n\r]+)/g;
+    const names = [];
+    let match;
+    while ((match = nameRegex.exec(rawData)) !== null) {
+        names.push(match[1].trim());
+    }
+
+    if (names.length === 0) {
+        tenantsContainer.innerHTML = '<div class="loading" style="color: #ec4899; background: #fff1f2; border-color: #fda4af;">❌ 数据解析异常</div>';
+        return;
+    }
+
+    if (names.length === 1) {
+        tenantsData.push({ name: names[0], content: rawData.trim() });
+    } else {
+        const blocks = rawData.split(/基本信息[：:]/);
+        for (let i = 1; i < blocks.length && i - 1 < names.length; i++) {
+            tenantsData.push({ name: names[i - 1], content: '基本信息：' + blocks[i].trim() });
+        }
+    }
+
+    tenantsContainer.innerHTML = '';
+    tenantsData.forEach(function(tenant, index) {
+        const card = document.createElement('div');
+        card.className = 'tenant-card';
+        card.innerHTML = '<div class="tenant-name"><i class="fa fa-user-circle"></i> ' + tenant.name + '</div>' +
+            '<div class="edit-area" id="tenant-content-' + index + '" contenteditable="true">' + tenant.content + '</div>' +
+            '<div class="hint-text"><i class="fa fa-info-circle"></i> 将保存为 World Info (Constant)</div>';
+        tenantsContainer.appendChild(card);
+    });
+
+    addAllBtn.classList.remove('disabled');
+    confirmMoveInBtn.classList.remove('disabled');
+
+    addAllBtn.addEventListener('click', async function() {
+        var btn = this;
+        // 查找酒馆助手API（遍历parent链，兼容iframe嵌套）
+        var getOrCreate = null, updateWB = null;
+        var w = window;
+        for (var depth = 0; depth < 5 && w; depth++) {
+            if (typeof w.getOrCreateChatWorldbook === 'function') getOrCreate = w.getOrCreateChatWorldbook;
+            if (typeof w.updateWorldbookWith === 'function') updateWB = w.updateWorldbookWith;
+            if (getOrCreate && updateWB) break;
+            try { w = w.parent; } catch(e) { break; }
+            if (w === window) break;
+        }
+        if (getOrCreate && updateWB) {
+            try {
+                var loreName = await getOrCreate('current');
+                if (!loreName) { alert('无法创建ChatLore'); return; }
+                var successCount = 0;
+                for (var i = 0; i < tenantsData.length; i++) {
+                    var content = document.getElementById('tenant-content-' + i).textContent.trim();
+                    var name = tenantsData[i].name;
+                    if (content && name) {
+                        await updateWB(loreName, function(entries) {
+                            var idx = entries.findIndex(function(e) { return e.name === name; });
+                            var entry = {
+                                name: name, enabled: true, content: content,
+                                strategy: { type: 'constant', keys: [name], keys_secondary: { logic: 'and_any', keys: [] }, scan_depth: 'same_as_global' },
+                                position: { type: 'before_character_definition', role: 'system', depth: 4, order: 100 },
+                                probability: 100
+                            };
+                            if (idx >= 0) entries[idx] = Object.assign({}, entries[idx], entry); else entries.push(entry);
+                            return entries;
+                        });
+                        successCount++;
+                    }
+                }
+                btn.innerHTML = '<i class="fa fa-check"></i> 已保存';
+                btn.classList.add('disabled');
+                if (successCount > 0) alert('✅ ' + successCount + ' 份档案已归档（蓝灯常驻）！');
+            } catch(e) { alert('保存失败: ' + e.message); }
+        } else if (typeof triggerSlash === 'function') {
+            var successCount = 0;
+            tenantsData.forEach(function(tenant, index) {
+                var content = document.getElementById('tenant-content-' + index).textContent.trim();
+                if (content) {
+                    triggerSlash('/getchatbook | /createentry file={{pipe}} key=' + tenant.name + ' ' + content);
+                    setTimeout(function() { triggerSlash('/getchatbook | /setentryfield file={{pipe}} key=' + tenant.name + ' field=constant true'); }, 200 * (index + 1));
+                    successCount++;
+                }
+            });
+            if (successCount > 0) {
+                btn.innerHTML = '<i class="fa fa-check"></i> 已保存';
+                btn.classList.add('disabled');
+                alert('✅ ' + successCount + ' 份档案已归档！');
+            }
+        } else {
+            alert('请在酒馆中运行');
+        }
+    });
+
+    // 办理入住 → 展开房间选择器
+    var roomPicker = document.getElementById('room-picker');
+    var roomGrid = document.getElementById('room-grid');
+    var roomFallback = document.getElementById('room-picker-fallback');
+    var confirmRoomBtn = document.getElementById('confirm-room-btn');
+    var selectedRoomKey = '';
+    var selectedRoomOccupant = '';
+
+    confirmMoveInBtn.addEventListener('click', function() {
+        if (roomPicker.classList.contains('active')) {
+            roomPicker.classList.remove('active');
+            return;
+        }
+        // 尝试从掌上公寓获取卧室列表
+        var bedrooms = [];
+        try { bedrooms = parent.getApartmentBedrooms ? parent.getApartmentBedrooms() : []; } catch(e) {}
+
+        roomGrid.innerHTML = '';
+        if (bedrooms.length > 0) {
+            roomFallback.style.display = 'none';
+            bedrooms.forEach(function(r, i) {
+                var badgeClass = r.isEmpty ? 'badge-empty' : 'badge-occupied';
+                var badgeText = r.isEmpty ? '✅ 空闲' : '🏠 ' + r.occupant;
+                var card = document.createElement('div');
+                card.className = 'room-card';
+                card.dataset.key = r.key;
+                card.dataset.occupant = r.isEmpty ? '' : r.occupant;
+                card.innerHTML = '<div class="room-card-name">' + r.name + '</div>'
+                    + '<div class="room-card-info">' + r.floor + ' · ' + r.position + '</div>'
+                    + '<span class="room-card-badge ' + badgeClass + '">' + badgeText + '</span>';
+                card.addEventListener('click', function() {
+                    roomGrid.querySelectorAll('.room-card').forEach(function(c) { c.classList.remove('rc-selected'); });
+                    card.classList.add('rc-selected');
+                    selectedRoomKey = r.key;
+                    selectedRoomOccupant = r.isEmpty ? '' : r.occupant;
+                    confirmRoomBtn.classList.remove('disabled');
+                    confirmRoomBtn.innerHTML = '<i class="fa fa-check"></i> 入住 → ' + r.name;
+                });
+                roomGrid.appendChild(card);
+            });
+            // 默认选中第一个空闲卧室，没有空闲则选第一个
+            var autoSelect = roomGrid.querySelector('.room-card[data-occupant=""]') || roomGrid.querySelector('.room-card');
+            if (autoSelect) autoSelect.click();
+        } else {
+            roomGrid.innerHTML = '<div class="room-picker-none">⚠️ 无法获取卧室数据，请手动输入</div>';
+            roomFallback.style.display = 'block';
+            var roomInput = document.getElementById('room-name-input');
+            roomInput.addEventListener('input', function() {
+                if (roomInput.value.trim()) {
+                    selectedRoomKey = roomInput.value.trim();
+                    selectedRoomOccupant = '';
+                    confirmRoomBtn.classList.remove('disabled');
+                } else {
+                    confirmRoomBtn.classList.add('disabled');
+                }
+            });
+        }
+        roomPicker.classList.add('active');
+    });
+
+    // 确认入住（带房间）
+    confirmRoomBtn.addEventListener('click', function() {
+        if (!selectedRoomKey) return;
+        var tenantNames = tenantsData.map(function(t) { return '"' + t.name + '"'; }).join('和');
+        var message = '请让 ' + tenantNames + ' 正式入住「' + selectedRoomKey + '」。';
+        if (selectedRoomOccupant) {
+            message += '（该房间已有住户「' + selectedRoomOccupant + '」，新租客将合租，住户字段更新为「' + selectedRoomOccupant + '、新租客姓名」）';
+        }
+        if (typeof triggerSlash === 'function') {
+            triggerSlash('/send ' + message.trim() + '|/trigger');
+        } else {
+            alert('模拟发送：\n' + message);
+        }
+        confirmRoomBtn.innerHTML = '<i class="fa fa-check"></i> ✅ 已提交';
+        confirmRoomBtn.classList.add('disabled');
+        confirmMoveInBtn.innerHTML = '<i class="fa fa-check"></i> ✅ 已安排入住';
+        confirmMoveInBtn.classList.add('disabled');
+    });
+})();
+</script>
+</body>
+</html>
+```

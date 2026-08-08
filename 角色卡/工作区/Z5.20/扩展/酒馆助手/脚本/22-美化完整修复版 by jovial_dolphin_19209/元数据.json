@@ -1,0 +1,21 @@
+{
+  "type": "script",
+  "enabled": true,
+  "name": "美化完整修复版 by jovial_dolphin_19209",
+  "id": "da7f15fe-c867-43ad-a1ab-ec2e6dbe9850",
+  "info": "",
+  "button": {
+    "enabled": true,
+    "buttons": [
+      {
+        "name": "美化设置",
+        "visible": true
+      }
+    ]
+  },
+  "data": {},
+  "export_with": {
+    "data": true,
+    "button": true
+  }
+}

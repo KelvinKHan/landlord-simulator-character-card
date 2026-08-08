@@ -1,0 +1,16 @@
+{
+  "type": "script",
+  "enabled": false,
+  "name": "租客分析系统（二改版）",
+  "id": "05e4f363-5fe0-476d-8f72-e1ab985966d1",
+  "info": "",
+  "button": {
+    "enabled": true,
+    "buttons": []
+  },
+  "data": {},
+  "export_with": {
+    "data": true,
+    "button": true
+  }
+}

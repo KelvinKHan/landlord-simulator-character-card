@@ -1,0 +1,15 @@
+{
+  "id": "2115d9ca-e353-47a2-a83a-1aa54fbf214e",
+  "scriptName": "DLC1群聊记录",
+  "disabled": false,
+  "runOnEdit": false,
+  "trimStrings": [],
+  "placement": [
+    2
+  ],
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null,
+  "markdownOnly": true,
+  "promptOnly": false
+}

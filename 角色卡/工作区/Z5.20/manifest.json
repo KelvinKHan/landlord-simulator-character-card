@@ -1,0 +1,298 @@
+{
+  "workspace_format": 1,
+  "card": {
+    "name": "房东模拟器Z5.20",
+    "version": "Z5.20",
+    "spec": "chara_card_v3",
+    "spec_version": "3.0",
+    "original_path": "角色卡/原始导出/房东模拟器Z5.20.json",
+    "original_sha256": "260b248d8cad57b413c19126b2f9aca5d0a819a750b325fd5c7f2aa89f3bbda7"
+  },
+  "parts": {
+    "compatibility": "兼容字段.json",
+    "core": "角色文本/基本信息.json",
+    "text_fields": [
+      {
+        "field": "description",
+        "path": "角色文本/description.md"
+      },
+      {
+        "field": "personality",
+        "path": "角色文本/personality.md"
+      },
+      {
+        "field": "scenario",
+        "path": "角色文本/scenario.md"
+      },
+      {
+        "field": "first_mes",
+        "path": "角色文本/first_mes.md"
+      },
+      {
+        "field": "mes_example",
+        "path": "角色文本/mes_example.md"
+      },
+      {
+        "field": "creator_notes",
+        "path": "角色文本/creator_notes.md"
+      },
+      {
+        "field": "system_prompt",
+        "path": "角色文本/system_prompt.md"
+      },
+      {
+        "field": "post_history_instructions",
+        "path": "角色文本/post_history_instructions.md"
+      }
+    ],
+    "alternate_greetings": [
+      "角色文本/alternate_greetings/00.md",
+      "角色文本/alternate_greetings/01.md"
+    ],
+    "worldbook": {
+      "settings": "世界书/设置.json",
+      "entries": [
+        {
+          "metadata": "世界书/条目/00-[InitVar]/元数据.json",
+          "content": "世界书/条目/00-[InitVar]/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/01-[mvu_update]变量更新规则/元数据.json",
+          "content": "世界书/条目/01-[mvu_update]变量更新规则/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/02-[mvu_update]变量输出格式/元数据.json",
+          "content": "世界书/条目/02-[mvu_update]变量输出格式/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/03-变量列表/元数据.json",
+          "content": "世界书/条目/03-变量列表/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/04-关于基建/元数据.json",
+          "content": "世界书/条目/04-关于基建/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/05-(别开)世界观设定/元数据.json",
+          "content": "世界书/条目/05-(别开)世界观设定/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/06-管理租客档案/元数据.json",
+          "content": "世界书/条目/06-管理租客档案/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/07-招募租客规则/元数据.json",
+          "content": "世界书/条目/07-招募租客规则/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/08-DLC1群聊记录/元数据.json",
+          "content": "世界书/条目/08-DLC1群聊记录/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/09-DLC2浏览器搜索记录/元数据.json",
+          "content": "世界书/条目/09-DLC2浏览器搜索记录/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/10-DLC3私人日记/元数据.json",
+          "content": "世界书/条目/10-DLC3私人日记/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/11-DLC4虚拟直播间/元数据.json",
+          "content": "世界书/条目/11-DLC4虚拟直播间/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/12-今日新闻/元数据.json",
+          "content": "世界书/条目/12-今日新闻/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/13-世界旅行/元数据.json",
+          "content": "世界书/条目/13-世界旅行/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/14-防全知条目 from klein_morreit/元数据.json",
+          "content": "世界书/条目/14-防全知条目 from klein_morreit/内容.md"
+        },
+        {
+          "metadata": "世界书/条目/15-今日天气/元数据.json",
+          "content": "世界书/条目/15-今日天气/内容.md"
+        }
+      ]
+    },
+    "extensions": "扩展/其他扩展.json",
+    "tavern_helper": {
+      "settings": "扩展/酒馆助手/设置.json",
+      "variables": "扩展/酒馆助手/variables.json",
+      "scripts": [
+        {
+          "metadata": "扩展/酒馆助手/脚本/00-MVU zod(开)/元数据.json",
+          "content": "扩展/酒馆助手/脚本/00-MVU zod(开)/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/01-变量结构(开)/元数据.json",
+          "content": "扩展/酒馆助手/脚本/01-变量结构(开)/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/02-悬浮球管理/元数据.json",
+          "content": "扩展/酒馆助手/脚本/02-悬浮球管理/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/03-switcher/元数据.json",
+          "content": "扩展/酒馆助手/脚本/03-switcher/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/04-公寓(开)/元数据.json",
+          "content": "扩展/酒馆助手/脚本/04-公寓(开)/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/05-悬浮球示例(别开)/元数据.json",
+          "content": "扩展/酒馆助手/脚本/05-悬浮球示例(别开)/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/06-小手机主程序/元数据.json",
+          "content": "扩展/酒馆助手/脚本/06-小手机主程序/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/07-聊天数据库/元数据.json",
+          "content": "扩展/酒馆助手/脚本/07-聊天数据库/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/08-分析调度器/元数据.json",
+          "content": "扩展/酒馆助手/脚本/08-分析调度器/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/09-租客分析系统/元数据.json",
+          "content": "扩展/酒馆助手/脚本/09-租客分析系统/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/10-分析队列组件/元数据.json",
+          "content": "扩展/酒馆助手/脚本/10-分析队列组件/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/11-聊天核心/元数据.json",
+          "content": "扩展/酒馆助手/脚本/11-聊天核心/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/12-聊天正文联动/元数据.json",
+          "content": "扩展/酒馆助手/脚本/12-聊天正文联动/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/13-聊天APP/元数据.json",
+          "content": "扩展/酒馆助手/脚本/13-聊天APP/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/14-租客档案APP/元数据.json",
+          "content": "扩展/酒馆助手/脚本/14-租客档案APP/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/15-提示词-控制台查看器/元数据.json",
+          "content": "扩展/酒馆助手/脚本/15-提示词-控制台查看器/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/16-地图/元数据.json",
+          "content": "扩展/酒馆助手/脚本/16-地图/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/17-音乐/元数据.json",
+          "content": "扩展/酒馆助手/脚本/17-音乐/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/18-世界地图/元数据.json",
+          "content": "扩展/酒馆助手/脚本/18-世界地图/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/19-天气APP/元数据.json",
+          "content": "扩展/酒馆助手/脚本/19-天气APP/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/20-新闻/元数据.json",
+          "content": "扩展/酒馆助手/脚本/20-新闻/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/21-和欧欧聊天吧!/元数据.json",
+          "content": "扩展/酒馆助手/脚本/21-和欧欧聊天吧!/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/22-美化完整修复版 by jovial_dolphin_19209/元数据.json",
+          "content": "扩展/酒馆助手/脚本/22-美化完整修复版 by jovial_dolphin_19209/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/23-创意工坊main/元数据.json",
+          "content": "扩展/酒馆助手/脚本/23-创意工坊main/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/24-大富翁主脚本/元数据.json",
+          "content": "扩展/酒馆助手/脚本/24-大富翁主脚本/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/25-公寓(二改版)/元数据.json",
+          "content": "扩展/酒馆助手/脚本/25-公寓(二改版)/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/26-租客分析系统(二改版)/元数据.json",
+          "content": "扩展/酒馆助手/脚本/26-租客分析系统(二改版)/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/27-聊天系统(二改版)/元数据.json",
+          "content": "扩展/酒馆助手/脚本/27-聊天系统(二改版)/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/28-音乐(二改版)/元数据.json",
+          "content": "扩展/酒馆助手/脚本/28-音乐(二改版)/index.js"
+        },
+        {
+          "metadata": "扩展/酒馆助手/脚本/29-报社系统(二改版)/元数据.json",
+          "content": "扩展/酒馆助手/脚本/29-报社系统(二改版)/index.js"
+        }
+      ]
+    },
+    "regex_scripts": {
+      "items": [
+        {
+          "metadata": "扩展/正则脚本/00-对AI隐藏状态栏(必开)/元数据.json",
+          "find": "扩展/正则脚本/00-对AI隐藏状态栏(必开)/查找表达式.txt",
+          "replace": "扩展/正则脚本/00-对AI隐藏状态栏(必开)/替换内容.html"
+        },
+        {
+          "metadata": "扩展/正则脚本/01-完整变量更新(必开)/元数据.json",
+          "find": "扩展/正则脚本/01-完整变量更新(必开)/查找表达式.txt",
+          "replace": "扩展/正则脚本/01-完整变量更新(必开)/替换内容.html"
+        },
+        {
+          "metadata": "扩展/正则脚本/02-隐藏变量更新/元数据.json",
+          "find": "扩展/正则脚本/02-隐藏变量更新/查找表达式.txt",
+          "replace": "扩展/正则脚本/02-隐藏变量更新/替换内容.html"
+        },
+        {
+          "metadata": "扩展/正则脚本/03-招募租客状态栏/元数据.json",
+          "find": "扩展/正则脚本/03-招募租客状态栏/查找表达式.txt",
+          "replace": "扩展/正则脚本/03-招募租客状态栏/替换内容.html"
+        },
+        {
+          "metadata": "扩展/正则脚本/04-租客档案状态栏/元数据.json",
+          "find": "扩展/正则脚本/04-租客档案状态栏/查找表达式.txt",
+          "replace": "扩展/正则脚本/04-租客档案状态栏/替换内容.html"
+        },
+        {
+          "metadata": "扩展/正则脚本/05-DLC1群聊记录/元数据.json",
+          "find": "扩展/正则脚本/05-DLC1群聊记录/查找表达式.txt",
+          "replace": "扩展/正则脚本/05-DLC1群聊记录/替换内容.html"
+        },
+        {
+          "metadata": "扩展/正则脚本/06-DLC2浏览器搜索记录/元数据.json",
+          "find": "扩展/正则脚本/06-DLC2浏览器搜索记录/查找表达式.txt",
+          "replace": "扩展/正则脚本/06-DLC2浏览器搜索记录/替换内容.html"
+        },
+        {
+          "metadata": "扩展/正则脚本/07-DLC3私人日记/元数据.json",
+          "find": "扩展/正则脚本/07-DLC3私人日记/查找表达式.txt",
+          "replace": "扩展/正则脚本/07-DLC3私人日记/替换内容.html"
+        },
+        {
+          "metadata": "扩展/正则脚本/08-DLC4直播间/元数据.json",
+          "find": "扩展/正则脚本/08-DLC4直播间/查找表达式.txt",
+          "replace": "扩展/正则脚本/08-DLC4直播间/替换内容.html"
+        }
+      ]
+    }
+  }
+}

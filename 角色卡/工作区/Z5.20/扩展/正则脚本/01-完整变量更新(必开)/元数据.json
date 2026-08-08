@@ -1,0 +1,15 @@
+{
+  "id": "e5d35a28-f079-49b3-8562-9e5821934350",
+  "scriptName": "完整变量更新（必开）",
+  "disabled": false,
+  "runOnEdit": false,
+  "trimStrings": [],
+  "placement": [
+    2
+  ],
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null,
+  "markdownOnly": true,
+  "promptOnly": false
+}
