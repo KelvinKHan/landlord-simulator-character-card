@@ -1,16 +1,16 @@
 {
-  "version": "0.1.0-preview.5",
+  "version": "0.1.0-preview.6",
   "format": "esm",
   "entry": "landlord-simulator.bundle.js",
   "bytes": 929253,
-  "sha256": "cdbad4773f02b87b8d9e973e74183b36f3233da9b2c09f24335aa7eabc822226",
+  "sha256": "251acc12634f3cf5beb58ba528ae630e971b1e8ba9f078d210522bfc8a160c74",
   "release": {
-    "tag": "v0.1.0-preview.5",
+    "tag": "v0.1.0-preview.6",
     "repository": "KelvinKHan/landlord-simulator-character-card",
     "loader": "landlord-simulator.loader.js",
     "sources": [
-      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.5/dist/landlord-simulator.bundle.js",
-      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.5/dist/landlord-simulator.bundle.js"
+      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.6/dist/landlord-simulator.bundle.js",
+      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.1.0-preview.6/dist/landlord-simulator.bundle.js"
     ]
   },
   "upstreams": {

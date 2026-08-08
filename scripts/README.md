@@ -23,6 +23,7 @@
 - `npm run architecture:check`：检查依赖顺序、重复服务、模块体积和隐式全局访问。
 - `npm run migration:build`：额外生成只有一条酒馆助手脚本的在线、离线预览卡。
 - `npm run migration:check`：检查原卡结构、迁移完整性、运行时、多合一产物和两张预览卡。
+- `migration:check` 还会逐字符对照 Z5.20 原卡脚本，并检查 `visual-fidelity-contract.mjs` 中的 CSS、HTML、图标与布局标记，阻止缩水界面进入 bundle。
 - `npm run release:verify`：发布固定标签后，确认两个 CDN 节点返回的脚本与本地哈希完全一致。
 
 正式发布时应在本地构建并提交 `dist/`，再使用固定 Git tag 的 jsDelivr 地址。不要使用

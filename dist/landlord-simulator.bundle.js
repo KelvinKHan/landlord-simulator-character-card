@@ -19543,4 +19543,4 @@ var modules = [
     load: () => Promise.resolve().then(() => (init_main(), main_exports))
   }
 ];
-await startLandlordRuntime({ version: "0.1.0-preview.5", modules });
+await startLandlordRuntime({ version: "0.1.0-preview.6", modules });

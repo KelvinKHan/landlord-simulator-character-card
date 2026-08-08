@@ -1,6 +1,6 @@
 {
   "name": "landlord-simulator-character-card",
-  "version": "0.1.0-preview.5",
+  "version": "0.1.0-preview.6",
   "private": true,
   "description": "房东模拟器 SillyTavern 角色卡的可逆拆分与构建工具",
   "type": "module",
@@ -14,7 +14,7 @@
     "architecture:check": "node tools/check-architecture.mjs",
     "test:runtime": "node --test tests/*.test.mjs",
     "migration:build": "npm run card:build && npm run scripts:build && node tools/build-migration-card.mjs",
-    "migration:check": "npm run card:check && npm run architecture:check && npm run scripts:check && npm run test:runtime && node tools/build-migration-card.mjs --check",
+    "migration:check": "npm run card:check && npm run card:verify-baseline && npm run architecture:check && npm run scripts:check && npm run test:runtime && node tools/build-migration-card.mjs --check",
     "release:verify": "node tools/verify-cdn-release.mjs"
   },
   "devDependencies": {
