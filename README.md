@@ -9,6 +9,8 @@
 - `角色卡/原始导出/`：从 SillyTavern 导出的原始 JSON 与 PNG，作为不可修改的回退基线。
 - `角色卡/工作区/Z5.20/`：按角色文本、世界书、酒馆助手脚本和正则规则拆分的可编辑源码。
 - `角色卡/构建产物/`：由工作区重新组装、用于导入 SillyTavern 的 JSON。
+- `scripts/`：多合一模块顺序、统一运行时、酒馆助手 AI 服务和发布配置。
+- `dist/`：提交到 GitHub、供 jsDelivr 读取的单文件脚本与在线加载器。
 - `tools/card-workspace.mjs`：无第三方依赖的拆分、构建和一致性检查工具。
 - `docs/参考项目.md`：本项目可能使用的规范、插件与模板资料。
 
@@ -30,6 +32,17 @@
 - `npm run card:build`：从工作区生成完整 JSON 角色卡。
 - `npm run card:check`：检查构建结果的基本结构和 ID 唯一性。
 - `npm run card:verify-baseline`：验证当前工作区可以无损还原原始 Z5.20。
+- `npm run migration:build`：生成单文件脚本，以及只有一条酒馆助手脚本的在线、离线预览卡。
+- `npm run migration:check`：检查脚本迁移完整性、加载顺序、运行时和预览卡结构。
+- `npm run release:verify`：发布固定 Git tag 后，核对两个 jsDelivr 节点的文件哈希。
+
+## 多合一预览
+
+当前多合一预览把原卡 23 条启用脚本中的 22 条合并为一个 ESM 文件。旧 `switcher` 由统一运行时替代；
+大富翁及原卡已禁用的二改版暂不进入构建。在线版优先使用国内可访问性更好的 jsDelivr 节点，失败后自动尝试官方节点；
+离线版把完整代码直接嵌入角色卡。两版角色卡和内嵌世界书使用不同名称，避免 SillyTavern 名称冲突。
+
+MVU 主程序与 MVU Zod 工具都固定到明确版本，并保留两个 CDN 节点的自动回退。同一发布标签因此不会被上游后续更新悄悄改变。
 
 ## 授权说明
 

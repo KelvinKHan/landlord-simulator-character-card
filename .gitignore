@@ -3,11 +3,12 @@
 .idea/
 .vscode/
 node_modules/
-dist/
 build/
 .env
 .env.*
 !.env.example
+
+# dist/ 是角色卡 CDN 的正式发布内容，需要进入版本管理。
 
 # 可由工作区重新生成，不重复提交。
 /角色卡/构建产物/*.json
