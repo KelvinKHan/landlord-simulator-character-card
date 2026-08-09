@@ -1,16 +1,16 @@
 {
-  "version": "0.3.0-preview.15",
+  "version": "0.3.0-preview.16",
   "format": "esm",
   "entry": "landlord-simulator.bundle.js",
-  "bytes": 1347356,
-  "sha256": "8fe04430748868aae43a6fbe8eaa7c3024d938be2a35179fe6b5c26bd3883b00",
+  "bytes": 1354427,
+  "sha256": "9a677dc36e80311a4d8fecd9f79037c20c4e51bb1bfc2427dcefc6b6d327e7b9",
   "release": {
-    "tag": "v0.3.0-preview.15",
+    "tag": "v0.3.0-preview.16",
     "repository": "KelvinKHan/landlord-simulator-character-card",
     "loader": "landlord-simulator.loader.js",
     "sources": [
-      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.15/dist/landlord-simulator.bundle.js",
-      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.15/dist/landlord-simulator.bundle.js"
+      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.16/dist/landlord-simulator.bundle.js",
+      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.16/dist/landlord-simulator.bundle.js"
     ]
   },
   "upstreams": {
@@ -597,6 +597,7 @@
         "租客在正文、微信、新闻与建筑中的统一身份",
         "基于空间尺寸与相邻关系的建筑数字孪生",
         "把装修配色、材质、照明与家具编译为稳定视觉令牌",
+        "把待确认装修方案无副作用地投射到真实数字孪生楼层",
         "人物移动路线校验、同步提案、冲突检测与确认写入",
         "汇总全部已接管建筑的真实空间并规划跨建筑人物交通",
         "从装修、设施、人物与空间用途实时编译建筑运行脉冲和可激活场景",
@@ -646,6 +647,7 @@
         "多建筑资产总览与建筑切换",
         "可点击的经营版图神经网络、实时运营链路与接管机会节点",
         "楼层和空间编译视图",
+        "装修方案确认前的楼层全息投影、目标高亮与前后视觉对照",
         "本地模拟的接管、装修、招募预览与确认",
         "经营事件时间线",
         "多频道联动待办与消费状态",

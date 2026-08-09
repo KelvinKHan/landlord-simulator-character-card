@@ -67,6 +67,7 @@ const historyCenter = {
     { id: 'op_1', kind: 'exploration', label: '探索房东总部公寓', changeCount: 2, affectedRoots: ['建筑列表'], createdAt: Date.now() - 120_000, status: '已应用' },
   ],
 };
+const renovationTwin = createBuildingLayout(current);
 const twinBuilding = structuredClone(current);
 const twinRoom = twinBuilding.floors.flatMap(floor => floor.spaces).find(space => space.id === ownerRoom.id);
 const twinPlan = renovationPreview.plans[1];
@@ -122,6 +123,7 @@ const pages = {
   renovation: {
     ui: { section: 'renovation', selectedSpaceId: ownerRoom.id, selectedOptionId: 'world-collision', busy: false },
     task: { status: 'ready', preview: renovationPreview },
+    twin: renovationTwin,
   },
   recruitment: {
     ui: {
@@ -145,7 +147,7 @@ const pages = {
 await fs.mkdir(outputDirectory, { recursive: true });
 
 for (const [name, page] of Object.entries(pages)) {
-  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin });
+  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin: page.twin ?? twin });
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),

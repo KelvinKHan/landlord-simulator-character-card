@@ -152,6 +152,11 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     await waitFor(() => assert.match(dom.window.document.body.textContent, /万界拼贴/));
     assert.equal(dom.window.document.querySelectorAll('.lmo-renovation-card[data-renovation-signature]').length, 3);
     click(dom.window.document, '[data-action="choose-option"][data-option-id="world-collision"]');
+    assert.ok(dom.window.document.querySelector('[data-renovation-projection]'));
+    assert.equal(dom.window.document.querySelectorAll('.lmo-hologram-node.projected').length, 1);
+    assert.equal(dom.window.document.querySelector('.lmo-hologram-node.projected')?.dataset.spaceId, 'hospital_ward');
+    assert.match(dom.window.document.body.textContent, /此刻仍未写入 MVU/);
+    assert.equal(store.getState().建筑列表.building_hospital_candidate.空间列表.hospital_ward.装修.风格, '基础装修');
     click(dom.window.document, '[data-action="confirm-renovation"]');
     await waitFor(() =>
       assert.equal(
