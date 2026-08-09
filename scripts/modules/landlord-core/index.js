@@ -4,6 +4,7 @@ import { createBuildingLayoutService } from '../../src/buildings/layout-engine.j
 import { createBuildingOperationsService } from '../../src/buildings/operations-engine.js';
 import { createRenovationVisualService } from '../../src/renovation/visual-engine.js';
 import { createSpatialRouteService } from '../../src/spatial/route-engine.js';
+import { createTenantEmbodimentService } from '../../src/tenants/embodiment-engine.js';
 import { createBuildingEventBus } from '../../src/events/building-event-bus.js';
 import { managementMockRecipes } from '../../src/mock/management-recipes.js';
 import { createLandlordStore } from '../../src/services/landlord-store.js';
@@ -44,6 +45,7 @@ export function activate(context) {
   const renovationVisuals = createRenovationVisualService();
   const routes = createSpatialRouteService();
   const spatialSync = createSpatialSyncService({ store });
+  const embodiment = createTenantEmbodimentService();
   const bridges = createChannelBridgeService({
     events,
     identities,
@@ -61,6 +63,7 @@ export function activate(context) {
   context.services.register('building.renovationVisual', renovationVisuals);
   context.services.register('building.routes', routes);
   context.services.register('landlord.spatialSync', spatialSync);
+  context.services.register('tenant.embodiment', embodiment);
   context.services.register('landlord.bridges', bridges);
   context.services.register('building.compiler', compiler);
   context.lifecycle.onDispose(() => tasks.dispose());

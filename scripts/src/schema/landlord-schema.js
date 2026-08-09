@@ -155,6 +155,15 @@ export const Schema = z.object({
                   纹样: z.string().prefault('dots'),
                 })
                 .prefault({}),
+              生活状态: z
+                .object({
+                  空间契合度: z.coerce.number().transform(value => Math.max(0, Math.min(100, value))).prefault(0),
+                  当前感受: z.string().prefault('尚未形成明确感受'),
+                  偏好线索: z.record(z.string().describe('偏好标签'), z.string()).prefault({}),
+                  最近空间ID: z.string().prefault(''),
+                  反应键: z.string().prefault(''),
+                })
+                .prefault({}),
               关系: z.record(z.string().describe('人物ID'), z.string()).prefault({}),
             })
             .prefault({}),

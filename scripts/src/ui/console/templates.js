@@ -73,6 +73,7 @@ function renderSidebar(state, ui, portfolio) {
       ${navItem('portfolio', ui.section, '资产总览', 'buildings')}
       ${navItem('building', ui.section, '当前建筑', 'home')}
       ${navItem('pulse', ui.section, '运行脉冲', 'pulse')}
+      ${navItem('tenants', ui.section, '租客生活', 'person')}
       ${navItem('twin', ui.section, '数字孪生', 'room')}
       ${navItem('renovation', ui.section, '装修中心', 'renovate')}
       ${navItem('recruitment', ui.section, '招募中心', 'recruit')}
@@ -103,6 +104,7 @@ function sectionTitle(section, current) {
   if (section === 'renovation') return '装修具现化中心';
   if (section === 'twin') return '建筑数字孪生';
   if (section === 'pulse') return '建筑运行脉冲';
+  if (section === 'tenants') return '租客具身生活';
   if (section === 'recruitment') return '跨世界招募中心';
   if (section === 'takeover') return '建筑接管提案';
   if (section === 'tasks') return '统一任务中心';
@@ -282,6 +284,17 @@ function renderPulse(pulse, ui) {
   </section>`;
 }
 
+function renderTenantLife(tenantLife, ui) {
+  const selected = tenantLife.residents.find(item => item.id === ui.selectedReactionId && !item.recorded);
+  return `<section class="lmo-view lmo-tenant-life-view">
+    <div class="lmo-section-heading"><div><span>TENANT EMBODIMENT ENGINE</span><h2>同一间房，换一个人就会产生完全不同的生活反应</h2></div><p>代码读取人物职业、性格、来源世界和房间真实状态；确认前不写人物，不调用 AI。</p></div>
+    <article class="lmo-tenant-life-hero" data-embodiment-signature="${escapeHtml(tenantLife.signature)}"><div>${icon('person')}<span><strong>${tenantLife.residents.length}</strong><small>位具身人物</small></span></div><p><span>不是统一满意度</span><strong>${escapeHtml(tenantLife.buildingName)}里的每个人，都用自己的偏好感受建筑</strong><small>装修决定空间提供什么，人物决定什么细节会被真正看见。</small></p><code>${escapeHtml(tenantLife.signature)}</code></article>
+    ${tenantLife.encounters.length ? `<div class="lmo-encounter-strip">${tenantLife.encounters.map(item => `<article>${icon('sparkle')}<p><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.summary)}</small></p><span>${escapeHtml(item.names.join(' × '))}</span></article>`).join('')}</div>` : ''}
+    ${tenantLife.residents.length ? `<div class="lmo-tenant-life-grid">${tenantLife.residents.map(person => `<button class="lmo-tenant-life-card ${person.id === ui.selectedReactionId ? 'selected' : ''} ${person.recorded ? 'recorded' : ''}" data-action="choose-tenant-reaction" data-reaction-id="${escapeHtml(person.id)}" style="--person-accent:${safeColor(person.color)}" ${person.recorded ? 'disabled' : ''}><header><i>${escapeHtml(person.name.slice(0, 1))}</i><p><span>${escapeHtml(person.origin)} · ${escapeHtml(person.profession)}</span><strong>${escapeHtml(person.name)}</strong><small>${escapeHtml(person.spaceName)} · ${escapeHtml(person.state)}</small></p><div style="--fit:${person.fit}"><b>${person.fit}</b><small>契合</small></div></header><blockquote>${escapeHtml(person.reaction)}</blockquote><div class="lmo-tenant-preferences"><small>识别偏好</small>${tags(person.preferenceTags)}</div>${person.matchedTags.length ? `<div class="lmo-tenant-matches"><small>房间已回应</small>${tags(person.matchedTags)}</div>` : ''}<footer>${person.alternatives.length ? `<span>更适合：${person.alternatives.map(item => `${escapeHtml(item.spaceName)} +${item.delta}`).join(' / ')}</span>` : '<span>当前已经是最合适的已知空间</span>'}<em>${person.recorded ? '感受已记录' : '选择这份反应'}</em></footer></button>`).join('')}</div>` : emptyState('建筑里还没有具身人物', '先从招募中心让一位人物进入建筑，再回来观察其真实空间反应。')}
+    ${selected ? `<div class="lmo-confirm-bar lmo-tenant-confirm"><div><strong>记录${escapeHtml(selected.name)}此刻的感受</strong><span>确认后会写入人物生活状态，并创建正文、微信与建筑草稿；位置变化会使旧反应自动失效。</span></div><button class="lmo-primary" data-action="confirm-tenant-reaction" ${ui.busy ? 'disabled' : ''}>确认记录 ${icon('arrow')}</button></div>` : ''}
+  </section>`;
+}
+
 const taskStatusLabels = Object.freeze({
   created: '已创建', queued: '排队中', running: '执行中', retrying: '重试中',
   'waiting-retry': '等待重试', ready: '待确认', applying: '写入中', confirmed: '已确认',
@@ -338,7 +351,7 @@ function renderEvents(state, portfolio, linkCenter) {
 }
 
 const operationKindLabels = Object.freeze({
-  takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募', exploration: '探索感知', movement: '人物移动', scene: '建筑场景', management: '经营操作',
+  takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募', exploration: '探索感知', movement: '人物移动', scene: '建筑场景', reaction: '人物感受', management: '经营操作',
 });
 
 function renderSpatial(spatialCenter, current, ui) {
@@ -380,11 +393,12 @@ function renderHistory(historyCenter) {
   </section>`;
 }
 
-export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, pulse, twin }) {
+export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, tenantLife, pulse, twin }) {
   let content;
   if (ui.section === 'portfolio') content = renderPortfolio(state, portfolio);
   else if (ui.section === 'building') content = renderBuilding(current, identityCenter);
   else if (ui.section === 'pulse') content = renderPulse(pulse, ui);
+  else if (ui.section === 'tenants') content = renderTenantLife(tenantLife, ui);
   else if (ui.section === 'twin') content = renderTwin(twin, ui);
   else if (ui.section === 'takeover') content = renderTakeover(state, ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
   else if (ui.section === 'renovation') content = renderRenovation(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);

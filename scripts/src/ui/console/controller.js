@@ -4,7 +4,7 @@ function owned(building) {
   return building && ['总部', '已接管'].includes(building.status);
 }
 
-export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, perception = null, identities = null, layouts = null, operations = null, bridges = null, compiler, logger }) {
+export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, embodiment = null, perception = null, identities = null, layouts = null, operations = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -15,6 +15,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     focusedFloorId: null,
     twinSpaceId: null,
     selectedPulseSceneId: null,
+    selectedReactionId: null,
     previewLinkIds: [],
     selectedMovePersonId: null,
     selectedMoveSpaceId: null,
@@ -46,6 +47,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     const identityCenter = { residents: identities?.listForBuilding(current.id) ?? [] };
     const twin = layouts?.compile(current) ?? { buildingId: current.id, name: current.name, theme: current.theme, floors: [], metrics: { floors: 0, nodes: 0, edges: 0 } };
     const pulse = operations?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'pulse_unavailable', total: 0, state: '尚未加载', metrics: { comfort: 0, function: 0, vitality: 0, appeal: 0 }, spaces: [], synergies: [], scenes: [], residentCount: 0, originCount: 0 };
+    const tenantLife = embodiment?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'embodied_unavailable', residents: [], encounters: [] };
     const historyCenter = history
       ? { ...history.summary(), entries: history.list({ limit: 20 }) }
       : { busy: false, count: 0, appliedCount: 0, canUndo: false, canRedo: false, undoLabel: '', redoLabel: '', blockedUndo: false, entries: [] };
@@ -59,7 +61,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       proposals: spatialSync?.list({ limit: 20 }) ?? [],
       counts: spatialSync?.counts() ?? { 待确认: 0, 冲突: 0, 已应用: 0, 已忽略: 0, 写入中: 0 },
     };
-    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, pulse, twin };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, tenantLife, pulse, twin };
   }
 
   function resetWorkflow({ keepSpace = false } = {}) {
@@ -164,6 +166,19 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
         await recordOperation('scene', `点亮${scene.title}`, () => store.activateBuildingScene({ buildingId: data.current.id, scene }));
         ui.selectedPulseSceneId = null;
         setNotice('场景已经写入建筑记忆，人物状态与四频道草稿同步更新。', 'success');
+      });
+    }
+    if (action === 'choose-tenant-reaction') {
+      ui.selectedReactionId = button.dataset.reactionId;
+      return render();
+    }
+    if (action === 'confirm-tenant-reaction') {
+      const reaction = data.tenantLife.residents.find(item => item.id === ui.selectedReactionId);
+      if (!reaction || reaction.recorded) throw new Error('请选择一份尚未记录的人物感受');
+      return withBusy(async () => {
+        await recordOperation('reaction', `记录${reaction.name}的空间感受`, () => store.recordTenantReaction({ personId: reaction.personId, reaction }));
+        ui.selectedReactionId = null;
+        setNotice('这份感受已经进入人物状态，并生成正文、微信和建筑草稿。', 'success');
       });
     }
     if (action === 'undo-operation' || action === 'redo-operation') {

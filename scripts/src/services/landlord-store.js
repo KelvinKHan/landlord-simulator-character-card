@@ -312,6 +312,36 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
       });
     },
 
+    async recordTenantReaction({ personId, reaction }) {
+      return commit('记录租客空间感受', state => {
+        const person = state.人物列表[personId];
+        if (!person) throw new Error(`人物不存在：${personId}`);
+        if (!reaction || reaction.personId !== personId || !reaction.id) throw new Error('人物反应与目标人物不匹配');
+        if (person.所在建筑ID !== reaction.expectedLocation?.buildingId || person.所在空间ID !== reaction.expectedLocation?.spaceId) {
+          throw new Error(`${person.姓名}的位置已经变化，请重新计算空间感受`);
+        }
+        if (person.生活状态?.反应键 === reaction.id) throw new Error('这份空间感受已经记录过了');
+        person.生活状态 = {
+          空间契合度: reaction.fit,
+          当前感受: reaction.reaction,
+          偏好线索: Object.fromEntries((reaction.preferenceTags ?? []).map((tag, index) => [tag, index === 0 ? '主要偏好' : '已识别'])),
+          最近空间ID: person.所在空间ID,
+          反应键: reaction.id,
+        };
+        appendDomainEvent(state, {
+          标题: `${person.姓名}对${reaction.spaceName}形成了新的感受`,
+          类型: '人物感受',
+          建筑ID: person.所在建筑ID,
+          空间ID: person.所在空间ID,
+          状态: '已完成',
+          摘要: reaction.reaction,
+          发生时间: '刚刚',
+          场景键: reaction.id,
+          参与者: { [personId]: '空间体验者' },
+        }, { channels: ['正文', '微信', '建筑'] });
+      });
+    },
+
     async setDeliveryStatus(deliveryId, status) {
       if (!['待分发', '已读取', '已忽略'].includes(status)) throw new Error(`不支持的联动状态：${status}`);
       return commit('更新联动队列', state => {
