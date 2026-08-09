@@ -4,6 +4,7 @@ import { JSDOM } from 'jsdom';
 import { z } from 'zod';
 import { compileBuilding, compilePortfolio } from '../scripts/src/buildings/compiler.js';
 import { createBuildingLayoutService } from '../scripts/src/buildings/layout-engine.js';
+import { createBuildingMemoryService } from '../scripts/src/buildings/memory-engine.js';
 import { createBuildingOperationsService } from '../scripts/src/buildings/operations-engine.js';
 import { createBuildingEventBus } from '../scripts/src/events/building-event-bus.js';
 import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js';
@@ -109,6 +110,7 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     contextCapsules,
     bridges,
     layouts: createBuildingLayoutService(),
+    memories: createBuildingMemoryService(),
     operations: createBuildingOperationsService(),
     embodiment: createTenantEmbodimentService(),
     compiler: { compileBuilding, compilePortfolio },
@@ -221,6 +223,9 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     assert.equal(dom.window.document.querySelector('[data-space-id="hospital_ward"]').dataset.twinLayer, 'tenants');
     assert.ok(Number(dom.window.document.querySelector('[data-space-id="hospital_ward"]').dataset.tenantFit) > 0);
     assert.match(dom.window.document.querySelector('.lmo-twin-inspector').textContent, /具身反应/);
+    click(dom.window.document, '[data-action="set-twin-layer"][data-layer="memories"]');
+    assert.equal(dom.window.document.querySelector('[data-space-id="hospital_ward"]').dataset.twinLayer, 'memories');
+    assert.match(dom.window.document.querySelector('.lmo-twin-inspector').textContent, /空间记忆回声/);
 
     const floorButtons = [...dom.window.document.querySelectorAll('[data-action="focus-twin-floor"]')];
     assert.ok(floorButtons.length >= 2);

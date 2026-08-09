@@ -18,6 +18,7 @@ export function activate(context) {
   const perception = context.services.require('landlord.perception');
   const identities = context.services.require('landlord.identities');
   const layouts = context.services.require('building.layout');
+  const memories = context.services.require('building.memories');
   const operations = context.services.require('building.operations');
   const bridges = context.services.require('landlord.bridges');
   const compiler = context.services.require('building.compiler');
@@ -40,6 +41,7 @@ export function activate(context) {
     perception,
     identities,
     layouts,
+    memories,
     operations,
     bridges,
     compiler,

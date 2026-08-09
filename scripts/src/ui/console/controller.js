@@ -2,7 +2,7 @@ import { renderConsole } from './templates.js';
 import { handleRelationshipAction } from './relationship-actions.js';
 import { detectDocumentTheme, extractNarrativeProposals, isOwnedBuilding as owned } from './workflow-actions.js';
 
-export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, relationships = null, perception = null, identities = null, layouts = null, operations = null, bridges = null, compiler, logger }) {
+export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, relationships = null, perception = null, identities = null, layouts = null, memories = null, operations = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -50,6 +50,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     const identityCenter = { residents: identities?.listForBuilding(current.id) ?? [] };
     const contextCapsule = contextCapsules?.compile(current.id) ?? null;
     const twin = layouts?.compile(current) ?? { buildingId: current.id, name: current.name, theme: current.theme, floors: [], metrics: { floors: 0, nodes: 0, edges: 0 } };
+    const memory = memories?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'memory_unavailable', totalEvents: 0, activeSpaces: 0, spaces: [], unplaced: [] };
     const pulse = operations?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'pulse_unavailable', total: 0, state: '尚未加载', metrics: { comfort: 0, function: 0, vitality: 0, appeal: 0 }, spaces: [], synergies: [], scenes: [], residentCount: 0, originCount: 0 };
     const tenantLife = embodiment?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'embodied_unavailable', residents: [], encounters: [] };
     const relationshipCenter = relationships?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, sparks: [], scenes: [], network: null };
@@ -68,7 +69,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       narrativeMode: state.运行模式 === '真实' ? 'ai' : 'local',
       narrativeCapabilities: narrativeIntents?.capabilities() ?? { local: true, ai: false },
     };
-    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, relationshipCenter, pulse, twin };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, relationshipCenter, memory, pulse, twin };
   }
 
   function resetWorkflow({ keepSpace = false } = {}) {
@@ -161,7 +162,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     }
     if (action === 'set-twin-layer') {
       const layer = button.dataset.layer;
-      if (!['layout', 'pulse', 'tenants'].includes(layer)) throw new Error(`未知数字孪生图层：${layer}`);
+      if (!['layout', 'pulse', 'tenants', 'memories'].includes(layer)) throw new Error(`未知数字孪生图层：${layer}`);
       ui.twinLayer = layer;
       return render();
     }

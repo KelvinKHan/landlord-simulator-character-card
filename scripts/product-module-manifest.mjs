@@ -14,7 +14,7 @@ export const productModuleManifest = [
     entry: 'scripts/modules/landlord-core/index.js',
     critical: false,
     requires: ['landlord.schema'],
-    provides: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.relationships', 'building.compiler', 'building.layout', 'building.operations', 'building.renovationVisual', 'building.routes'],
+    provides: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.relationships', 'building.compiler', 'building.layout', 'building.memories', 'building.operations', 'building.renovationVisual', 'building.routes'],
     features: [
       'MVU 事务写入',
       '多建筑编译',
@@ -34,6 +34,7 @@ export const productModuleManifest = [
       '把当前建筑相关事实压缩成有字符预算、可预览的一次性正文上下文胶囊',
       '按真实同屋位置、来源世界、职业和空间体感计算双向关系火花',
       '从已确认人物关系编译跨世界与双职业共同生活场景并原子同步双方位置',
+      '把已确认经营与生活事件按建筑空间编译为数字孪生记忆回声',
       '正文一次性提示词注入与微信、新闻的显式草稿投递桥',
     ],
   },
@@ -42,7 +43,7 @@ export const productModuleManifest = [
     name: '房东经营中枢',
     entry: 'scripts/modules/landlord-console/index.js',
     critical: false,
-    requires: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.relationships', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'building.compiler', 'building.layout', 'building.operations', 'ui.floatingMenu'],
+    requires: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.relationships', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'building.compiler', 'building.layout', 'building.memories', 'building.operations', 'ui.floatingMenu'],
     provides: ['landlord.console'],
     legacyRequires: ['FloatingMenuManager'],
     features: [
@@ -60,6 +61,7 @@ export const productModuleManifest = [
       '当前建筑上下文胶囊预览、预算显示与一次性正文注入',
       '同屋人物关系火花预览、成因解释、双向确认与三频道联动',
       '已确认关系专属的双人生活导演台、位置复核与共同场景启动',
+      '按真实房间定位的空间记忆热力、主导事件与生活回声详情',
       '糖果明亮主题与 Rose Pine 暗色主题',
       '桌面与窄屏响应式布局',
     ],

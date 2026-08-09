@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compilePortfolio } from '../scripts/src/buildings/compiler.js';
 import { createBuildingLayout } from '../scripts/src/buildings/layout-engine.js';
+import { compileBuildingMemories } from '../scripts/src/buildings/memory-engine.js';
 import { compileBuildingOperations } from '../scripts/src/buildings/operations-engine.js';
 import { createDefaultLandlordState } from '../scripts/src/model/default-state.js';
 import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js';
@@ -97,6 +98,7 @@ state.人物列表.preview_person_linxia.关系.preview_person_shaoqing = previe
 state.人物列表.preview_person_shaoqing.关系.preview_person_linxia = previewRelationshipSpark.label;
 state.事件列表.preview_relationship = { 标题: previewRelationshipSpark.title, 类型: '关系火花', 建筑ID: current.id, 空间ID: previewRelationshipSpark.spaceId, 状态: '已完成', 摘要: previewRelationshipSpark.summary, 发生时间: '刚刚', 场景键: previewRelationshipSpark.id, 参与者: { preview_person_linxia: previewRelationshipSpark.label, preview_person_shaoqing: previewRelationshipSpark.label } };
 const relationshipCenter = compileRelationshipSparks(state, current.id);
+const memory = compileBuildingMemories(state, current.id);
 const contextCapsule = compileContextCapsule(state, current.id);
 
 const pages = {
@@ -131,12 +133,13 @@ const pages = {
   twin: { ui: { section: 'twin', twinLayer: 'layout' }, task: null },
   'twin-pulse': { ui: { section: 'twin', twinLayer: 'pulse', focusedFloorId: 'floor_1', twinSpaceId: 'living_room' }, task: null },
   'twin-tenants': { ui: { section: 'twin', twinLayer: 'tenants', focusedFloorId: 'floor_1', twinSpaceId: 'living_room' }, task: null },
+  'twin-memories': { ui: { section: 'twin', twinLayer: 'memories', focusedFloorId: 'floor_1', twinSpaceId: 'living_room' }, task: null },
 };
 
 await fs.mkdir(outputDirectory, { recursive: true });
 
 for (const [name, page] of Object.entries(pages)) {
-  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, relationshipCenter, pulse, twin });
+  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, relationshipCenter, memory, pulse, twin });
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),
