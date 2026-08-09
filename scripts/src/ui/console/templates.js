@@ -164,7 +164,7 @@ function renderBuilding(building, identityCenter) {
   </section>`;
 }
 
-function renderTwinMap(floor, selectedId, accent) {
+function renderTwinMap(floor, selectedId, accent, layer, pulseMap, tenantMap) {
   const selected = floor.nodes.find(node => node.id === selectedId) ?? floor.nodes[0] ?? null;
   const connected = new Set(
     floor.edges
@@ -176,17 +176,28 @@ function renderTwinMap(floor, selectedId, accent) {
     return `<line class="${highlighted ? 'active' : ''}" x1="${edge.fromPoint.x}" y1="${edge.fromPoint.y}" x2="${edge.toPoint.x}" y2="${edge.toPoint.y}" data-edge-id="${escapeHtml(edge.id)}"/>`;
   }).join('');
   const nodes = floor.nodes.map(node => {
+    const operation = pulseMap.get(node.id);
+    const tenantReactions = tenantMap.get(node.id) ?? [];
+    const tenantFit = tenantReactions.length ? Math.round(tenantReactions.reduce((sum, item) => sum + item.fit, 0) / tenantReactions.length) : 0;
+    const overlayScore = layer === 'pulse' ? operation?.total ?? 0 : layer === 'tenants' ? tenantFit : node.awareness;
+    const overlayLabel = layer === 'pulse'
+      ? `${operation?.status ?? '未知'} · ${operation?.total ?? 0}`
+      : layer === 'tenants'
+        ? (tenantReactions.length ? tenantReactions.map(item => `${item.name} ${item.fit}`).join(' / ') : '等待人物')
+        : `${node.type} · ${node.awareness}%`;
+    const overlayAccent = layer === 'tenants' && tenantReactions[0]?.color ? tenantReactions[0].color : accent;
     const classes = [
       `visibility-${escapeHtml(node.visibility)}`,
+      `twin-layer-${escapeHtml(layer)}`,
       node.id === selected?.id ? 'selected' : '',
       connected.has(node.id) && node.id !== selected?.id ? 'connected' : '',
     ].filter(Boolean).join(' ');
-    return `<button class="${classes} material-${escapeHtml(node.visual.material)} lighting-${escapeHtml(node.visual.lightingMode)}" data-action="inspect-twin-space" data-floor-id="${escapeHtml(floor.id)}" data-space-id="${escapeHtml(node.id)}" aria-pressed="${node.id === selected?.id}" data-renovation-signature="${escapeHtml(node.visual.signature)}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%;${renovationVisualStyle(node.visual)}"><strong>${escapeHtml(node.name)}</strong><small>${escapeHtml(node.type)} · ${node.awareness}%</small>${node.occupants?.length ? `<em>${node.occupants.map(person => escapeHtml(person.name)).join(' / ')}</em>` : ''}${node.visual.furniture.length ? `<span class="lmo-twin-furniture">${node.visual.furniture.slice(0, 4).map(item => `<i title="${escapeHtml(item.label)}">${escapeHtml(item.marker)}</i>`).join('')}</span>` : ''}</button>`;
+    return `<button class="${classes} material-${escapeHtml(node.visual.material)} lighting-${escapeHtml(node.visual.lightingMode)}" data-action="inspect-twin-space" data-floor-id="${escapeHtml(floor.id)}" data-space-id="${escapeHtml(node.id)}" data-twin-layer="${escapeHtml(layer)}" data-operation-score="${operation?.total ?? 0}" data-tenant-fit="${tenantFit}" aria-pressed="${node.id === selected?.id}" data-renovation-signature="${escapeHtml(node.visual.signature)}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%;--overlay-score:${overlayScore};--overlay-accent:${safeColor(overlayAccent)};${renovationVisualStyle(node.visual)}"><strong>${escapeHtml(node.name)}</strong><small>${escapeHtml(overlayLabel)}</small>${node.occupants?.length ? `<em>${node.occupants.map(person => escapeHtml(person.name)).join(' / ')}</em>` : ''}${node.visual.furniture.length && layer === 'layout' ? `<span class="lmo-twin-furniture">${node.visual.furniture.slice(0, 4).map(item => `<i title="${escapeHtml(item.label)}">${escapeHtml(item.marker)}</i>`).join('')}</span>` : ''}${layer !== 'layout' ? `<span class="lmo-twin-layer-meter"><i></i><b>${overlayScore}</b></span>` : ''}</button>`;
   }).join('');
   return `<div class="lmo-twin-map" style="--twin-accent:${safeColor(accent)}"><svg class="lmo-twin-edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="已知空间相邻关系">${lines}</svg>${nodes}</div>`;
 }
 
-function renderTwinInspector(node, floor) {
+function renderTwinInspector(node, floor, layer, pulseMap, tenantMap) {
   if (!node) return `<aside class="lmo-twin-inspector">${emptyState('这一层仍是未知', '继续探索后，房间和连接关系会在这里显现。')}</aside>`;
   const connectedIds = new Set(
     floor.edges
@@ -198,30 +209,48 @@ function renderTwinInspector(node, floor) {
   const occupants = node.occupants?.length
     ? node.occupants.map(person => `<span style="--person-accent:${safeColor(person.color)}"><i>${escapeHtml(person.name.slice(0, 1))}</i>${escapeHtml(person.name)}</span>`).join('')
     : '<small>当前无人使用</small>';
+  const operation = pulseMap.get(node.id);
+  const tenantReactions = tenantMap.get(node.id) ?? [];
+  const layerDetail = layer === 'pulse' && operation
+    ? `<div class="lmo-twin-inspector-block lmo-twin-sensor"><small>空间运行传感</small><div>${Object.entries(operation.metrics).map(([key, value]) => `<span><b>${value}</b>${escapeHtml(pulseMetricMeta[key]?.[0] ?? key)}</span>`).join('')}</div><p>${escapeHtml(operation.status)} · 综合 ${operation.total} · 设施健康 ${operation.facilityHealth}</p></div>`
+    : layer === 'tenants'
+      ? `<div class="lmo-twin-inspector-block lmo-twin-reactions"><small>正在这里形成的具身反应</small>${tenantReactions.length ? tenantReactions.map(item => `<blockquote style="--person-accent:${safeColor(item.color)}"><strong>${escapeHtml(item.name)} · ${item.fit}</strong><p>${escapeHtml(item.reaction)}</p></blockquote>`).join('') : '<p>当前没有人物在这里；可从租客生活页查看谁更适合搬入。</p>'}</div>`
+      : '';
   return `<aside class="lmo-twin-inspector">
     <div class="lmo-twin-inspector-head"><span>${escapeHtml(node.type)} · ${escapeHtml(node.size)}</span><strong>${escapeHtml(node.name)}</strong><p>${escapeHtml(node.description)}</p></div>
     ${renderRenovationVisual(node.visual, { compact: true })}
     <div class="lmo-twin-data-grid"><span><small>空间状态</small><b>${escapeHtml(node.status)}</b></span><span><small>感知程度</small><b>${node.awareness}%</b></span><span><small>已知设施</small><b>${node.facilityCount ?? 0}</b></span><span><small>装修风格</small><b>${escapeHtml(node.renovation?.风格 ?? '尚未具现')}</b></span></div>
     <div class="lmo-twin-inspector-block"><small>当前用途</small><p>${escapeHtml(node.purpose)}</p></div>
     <div class="lmo-twin-inspector-block"><small>正在这里的人</small><div class="lmo-twin-people">${occupants}</div></div>
+    ${layerDetail}
     <div class="lmo-twin-inspector-block"><small>已知相邻空间</small>${connectedNames.length ? tags(connectedNames) : '<p>尚未确认连接关系</p>'}</div>
     <button class="lmo-primary" data-action="select-space" data-space-id="${escapeHtml(node.id)}">${icon('renovate')} 装修这个空间</button>
   </aside>`;
 }
 
-function renderTwin(twin, ui) {
+function renderTwin(twin, ui, pulse, tenantLife) {
   const floor = twin.floors.find(item => item.id === ui.focusedFloorId)
     ?? twin.floors.find(item => item.nodes.length > 0)
     ?? twin.floors[0]
     ?? null;
   const selected = floor?.nodes.find(node => node.id === ui.twinSpaceId) ?? floor?.nodes[0] ?? null;
+  const layer = ['layout', 'pulse', 'tenants'].includes(ui.twinLayer) ? ui.twinLayer : 'layout';
+  const pulseMap = new Map((pulse?.spaces ?? []).map(space => [space.id, space]));
+  const tenantMap = new Map();
+  for (const reaction of tenantLife?.residents ?? []) {
+    const list = tenantMap.get(reaction.spaceId) ?? [];
+    list.push(reaction);
+    tenantMap.set(reaction.spaceId, list);
+  }
+  const layerCopy = layer === 'pulse' ? '当前显示装修、设施、用途与人物共同形成的运行热力。' : layer === 'tenants' ? '当前显示人物在真实位置上的空间契合与具身反应。' : '当前显示确定性空间布局、装修材质与已知连接。';
   return `<section class="lmo-view lmo-twin-view">
     <div class="lmo-section-heading"><div><span>BUILDING DIGITAL TWIN</span><h2>${escapeHtml(twin.name)}·可计算空间镜像</h2></div><p>布局、房间面积与连接均由状态确定性计算；AI 不负责猜坐标。</p></div>
-    <div class="lmo-twin-toolbar"><div class="lmo-twin-metrics"><span><b>${twin.metrics.floors}</b>可见楼层</span><span><b>${twin.metrics.nodes}</b>空间节点</span><span><b>${twin.metrics.edges}</b>已知连接</span></div><div class="lmo-twin-legend"><span><i class="outline"></i>轮廓</span><span><i class="revealed"></i>已显现</span><span><i class="occupied"></i>有人使用</span></div></div>
+    <div class="lmo-twin-toolbar"><div class="lmo-twin-metrics"><span><b>${twin.metrics.floors}</b>可见楼层</span><span><b>${twin.metrics.nodes}</b>空间节点</span><span><b>${twin.metrics.edges}</b>已知连接</span></div><div class="lmo-twin-layer-switch" aria-label="数字孪生图层"><button class="${layer === 'layout' ? 'active' : ''}" data-action="set-twin-layer" data-layer="layout">空间结构</button><button class="${layer === 'pulse' ? 'active' : ''}" data-action="set-twin-layer" data-layer="pulse">运行体感</button><button class="${layer === 'tenants' ? 'active' : ''}" data-action="set-twin-layer" data-layer="tenants">租客感受</button></div></div>
+    <div class="lmo-twin-layer-note">${icon(layer === 'tenants' ? 'person' : layer === 'pulse' ? 'pulse' : 'room')}<span>${escapeHtml(layerCopy)}</span></div>
     <div class="lmo-twin-layout">
       <nav class="lmo-twin-floor-nav" aria-label="数字孪生楼层">${twin.floors.map(item => `<button class="${item.id === floor?.id ? 'active' : ''}" data-action="focus-twin-floor" data-floor-id="${escapeHtml(item.id)}" aria-pressed="${item.id === floor?.id}"><span>${String(item.order).padStart(2, '0')}</span><p><strong>${escapeHtml(item.name)}</strong><small>${item.nodes.length} 空间 · 感知 ${item.awareness}%</small></p></button>`).join('')}</nav>
-      <article class="lmo-twin-stage"><header><div><span>FOCUSED FLOOR</span><strong>${escapeHtml(floor?.name ?? '暂无可见楼层')}</strong></div><small>${floor ? `${floor.nodes.length} 个空间 · ${floor.edges.length} 条连接` : '等待探索'}</small></header>${floor?.nodes.length ? renderTwinMap(floor, selected?.id, twin.theme?.主色) : emptyState('暂无可见空间', '继续探索后，空间会进入数字孪生。')}</article>
-      ${renderTwinInspector(selected, floor ?? { nodes: [], edges: [] })}
+      <article class="lmo-twin-stage"><header><div><span>FOCUSED FLOOR · ${escapeHtml(layer.toUpperCase())}</span><strong>${escapeHtml(floor?.name ?? '暂无可见楼层')}</strong></div><small>${floor ? `${floor.nodes.length} 个空间 · ${floor.edges.length} 条连接` : '等待探索'}</small></header>${floor?.nodes.length ? renderTwinMap(floor, selected?.id, twin.theme?.主色, layer, pulseMap, tenantMap) : emptyState('暂无可见空间', '继续探索后，空间会进入数字孪生。')}</article>
+      ${renderTwinInspector(selected, floor ?? { nodes: [], edges: [] }, layer, pulseMap, tenantMap)}
     </div>
   </section>`;
 }
@@ -399,7 +428,7 @@ export function renderConsole({ state, portfolio, current, ui, task, taskCenter,
   else if (ui.section === 'building') content = renderBuilding(current, identityCenter);
   else if (ui.section === 'pulse') content = renderPulse(pulse, ui);
   else if (ui.section === 'tenants') content = renderTenantLife(tenantLife, ui);
-  else if (ui.section === 'twin') content = renderTwin(twin, ui);
+  else if (ui.section === 'twin') content = renderTwin(twin, ui, pulse, tenantLife);
   else if (ui.section === 'takeover') content = renderTakeover(state, ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
   else if (ui.section === 'renovation') content = renderRenovation(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
   else if (ui.section === 'recruitment') content = renderRecruitment(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);

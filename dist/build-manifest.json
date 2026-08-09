@@ -1,16 +1,16 @@
 {
-  "version": "0.3.0-preview.5",
+  "version": "0.3.0-preview.6",
   "format": "esm",
   "entry": "landlord-simulator.bundle.js",
-  "bytes": 1245855,
-  "sha256": "7bc9c276c7b167ddb92401544771c03d44c89363bfa98269c3c2b0a51ba448a1",
+  "bytes": 1252742,
+  "sha256": "d6b8369501bacc8ed8304c922504ab99519e25c161d68ed6f7126d245439212c",
   "release": {
-    "tag": "v0.3.0-preview.5",
+    "tag": "v0.3.0-preview.6",
     "repository": "KelvinKHan/landlord-simulator-character-card",
     "loader": "landlord-simulator.loader.js",
     "sources": [
-      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.5/dist/landlord-simulator.bundle.js",
-      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.5/dist/landlord-simulator.bundle.js"
+      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.6/dist/landlord-simulator.bundle.js",
+      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.6/dist/landlord-simulator.bundle.js"
     ]
   },
   "upstreams": {
@@ -634,6 +634,7 @@
         "人物位置同步提案、路线预览与冲突队列",
         "建筑运行脉冲、空间体感、协同效应与可确认场景",
         "租客空间契合度、具身反应、同屋相遇与更合适空间建议",
+        "数字孪生空间结构、运行体感与租客感受三层传感叠图",
         "糖果明亮主题与 Rose Pine 暗色主题",
         "桌面与窄屏响应式布局"
       ]

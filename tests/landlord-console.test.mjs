@@ -200,6 +200,14 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     assert.equal(dom.window.document.querySelector('[data-action="inspect-twin-space"][aria-pressed="true"] strong').textContent, inspectedName);
     assert.match(dom.window.document.querySelector('.lmo-twin-inspector').textContent, new RegExp(inspectedName));
 
+    click(dom.window.document, '[data-action="set-twin-layer"][data-layer="pulse"]');
+    assert.equal(dom.window.document.querySelector('[data-action="inspect-twin-space"]').dataset.twinLayer, 'pulse');
+    assert.match(dom.window.document.querySelector('.lmo-twin-inspector').textContent, /空间运行传感/);
+    click(dom.window.document, '[data-action="set-twin-layer"][data-layer="tenants"]');
+    assert.equal(dom.window.document.querySelector('[data-space-id="hospital_ward"]').dataset.twinLayer, 'tenants');
+    assert.ok(Number(dom.window.document.querySelector('[data-space-id="hospital_ward"]').dataset.tenantFit) > 0);
+    assert.match(dom.window.document.querySelector('.lmo-twin-inspector').textContent, /具身反应/);
+
     const floorButtons = [...dom.window.document.querySelectorAll('[data-action="focus-twin-floor"]')];
     assert.ok(floorButtons.length >= 2);
     floorButtons.at(-1).click();

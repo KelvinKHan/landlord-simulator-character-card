@@ -1,6 +1,6 @@
 {
   "name": "landlord-simulator-character-card",
-  "version": "0.3.0-preview.5",
+  "version": "0.3.0-preview.6",
   "private": true,
   "description": "房东模拟器 SillyTavern 角色卡的可逆拆分与构建工具",
   "type": "module",

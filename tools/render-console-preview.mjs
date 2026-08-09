@@ -118,7 +118,9 @@ const pages = {
   history: { ui: { section: 'history' }, task: null },
   spatial: { ui: { section: 'spatial', selectedMovePersonId: 'preview_person_linxia', selectedMoveSpaceId: 'garden' }, task: null },
   events: { ui: { section: 'events' }, task: null },
-  twin: { ui: { section: 'twin' }, task: null },
+  twin: { ui: { section: 'twin', twinLayer: 'layout' }, task: null },
+  'twin-pulse': { ui: { section: 'twin', twinLayer: 'pulse', focusedFloorId: 'floor_1', twinSpaceId: 'living_room' }, task: null },
+  'twin-tenants': { ui: { section: 'twin', twinLayer: 'tenants', focusedFloorId: 'floor_1', twinSpaceId: 'living_room' }, task: null },
 };
 
 await fs.mkdir(outputDirectory, { recursive: true });

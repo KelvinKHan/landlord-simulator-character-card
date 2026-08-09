@@ -14,6 +14,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     selectedSpaceId: null,
     focusedFloorId: null,
     twinSpaceId: null,
+    twinLayer: 'layout',
     selectedPulseSceneId: null,
     selectedReactionId: null,
     previewLinkIds: [],
@@ -153,6 +154,12 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     if (action === 'inspect-twin-space') {
       ui.focusedFloorId = button.dataset.floorId;
       ui.twinSpaceId = button.dataset.spaceId;
+      return render();
+    }
+    if (action === 'set-twin-layer') {
+      const layer = button.dataset.layer;
+      if (!['layout', 'pulse', 'tenants'].includes(layer)) throw new Error(`未知数字孪生图层：${layer}`);
+      ui.twinLayer = layer;
       return render();
     }
     if (action === 'choose-pulse-scene') {
