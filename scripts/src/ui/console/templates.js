@@ -82,6 +82,17 @@ function buildingCard(building, action) {
   </button>`;
 }
 
+function renderPortfolioNetwork(portfolio, current) {
+  const { nodes, edges, metrics } = portfolio.network;
+  const lines = edges.map(edge => `<line class="${escapeHtml(edge.status)}" x1="${edge.fromPoint.x}" y1="${edge.fromPoint.y}" x2="${edge.toPoint.x}" y2="${edge.toPoint.y}" data-network-edge="${escapeHtml(edge.kind)}"/>`).join('');
+  const nodeButtons = nodes.map(node => `<button class="lmo-network-node ${node.owned ? 'owned' : 'opportunity'} ${node.current ? 'current' : ''}" data-action="${escapeHtml(node.action)}" data-building-id="${escapeHtml(node.id)}" data-network-status="${escapeHtml(node.status)}" style="left:${node.x}%;top:${node.y}%;--node-accent:${safeColor(node.color)}"><i>${icon(node.headquarters ? 'home' : 'buildings')}</i><span>${escapeHtml(node.current ? '当前焦点' : node.status)}</span><strong>${escapeHtml(node.name)}</strong><small>${node.spaces} 空间 · 活跃 ${node.activity}</small></button>`).join('');
+  return `<article class="lmo-portfolio-network">
+    <header><div><span>PORTFOLIO NEURAL MAP</span><h2>经营版图神经网络</h2><p>由真实建筑状态即时编译；点击节点即可进入管理或查看接管提案。</p></div><div class="lmo-network-legend"><span><i></i>运营链路</span><span><i></i>接管机会</span></div></header>
+    <div class="lmo-network-layout"><div class="lmo-network-stage"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="建筑版图关系链路"><circle cx="50" cy="50" r="31"></circle><circle cx="50" cy="50" r="39"></circle>${lines}</svg>${nodeButtons}</div>
+    <aside><span>NETWORK STATUS</span><strong>${escapeHtml(current.name)}</strong><small>当前经营焦点</small><div><p><b>${metrics.owned}</b><small>已接管</small></p><p><b>${metrics.activeRoutes}</b><small>运营链路</small></p><p><b>${metrics.opportunities}</b><small>接管机会</small></p><p><b>${metrics.totalPeople}</b><small>版图人物</small></p></div><em>${escapeHtml(current.summary.今日亮点)}</em></aside></div>
+  </article>`;
+}
+
 function renderPortfolio(state, portfolio) {
   const current = portfolio.buildings.find(item => item.id === state.当前建筑ID) ?? portfolio.headquarters;
   const recentEvents = Object.entries(state.事件列表 ?? {}).slice(-3).reverse();
@@ -91,6 +102,7 @@ function renderPortfolio(state, portfolio) {
       <button class="lmo-primary" data-action="open-building" data-building-id="${escapeHtml(current.id)}">进入建筑 ${icon('arrow')}</button></div>
       <div class="lmo-hero-orbit"><span>${portfolio.owned.length}</span><small>栋建筑</small><i></i><i></i><i></i></div>
     </div>
+    ${renderPortfolioNetwork(portfolio, current)}
     <div class="lmo-section-heading"><div><span>OWNED</span><h2>已经属于你的地方</h2></div><p>每一栋建筑都使用同一份真实状态，但拥有自己的空间语言。</p></div>
     <div class="lmo-building-grid">${portfolio.owned.map(building => buildingCard(building, 'open-building')).join('')}</div>
     <div class="lmo-section-heading"><div><span>OPPORTUNITIES</span><h2>下一次接管机会</h2></div><p>不是空壳：它们已经有格局、设施和等待被改变的部分。</p></div>

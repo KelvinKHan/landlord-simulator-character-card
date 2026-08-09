@@ -124,6 +124,9 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     assert.match(dom.window.document.body.textContent, /我的建筑版图/);
     assert.match(dom.window.document.body.textContent, /本地模拟模式/);
     assert.match(dom.window.document.body.textContent, /白塔社区医院/);
+    assert.equal(dom.window.document.querySelectorAll('.lmo-network-node').length, 3);
+    assert.equal(dom.window.document.querySelectorAll('[data-network-edge="接管机会"]').length, 2);
+    assert.equal(dom.window.document.querySelectorAll('.lmo-network-node.current').length, 1);
 
     click(dom.window.document, '[data-action="navigate"][data-section="twin"]');
     click(dom.window.document, '[data-action="focus-twin-floor"][data-floor-id="floor_1"]');
@@ -138,6 +141,10 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     click(dom.window.document, '[data-action="confirm-takeover"]');
     await waitFor(() => assert.equal(store.getState().建筑列表.building_hospital_candidate.接管状态, '已接管'));
     assert.match(dom.window.document.body.textContent, /白塔治愈生活馆/);
+
+    click(dom.window.document, '[data-action="navigate"][data-section="portfolio"]');
+    assert.equal(dom.window.document.querySelectorAll('[data-network-edge="运营交通"]').length, 1);
+    assert.equal(dom.window.document.querySelector('[data-building-id="building_hospital_candidate"].lmo-network-node')?.dataset.networkStatus, '已接管');
 
     click(dom.window.document, '[data-action="navigate"][data-section="renovation"]');
     click(dom.window.document, '[data-action="choose-workflow-space"][data-space-id="hospital_ward"]');

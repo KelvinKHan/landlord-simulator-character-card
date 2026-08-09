@@ -18,6 +18,7 @@ export const productModuleManifest = [
     features: [
       'MVU 事务写入',
       '多建筑编译',
+      '从真实接管状态确定性编译总部、运营链路与建筑机会节点',
       '本地/AI 双模式统一任务中心',
       '任务排队、取消、重试、超时和预览确认',
       '当前会话内可冲突检测的经营撤销与重做',
@@ -50,6 +51,7 @@ export const productModuleManifest = [
     legacyRequires: ['FloatingMenuManager'],
     features: [
       '多建筑资产总览与建筑切换',
+      '可点击的经营版图神经网络、实时运营链路与接管机会节点',
       '楼层和空间编译视图',
       '本地模拟的接管、装修、招募预览与确认',
       '经营事件时间线',

@@ -1,22 +1,22 @@
 export const releaseConfig = Object.freeze({
-  version: '0.3.0-preview.14',
-  gitTag: 'v0.3.0-preview.14',
+  version: '0.3.0-preview.15',
+  gitTag: 'v0.3.0-preview.15',
   repository: 'KelvinKHan/landlord-simulator-character-card',
   bundlePath: 'dist/landlord-simulator.bundle.js',
   loaderPath: 'dist/landlord-simulator.loader.js',
   scriptId: '4fb9fe15-31ac-4d70-8bdd-b88658f1ad69',
   identities: {
     online: {
-      characterVersion: 'Z6.1-landlord-os-online-preview.14',
-      cardName: '房东模拟器 Z6.1｜Landlord OS·在线技术预览 0.3.0-14',
-      worldbookName: '房东模拟器·世界书｜Z6.1-LandlordOS-在线-0.3.0-14',
-      artifactFile: '房东模拟器Z6.1-LandlordOS-在线技术预览版-v0.3.0-preview.14.json',
+      characterVersion: 'Z6.1-landlord-os-online-preview.15',
+      cardName: '房东模拟器 Z6.1｜Landlord OS·在线技术预览 0.3.0-15',
+      worldbookName: '房东模拟器·世界书｜Z6.1-LandlordOS-在线-0.3.0-15',
+      artifactFile: '房东模拟器Z6.1-LandlordOS-在线技术预览版-v0.3.0-preview.15.json',
     },
     offline: {
-      characterVersion: 'Z6.1-landlord-os-offline-preview.14',
-      cardName: '房东模拟器 Z6.1｜Landlord OS·离线技术预览 0.3.0-14',
-      worldbookName: '房东模拟器·世界书｜Z6.1-LandlordOS-离线-0.3.0-14',
-      artifactFile: '房东模拟器Z6.1-LandlordOS-离线技术预览版-v0.3.0-preview.14.json',
+      characterVersion: 'Z6.1-landlord-os-offline-preview.15',
+      cardName: '房东模拟器 Z6.1｜Landlord OS·离线技术预览 0.3.0-15',
+      worldbookName: '房东模拟器·世界书｜Z6.1-LandlordOS-离线-0.3.0-15',
+      artifactFile: '房东模拟器Z6.1-LandlordOS-离线技术预览版-v0.3.0-preview.15.json',
     },
   },
   upstreams: {

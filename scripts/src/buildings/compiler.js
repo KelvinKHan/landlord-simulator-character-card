@@ -1,3 +1,5 @@
+import { compilePortfolioNetwork } from './portfolio-network-engine.js';
+
 const sizeWeight = Object.freeze({ 微型: 1, 小型: 2, 中型: 3, 大型: 5, 超大型: 8 });
 
 function byOrderDescending(left, right) {
@@ -113,5 +115,6 @@ export function compilePortfolio(state) {
     available: buildings.filter(building => building.status === '可接管'),
     hidden: buildings.filter(building => building.status === '未发现'),
     buildings,
+    network: compilePortfolioNetwork(buildings, state.当前建筑ID),
   };
 }

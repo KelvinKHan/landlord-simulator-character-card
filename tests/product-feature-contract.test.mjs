@@ -27,6 +27,10 @@ test('新版产品模块完整声明房东系统、经营核心与经营中枢',
 test('经营中枢构建产物包含所有可玩流程且明确显示本地模拟模式', () => {
   for (const marker of [
     '我的建筑版图',
+    '经营版图神经网络',
+    'PORTFOLIO NEURAL MAP',
+    'data-network-edge',
+    'data-network-status',
     '建筑接管提案',
     '装修具现化中心',
     '跨世界招募中心',
