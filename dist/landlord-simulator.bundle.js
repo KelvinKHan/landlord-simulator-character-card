@@ -23008,7 +23008,7 @@ function renderEvents(state, portfolio, linkCenter, contextCapsule, ui) {
 }
 function renderSpatial(spatialCenter, current, ui) {
   const selectedPerson = spatialCenter.people.find((person) => person.id === ui.selectedMovePersonId);
-  const selectedSpace = spatialCenter.spaces.find((space) => space.id === ui.selectedMoveSpaceId);
+  const selectedSpace = spatialCenter.spaces.find((space) => space.buildingId === ui.selectedMoveBuildingId && space.id === ui.selectedMoveSpaceId);
   const narrativeAi = spatialCenter.narrativeMode === "ai";
   return `<section class="lmo-view lmo-spatial-view">
     <div class="lmo-section-heading"><div><span>NARRATIVE \xB7 SPACE SYNC</span><h2>\u8BA9\u4EBA\u7269\u4F4D\u7F6E\u5148\u901A\u8FC7\u5EFA\u7B51\u7ED3\u6784\u6821\u9A8C</h2></div><p>\u624B\u52A8\u9009\u62E9\u3001\u672C\u5730\u89E3\u6790\u548C\u663E\u5F0F AI \u63D0\u53D6\u6700\u7EC8\u90FD\u4F1A\u8FDB\u5165\u540C\u4E00\u4EFD\u5F85\u786E\u8BA4\u63D0\u6848\u3002</p></div>
@@ -23017,11 +23017,11 @@ function renderSpatial(spatialCenter, current, ui) {
     <article class="lmo-spatial-planner">
       <div class="lmo-spatial-column"><span class="lmo-kicker">1 \xB7 \u9009\u62E9\u4EBA\u7269</span>${spatialCenter.people.length ? `<div class="lmo-spatial-people">${spatialCenter.people.map((person) => `<button class="${person.id === ui.selectedMovePersonId ? "selected" : ""}" data-action="choose-spatial-person" data-person-id="${escapeHtml(person.id)}" style="--person-accent:${safeColor2(person.color)}"><i>${escapeHtml(person.name.slice(0, 1))}</i><p><strong>${escapeHtml(person.name)}</strong><small>${escapeHtml(person.buildingName)} \xB7 ${escapeHtml(person.spaceName)}</small></p></button>`).join("")}</div>` : emptyState("\u8FD8\u6CA1\u6709\u53EF\u79FB\u52A8\u7684\u4EBA\u7269", "\u5148\u4ECE\u62DB\u52DF\u4E2D\u5FC3\u8BA9\u4E00\u4F4D\u4EBA\u7269\u8FDB\u5165\u5EFA\u7B51\u3002")}</div>
       <div class="lmo-spatial-arrow">${icon("arrow")}</div>
-      <div class="lmo-spatial-column"><span class="lmo-kicker">2 \xB7 \u9009\u62E9\u76EE\u6807</span><div class="lmo-spatial-spaces">${spatialCenter.spaces.map((space) => `<button class="${space.id === ui.selectedMoveSpaceId ? "selected" : ""}" data-action="choose-spatial-space" data-space-id="${escapeHtml(space.id)}"><span>${escapeHtml(space.floorName)}</span><strong>${escapeHtml(space.name)}</strong><small>${escapeHtml(space.type)} \xB7 ${escapeHtml(space.status)}</small></button>`).join("")}</div></div>
+      <div class="lmo-spatial-column"><span class="lmo-kicker">2 \xB7 \u9009\u62E9\u76EE\u6807</span><div class="lmo-spatial-spaces">${spatialCenter.spaces.map((space) => `<button class="${space.buildingId === ui.selectedMoveBuildingId && space.id === ui.selectedMoveSpaceId ? "selected" : ""}" data-action="choose-spatial-space" data-building-id="${escapeHtml(space.buildingId)}" data-space-id="${escapeHtml(space.id)}"><span>${escapeHtml(space.buildingName)} \xB7 ${escapeHtml(space.floorName)}</span><strong>${escapeHtml(space.name)}</strong><small>${escapeHtml(space.type)} \xB7 ${escapeHtml(space.status)}${space.currentBuilding ? " \xB7 \u5F53\u524D\u5EFA\u7B51" : " \xB7 \u8DE8\u5EFA\u7B51"}</small></button>`).join("")}</div></div>
       <div class="lmo-spatial-arrow">${icon("arrow")}</div>
-      <div class="lmo-spatial-submit"><span class="lmo-kicker">3 \xB7 \u63CF\u8FF0\u5F53\u524D\u52A8\u4F5C</span><div><small>\u79FB\u52A8\u9884\u89C8</small><strong>${escapeHtml(selectedPerson?.name ?? "\u5F85\u9009\u4EBA\u7269")} \u2192 ${escapeHtml(selectedSpace?.name ?? "\u5F85\u9009\u7A7A\u95F4")}</strong></div><label for="lmo-spatial-activity">\u5230\u8FBE\u540E\u6B63\u5728\u505A\u4EC0\u4E48</label><input id="lmo-spatial-activity" value="\u9002\u5E94\u65B0\u73AF\u5883" maxlength="40"><button class="lmo-primary" data-action="propose-spatial-move" ${selectedPerson && selectedSpace ? "" : "disabled"}>${icon("route")} \u6821\u9A8C\u79FB\u52A8\u610F\u56FE</button><p>\u8FD9\u4E00\u6B65\u53EA\u521B\u5EFA\u63D0\u6848\uFF0C\u4E0D\u4F1A\u76F4\u63A5\u6539\u52A8\u4EBA\u7269\u4F4D\u7F6E\u3002</p></div>
+      <div class="lmo-spatial-submit"><span class="lmo-kicker">3 \xB7 \u63CF\u8FF0\u5F53\u524D\u52A8\u4F5C</span><div><small>\u79FB\u52A8\u9884\u89C8</small><strong>${escapeHtml(selectedPerson?.name ?? "\u5F85\u9009\u4EBA\u7269")} \u2192 ${escapeHtml(selectedSpace ? `${selectedSpace.buildingName}\xB7${selectedSpace.name}` : "\u5F85\u9009\u7A7A\u95F4")}</strong></div><label for="lmo-spatial-activity">\u5230\u8FBE\u540E\u6B63\u5728\u505A\u4EC0\u4E48</label><input id="lmo-spatial-activity" value="\u9002\u5E94\u65B0\u73AF\u5883" maxlength="40"><button class="lmo-primary" data-action="propose-spatial-move" ${selectedPerson && selectedSpace ? "" : "disabled"}>${icon("route")} \u6821\u9A8C\u79FB\u52A8\u610F\u56FE</button><p>\u5EFA\u7B51\u5185\u4E0E\u8DE8\u5EFA\u7B51\u79FB\u52A8\u90FD\u4F1A\u5148\u751F\u6210\u8DEF\u7EBF\u63D0\u6848\uFF0C\u4E0D\u4F1A\u76F4\u63A5\u6539\u52A8\u4EBA\u7269\u4F4D\u7F6E\u3002</p></div>
     </article>
-    <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon("route")}<span><strong>\u7A7A\u95F4\u540C\u6B65\u63D0\u6848</strong><small>\u7ED3\u6784\u5408\u6CD5\u624D\u5141\u8BB8\u786E\u8BA4\uFF1B\u51B2\u7A81\u4E0D\u4F1A\u5199\u5165 MVU</small></span></div></div>${spatialCenter.proposals.length ? `<div class="lmo-spatial-proposals">${spatialCenter.proposals.map((proposal) => `<div class="status-${escapeHtml(proposal.status)}"><span>${proposal.status === "\u51B2\u7A81" ? "!" : proposal.route.path.length}</span><p><strong>${escapeHtml(proposal.route.personName ?? proposal.personId)} \u2192 ${escapeHtml(proposal.route.destinationName ?? proposal.spaceId)}</strong><small>${escapeHtml(proposal.route.kind ?? "\u65E0\u6CD5\u89C4\u5212")} \xB7 ${escapeHtml(proposal.reason)} \xB7 ${escapeHtml(proposal.activity)}</small></p><em>${escapeHtml(proposal.status)}</em>${proposal.status === "\u5F85\u786E\u8BA4" ? `<button data-action="confirm-spatial-proposal" data-proposal-id="${escapeHtml(proposal.id)}">\u786E\u8BA4\u540C\u6B65</button>` : ""}${["\u5F85\u786E\u8BA4", "\u51B2\u7A81"].includes(proposal.status) ? `<button data-action="ignore-spatial-proposal" data-proposal-id="${escapeHtml(proposal.id)}">\u5FFD\u7565</button>` : ""}</div>`).join("")}</div>` : emptyState("\u8FD8\u6CA1\u6709\u7A7A\u95F4\u540C\u6B65\u63D0\u6848", `\u9009\u62E9\u4EBA\u7269\u548C\u300C${escapeHtml(current.name)}\u300D\u5185\u7684\u76EE\u6807\u7A7A\u95F4\uFF0C\u5148\u7528\u672C\u5730\u89C4\u5219\u9A8C\u8BC1\u3002`)}</article>
+    <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon("route")}<span><strong>\u7A7A\u95F4\u540C\u6B65\u63D0\u6848</strong><small>\u7ED3\u6784\u5408\u6CD5\u624D\u5141\u8BB8\u786E\u8BA4\uFF1B\u51B2\u7A81\u4E0D\u4F1A\u5199\u5165 MVU</small></span></div></div>${spatialCenter.proposals.length ? `<div class="lmo-spatial-proposals">${spatialCenter.proposals.map((proposal) => `<div class="status-${escapeHtml(proposal.status)}"><span>${proposal.status === "\u51B2\u7A81" ? "!" : proposal.route.path.length}</span><p><strong>${escapeHtml(proposal.route.personName ?? proposal.personId)} \u2192 ${escapeHtml(proposal.route.destinationName ?? proposal.spaceId)}</strong><small>${escapeHtml(proposal.route.kind ?? "\u65E0\u6CD5\u89C4\u5212")} \xB7 ${escapeHtml(proposal.reason)} \xB7 ${escapeHtml(proposal.activity)}</small></p><em>${escapeHtml(proposal.status)}</em>${proposal.status === "\u5F85\u786E\u8BA4" ? `<button data-action="confirm-spatial-proposal" data-proposal-id="${escapeHtml(proposal.id)}">\u786E\u8BA4\u540C\u6B65</button>` : ""}${["\u5F85\u786E\u8BA4", "\u51B2\u7A81"].includes(proposal.status) ? `<button data-action="ignore-spatial-proposal" data-proposal-id="${escapeHtml(proposal.id)}">\u5FFD\u7565</button>` : ""}</div>`).join("")}</div>` : emptyState("\u8FD8\u6CA1\u6709\u7A7A\u95F4\u540C\u6B65\u63D0\u6848", "\u9009\u62E9\u4EBA\u7269\u548C\u4EFB\u610F\u5DF2\u63A5\u7BA1\u5EFA\u7B51\u4E2D\u7684\u76EE\u6807\u7A7A\u95F4\uFF0C\u5148\u7528\u672C\u5730\u89C4\u5219\u9A8C\u8BC1\u3002")}</article>
   </section>`;
 }
 function renderOperationTime(value) {
@@ -23164,6 +23164,21 @@ var init_relationship_actions = __esm({
   }
 });
 
+// scripts/src/ui/console/spatial-view-model.js
+function compileOwnedSpatialTargets(portfolio, currentBuildingId) {
+  return Object.freeze((portfolio?.owned ?? []).flatMap((building) => building.floors.flatMap((floor) => floor.spaces.map((space) => Object.freeze({
+    ...space,
+    buildingId: building.id,
+    buildingName: building.name,
+    floorName: floor.name,
+    currentBuilding: building.id === currentBuildingId
+  })))));
+}
+var init_spatial_view_model = __esm({
+  "scripts/src/ui/console/spatial-view-model.js"() {
+  }
+});
+
 // scripts/src/ui/console/workflow-actions.js
 async function extractNarrativeProposals({ text: text2, mode, narrativeIntents, spatialSync }) {
   if (!narrativeIntents || !spatialSync) throw new Error("\u5267\u60C5\u7A7A\u95F4\u63D0\u53D6\u670D\u52A1\u5C1A\u672A\u52A0\u8F7D");
@@ -23206,6 +23221,7 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
     previewLinkIds: [],
     contextCapsuleVisible: false,
     selectedMovePersonId: null,
+    selectedMoveBuildingId: null,
     selectedMoveSpaceId: null,
     lastNarrativeExtraction: null,
     selectedOptionId: null,
@@ -23245,7 +23261,7 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
         const space = building?.floors.flatMap((floor) => floor.spaces).find((item) => item.id === person.\u6240\u5728\u7A7A\u95F4ID);
         return { id, name: person.\u59D3\u540D, status: person.\u72B6\u6001, buildingName: building?.name ?? person.\u6240\u5728\u5EFA\u7B51ID, spaceName: space?.name ?? person.\u6240\u5728\u7A7A\u95F4ID, color: person.\u89C6\u89C9\u8EAB\u4EFD?.\u4E3B\u8272 };
       }),
-      spaces: current.floors.flatMap((floor) => floor.spaces).map((space) => ({ ...space, floorName: current.floors.find((floor) => floor.spaces.some((item) => item.id === space.id))?.name ?? "" })),
+      spaces: compileOwnedSpatialTargets(portfolio, current.id),
       proposals: spatialSync?.list({ limit: 20 }) ?? [],
       counts: spatialSync?.counts() ?? { \u5F85\u786E\u8BA4: 0, \u51B2\u7A81: 0, \u5DF2\u5E94\u7528: 0, \u5DF2\u5FFD\u7565: 0, \u5199\u5165\u4E2D: 0 },
       narrativeMode: state.\u8FD0\u884C\u6A21\u5F0F === "\u771F\u5B9E" ? "ai" : "local",
@@ -23390,16 +23406,17 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
       });
     }
     if (action === "choose-spatial-space") {
+      ui.selectedMoveBuildingId = button.dataset.buildingId;
       ui.selectedMoveSpaceId = button.dataset.spaceId;
       return render();
     }
     if (action === "propose-spatial-move") {
       if (!spatialSync) throw new Error("\u7A7A\u95F4\u540C\u6B65\u670D\u52A1\u5C1A\u672A\u52A0\u8F7D");
-      if (!ui.selectedMovePersonId || !ui.selectedMoveSpaceId) throw new Error("\u8BF7\u9009\u62E9\u4EBA\u7269\u548C\u76EE\u6807\u7A7A\u95F4");
+      if (!ui.selectedMovePersonId || !ui.selectedMoveBuildingId || !ui.selectedMoveSpaceId) throw new Error("\u8BF7\u9009\u62E9\u4EBA\u7269\u548C\u76EE\u6807\u7A7A\u95F4");
       const activity = root.querySelector("#lmo-spatial-activity")?.value?.trim() || "\u9002\u5E94\u65B0\u73AF\u5883";
       spatialSync.propose([{
         personId: ui.selectedMovePersonId,
-        buildingId: data.current.id,
+        buildingId: ui.selectedMoveBuildingId,
         spaceId: ui.selectedMoveSpaceId,
         activity
       }], { source: "manual-preview" });
@@ -23661,6 +23678,7 @@ var init_controller = __esm({
     init_templates();
     init_autonomy_actions();
     init_relationship_actions();
+    init_spatial_view_model();
     init_workflow_actions();
   }
 });
@@ -24451,4 +24469,4 @@ var modules = [
     load: () => Promise.resolve().then(() => (init_landlord_console(), landlord_console_exports))
   }
 ];
-await startLandlordRuntime({ version: "0.3.0-preview.13", modules });
+await startLandlordRuntime({ version: "0.3.0-preview.14", modules });

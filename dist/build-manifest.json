@@ -1,16 +1,16 @@
 {
-  "version": "0.3.0-preview.13",
+  "version": "0.3.0-preview.14",
   "format": "esm",
   "entry": "landlord-simulator.bundle.js",
-  "bytes": 1336369,
-  "sha256": "2711b9f8bf040159dc5190884a050853ab56ab1a33dddd41acd12f21d9dd2baa",
+  "bytes": 1337328,
+  "sha256": "d163924b581e4c43f83ddeaa5c29f80236350bf0e2af85965ff47d1299fcbe3d",
   "release": {
-    "tag": "v0.3.0-preview.13",
+    "tag": "v0.3.0-preview.14",
     "repository": "KelvinKHan/landlord-simulator-character-card",
     "loader": "landlord-simulator.loader.js",
     "sources": [
-      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.13/dist/landlord-simulator.bundle.js",
-      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.13/dist/landlord-simulator.bundle.js"
+      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.14/dist/landlord-simulator.bundle.js",
+      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.14/dist/landlord-simulator.bundle.js"
     ]
   },
   "upstreams": {
@@ -597,6 +597,7 @@
         "基于空间尺寸与相邻关系的建筑数字孪生",
         "把装修配色、材质、照明与家具编译为稳定视觉令牌",
         "人物移动路线校验、同步提案、冲突检测与确认写入",
+        "汇总全部已接管建筑的真实空间并规划跨建筑人物交通",
         "从装修、设施、人物与空间用途实时编译建筑运行脉冲和可激活场景",
         "按人物职业、性格和来源世界计算空间契合、偏好反应与具身生活建议",
         "让人物根据职业、性格与真实空间状态提出可由玩家批准的自主行动",
@@ -648,6 +649,7 @@
         "多频道联动待办与消费状态",
         "经营操作时间线与安全撤销/重做",
         "人物位置同步提案、路线预览与冲突队列",
+        "多建筑人员目标列表、跨建筑交通预览与确认调度",
         "建筑运行脉冲、空间体感、协同效应与可确认场景",
         "租客空间契合度、具身反应、同屋相遇与更合适空间建议",
         "租客自主行动提案、职业化活动解释、位置复核与玩家批准移动",

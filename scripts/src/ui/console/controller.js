@@ -1,6 +1,7 @@
 import { renderConsole } from './templates.js';
 import { handleAutonomyAction } from './autonomy-actions.js';
 import { handleRelationshipAction } from './relationship-actions.js';
+import { compileOwnedSpatialTargets } from './spatial-view-model.js';
 import { detectDocumentTheme, extractNarrativeProposals, isOwnedBuilding as owned } from './workflow-actions.js';
 
 export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, autonomy = null, relationships = null, perception = null, identities = null, layouts = null, memories = null, operations = null, bridges = null, compiler, logger }) {
@@ -22,6 +23,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     previewLinkIds: [],
     contextCapsuleVisible: false,
     selectedMovePersonId: null,
+    selectedMoveBuildingId: null,
     selectedMoveSpaceId: null,
     lastNarrativeExtraction: null,
     selectedOptionId: null,
@@ -66,7 +68,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
         const space = building?.floors.flatMap(floor => floor.spaces).find(item => item.id === person.所在空间ID);
         return { id, name: person.姓名, status: person.状态, buildingName: building?.name ?? person.所在建筑ID, spaceName: space?.name ?? person.所在空间ID, color: person.视觉身份?.主色 };
       }),
-      spaces: current.floors.flatMap(floor => floor.spaces).map(space => ({ ...space, floorName: current.floors.find(floor => floor.spaces.some(item => item.id === space.id))?.name ?? '' })),
+      spaces: compileOwnedSpatialTargets(portfolio, current.id),
       proposals: spatialSync?.list({ limit: 20 }) ?? [],
       counts: spatialSync?.counts() ?? { 待确认: 0, 冲突: 0, 已应用: 0, 已忽略: 0, 写入中: 0 },
       narrativeMode: state.运行模式 === '真实' ? 'ai' : 'local',
@@ -218,16 +220,17 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       });
     }
     if (action === 'choose-spatial-space') {
+      ui.selectedMoveBuildingId = button.dataset.buildingId;
       ui.selectedMoveSpaceId = button.dataset.spaceId;
       return render();
     }
     if (action === 'propose-spatial-move') {
       if (!spatialSync) throw new Error('空间同步服务尚未加载');
-      if (!ui.selectedMovePersonId || !ui.selectedMoveSpaceId) throw new Error('请选择人物和目标空间');
+      if (!ui.selectedMovePersonId || !ui.selectedMoveBuildingId || !ui.selectedMoveSpaceId) throw new Error('请选择人物和目标空间');
       const activity = root.querySelector('#lmo-spatial-activity')?.value?.trim() || '适应新环境';
       spatialSync.propose([{
         personId: ui.selectedMovePersonId,
-        buildingId: data.current.id,
+        buildingId: ui.selectedMoveBuildingId,
         spaceId: ui.selectedMoveSpaceId,
         activity,
       }], { source: 'manual-preview' });

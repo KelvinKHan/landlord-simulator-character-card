@@ -238,8 +238,16 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     click(dom.window.document, '[data-action="navigate"][data-section="spatial"]');
     assert.match(dom.window.document.body.textContent, /让人物位置先通过建筑结构校验/);
     click(dom.window.document, '[data-action="choose-spatial-person"][data-person-id="person_mock_医院_linxia"]');
+    const crossBuildingTarget = [...dom.window.document.querySelectorAll('[data-action="choose-spatial-space"]')]
+      .find(element => element.dataset.buildingId === 'building_headquarters');
+    assert.ok(crossBuildingTarget, '已接管的总部空间应进入跨建筑目标列表');
+    crossBuildingTarget.click();
+    click(dom.window.document, '[data-action="propose-spatial-move"]');
+    const crossBuildingProposal = spatialSync.list()[0];
+    assert.equal(crossBuildingProposal.route.kind, '跨建筑交通');
+    click(dom.window.document, `[data-action="ignore-spatial-proposal"][data-proposal-id="${crossBuildingProposal.id}"]`);
     const destination = [...dom.window.document.querySelectorAll('[data-action="choose-spatial-space"]')]
-      .find(element => element.dataset.spaceId !== 'hospital_ward');
+      .find(element => element.dataset.buildingId === 'building_hospital_candidate' && element.dataset.spaceId !== 'hospital_ward');
     assert.ok(destination);
     destination.click();
     click(dom.window.document, '[data-action="propose-spatial-move"]');
@@ -249,7 +257,7 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     assert.match(dom.window.document.body.textContent, /人物位置与建筑占用记录已经同步/);
 
     const narrativeTarget = [...dom.window.document.querySelectorAll('[data-action="choose-spatial-space"]')]
-      .find(element => element.dataset.spaceId !== destination.dataset.spaceId);
+      .find(element => element.dataset.buildingId === 'building_hospital_candidate' && element.dataset.spaceId !== destination.dataset.spaceId);
     const narrativeTargetName = narrativeTarget.querySelector('strong').textContent;
     dom.window.document.querySelector('#lmo-narrative-fragment').value = `林夏走进${narrativeTargetName}，正在观察这里的生活。`;
     click(dom.window.document, '[data-action="extract-narrative-intents"]');

@@ -85,7 +85,10 @@ const spatialCenter = {
     { id: 'preview_person_linxia', name: '林夏', status: '正在看窗外', buildingName: current.name, spaceName: '客厅', color: '#6B8DC9' },
     { id: 'preview_person_shaoqing', name: '邵青', status: '研究电梯', buildingName: current.name, spaceName: '花园', color: '#55B7A5' },
   ],
-  spaces: current.floors.flatMap(floor => floor.spaces).map(space => ({ ...space, floorName: current.floors.find(floor => floor.spaces.some(item => item.id === space.id))?.name ?? '' })),
+  spaces: [
+    ...current.floors.flatMap(floor => floor.spaces).map(space => ({ ...space, buildingId: current.id, buildingName: current.name, floorName: current.floors.find(floor => floor.spaces.some(item => item.id === space.id))?.name ?? '', currentBuilding: true })),
+    ...hospital.floors.flatMap(floor => floor.spaces).slice(0, 3).map(space => ({ ...space, buildingId: hospital.id, buildingName: hospital.name, floorName: hospital.floors.find(floor => floor.spaces.some(item => item.id === space.id))?.name ?? '', currentBuilding: false })),
+  ],
   counts: { 待确认: 1, 冲突: 1, 已应用: 2, 已忽略: 0, 写入中: 0 },
   proposals: [
     { id: 'spatial_preview_ready', personId: 'preview_person_linxia', buildingId: current.id, spaceId: 'garden', activity: '观察花园里的异世界植物', status: '待确认', reason: '经过 2 段已知连接', route: { personName: '林夏', destinationName: '花园', kind: '建筑内移动', path: ['living_room', 'garden'] } },
@@ -131,7 +134,7 @@ const pages = {
   },
   tasks: { ui: { section: 'tasks' }, task: null },
   history: { ui: { section: 'history' }, task: null },
-  spatial: { ui: { section: 'spatial', selectedMovePersonId: 'preview_person_linxia', selectedMoveSpaceId: 'garden' }, task: null },
+  spatial: { ui: { section: 'spatial', selectedMovePersonId: 'preview_person_linxia', selectedMoveBuildingId: hospital.id, selectedMoveSpaceId: 'hospital_ward' }, task: null },
   events: { ui: { section: 'events', contextCapsuleVisible: true }, task: null },
   twin: { ui: { section: 'twin', twinLayer: 'layout' }, task: null },
   'twin-pulse': { ui: { section: 'twin', twinLayer: 'pulse', focusedFloorId: 'floor_1', twinSpaceId: 'living_room' }, task: null },
