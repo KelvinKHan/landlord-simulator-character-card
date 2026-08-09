@@ -1,4 +1,5 @@
 import { cloneLandlordState, createDefaultLandlordState } from '../model/default-state.js';
+import { applyAcquisitionDirection } from '../buildings/acquisition-projection-engine.js';
 import { assertLandlordState } from '../model/validate-state.js';
 import { applyChangeSet } from '../state/change-set.js';
 
@@ -152,15 +153,7 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
         const building = state.建筑列表[buildingId];
         if (!building) throw new Error(`建筑不存在：${buildingId}`);
         if (building.接管状态 !== '可接管') throw new Error(`建筑「${building.名称}」当前不可接管`);
-        building.接管状态 = '已接管';
-        building.感知度 = 100;
-        building.经营摘要.活跃度 = Math.max(50, building.经营摘要.活跃度);
-        if (direction) {
-          building.名称 = direction.buildingName ?? building.名称;
-          building.简介 = direction.description ?? building.简介;
-          building.经营摘要.今日亮点 = direction.highlight ?? building.经营摘要.今日亮点;
-          building.主题 = { ...building.主题, ...(direction.theme ?? {}) };
-        }
+        applyAcquisitionDirection(building, direction);
         state.当前建筑ID = buildingId;
         appendDomainEvent(state, {
           标题: `正式接管「${building.名称}」`,

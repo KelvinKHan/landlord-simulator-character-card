@@ -138,6 +138,10 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     click(dom.window.document, '[data-action="run-takeover"]');
     await waitFor(() => assert.match(dom.window.document.body.textContent, /治愈系生活医院/));
     click(dom.window.document, '[data-action="choose-option"][data-option-id="healing-community"]');
+    assert.ok(dom.window.document.querySelector('[data-acquisition-projection]'));
+    assert.match(dom.window.document.body.textContent, /ACQUISITION SIMULATION/);
+    assert.match(dom.window.document.body.textContent, /接管机会.*运营交通/s);
+    assert.equal(store.getState().建筑列表.building_hospital_candidate.接管状态, '可接管');
     click(dom.window.document, '[data-action="confirm-takeover"]');
     await waitFor(() => assert.equal(store.getState().建筑列表.building_hospital_candidate.接管状态, '已接管'));
     assert.match(dom.window.document.body.textContent, /白塔治愈生活馆/);

@@ -1,16 +1,16 @@
 {
-  "version": "0.3.0-preview.17",
+  "version": "0.3.0-preview.18",
   "format": "esm",
   "entry": "landlord-simulator.bundle.js",
-  "bytes": 1368345,
-  "sha256": "e9cd6c21c40e63262cb2d259d952b30f3de6ff77af76af0ad580d6e0f0f7246d",
+  "bytes": 1380048,
+  "sha256": "72d437ca6014999239fa867c30fd12bcf8121830faf152794ca26d92b620cc17",
   "release": {
-    "tag": "v0.3.0-preview.17",
+    "tag": "v0.3.0-preview.18",
     "repository": "KelvinKHan/landlord-simulator-character-card",
     "loader": "landlord-simulator.loader.js",
     "sources": [
-      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.17/dist/landlord-simulator.bundle.js",
-      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.17/dist/landlord-simulator.bundle.js"
+      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.18/dist/landlord-simulator.bundle.js",
+      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.18/dist/landlord-simulator.bundle.js"
     ]
   },
   "upstreams": {
@@ -588,6 +588,7 @@
         "MVU 事务写入",
         "多建筑编译",
         "从真实接管状态确定性编译总部、运营链路与建筑机会节点",
+        "接管方向确认前预演建筑身份、感知范围与版图链路升级",
         "本地/AI 双模式统一任务中心",
         "任务排队、取消、重试、超时和预览确认",
         "当前会话内可冲突检测的经营撤销与重做",
@@ -646,6 +647,7 @@
       ],
       "features": [
         "多建筑资产总览与建筑切换",
+        "接管方向的建筑身份重构、版图链路和可玩机会预演",
         "可点击的经营版图神经网络、实时运营链路与接管机会节点",
         "楼层和空间编译视图",
         "装修方案确认前的楼层全息投影、目标高亮与前后视觉对照",
