@@ -19,6 +19,7 @@ import { createContextCapsuleService } from '../scripts/src/services/context-cap
 import { createTenantIdentityService } from '../scripts/src/services/tenant-identity-service.js';
 import { createRecipeTaskProvider, createTaskCenter } from '../scripts/src/services/task-center.js';
 import { createTenantEmbodimentService } from '../scripts/src/tenants/embodiment-engine.js';
+import { createTenantAutonomyService } from '../scripts/src/tenants/autonomy-engine.js';
 import { createLandlordConsole } from '../scripts/src/ui/console/controller.js';
 
 globalThis.z = z;
@@ -113,6 +114,7 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     memories: createBuildingMemoryService(),
     operations: createBuildingOperationsService(),
     embodiment: createTenantEmbodimentService(),
+    autonomy: createTenantAutonomyService(),
     compiler: { compileBuilding, compilePortfolio },
     logger: { error: () => {} },
   });
@@ -267,6 +269,13 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     click(dom.window.document, '[data-action="navigate"][data-section="tenants"]');
     assert.match(dom.window.document.body.textContent, /同一间房，换一个人/);
     assert.ok(dom.window.document.querySelector('[data-embodiment-signature]'));
+    const autonomyProposal = dom.window.document.querySelector('[data-action="choose-autonomy-proposal"]');
+    assert.ok(autonomyProposal);
+    autonomyProposal.click();
+    const autonomyDestinationId = store.getState().人物列表.person_mock_医院_linxia.所在空间ID;
+    click(dom.window.document, '[data-action="confirm-autonomy-proposal"]');
+    await waitFor(() => assert.notEqual(store.getState().人物列表.person_mock_医院_linxia.所在空间ID, autonomyDestinationId));
+    assert.match(dom.window.document.body.textContent, /已经开始自己的生活行动/);
     click(dom.window.document, '[data-action="choose-tenant-reaction"]');
     click(dom.window.document, '[data-action="confirm-tenant-reaction"]');
     await waitFor(() => assert.ok(store.getState().人物列表.person_mock_医院_linxia.生活状态.反应键));

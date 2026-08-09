@@ -13,6 +13,7 @@ export function activate(context) {
   const spatialSync = context.services.require('landlord.spatialSync');
   const narrativeIntents = context.services.require('landlord.narrativeIntents');
   const embodiment = context.services.require('tenant.embodiment');
+  const autonomy = context.services.require('tenant.autonomy');
   const relationships = context.services.require('tenant.relationships');
   const contextCapsules = context.services.require('landlord.contextCapsules');
   const perception = context.services.require('landlord.perception');
@@ -36,6 +37,7 @@ export function activate(context) {
     spatialSync,
     narrativeIntents,
     embodiment,
+    autonomy,
     relationships,
     contextCapsules,
     perception,

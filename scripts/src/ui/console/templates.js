@@ -1,48 +1,5 @@
 import { createRenovationVisual } from '../../renovation/visual-engine.js';
-
-const icons = Object.freeze({
-  home: '<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
-  buildings: '<svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M8 7h4M8 11h4M8 15h4M2 21h20M16 9h2a2 2 0 0 1 2 2v10"/></svg>',
-  room: '<svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v16M4 21h17M15 12h.01M8 7h7"/></svg>',
-  renovate: '<svg viewBox="0 0 24 24"><path d="m14 6 4 4M4 20l4.5-1 10-10a2.8 2.8 0 0 0-4-4l-10 10zM13 6l4 4M5 15l4 4"/></svg>',
-  recruit: '<svg viewBox="0 0 24 24"><path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M16 11h6"/></svg>',
-  event: '<svg viewBox="0 0 24 24"><path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M18 12h3M6 21h12M8 17a6 6 0 1 1 8 0l-1 1H9z"/></svg>',
-  tasks: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9h6M9 13h6M9 17h3M8 2v3M16 2v3"/></svg>',
-  history: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6M12 7v5l3 2"/></svg>',
-  route: '<svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3v-6a3 3 0 0 1 3-3"/></svg>',
-  pulse: '<svg viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6"/><circle cx="12" cy="12" r="9"/></svg>',
-  close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
-  arrow: '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
-  sparkle: '<svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
-  back: '<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
-  check: '<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>',
-  person: '<svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/></svg>',
-});
-
-function icon(name) {
-  return `<span class="lmo-icon">${icons[name] ?? icons.room}</span>`;
-}
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
-
-function safeColor(value, fallback = '#FF9EAA') {
-  return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : fallback;
-}
-
-function tags(values = []) {
-  return `<div class="lmo-tags">${values.map(value => `<span>${escapeHtml(value)}</span>`).join('')}</div>`;
-}
-
-function emptyState(title, text) {
-  return `<div class="lmo-empty">${icon('sparkle')}<strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></div>`;
-}
+import { emptyState, escapeHtml, icon, safeColor, tags } from './template-helpers.js';
 
 function renovationVisualStyle(visual) {
   return `--room-base:${safeColor(visual.css.base)};--room-accent:${safeColor(visual.css.accent)};--room-secondary:${safeColor(visual.css.secondary)};--room-glow:${safeColor(visual.css.glow)};--room-text:${safeColor(visual.css.text, '#283044')}`;
@@ -350,13 +307,23 @@ function renderRelationshipScenes(relationshipCenter, ui) {
   </section>`;
 }
 
-function renderTenantLife(tenantLife, relationshipCenter, ui) {
+function renderTenantAutonomy(autonomyCenter, ui) {
+  if (!autonomyCenter.proposals?.length) return '';
+  const selected = autonomyCenter.proposals.find(item => item.id === ui.selectedAutonomyProposalId);
+  return `<section class="lmo-autonomy-center" data-autonomy-signature="${escapeHtml(autonomyCenter.signature)}"><div class="lmo-section-heading compact"><div><span>TENANT FREE WILL</span><h2>租客自主行动 · 他们会产生想法，但不会夺走你的控制权</h2></div><p>提案来自人物职业、性格和建筑真实状态；不调用 AI，批准前不移动任何人。</p></div>
+    <div class="lmo-autonomy-grid">${autonomyCenter.proposals.map(proposal => `<button class="lmo-autonomy-card ${proposal.id === ui.selectedAutonomyProposalId ? 'selected' : ''}" data-action="choose-autonomy-proposal" data-proposal-id="${escapeHtml(proposal.id)}" style="--person-accent:${safeColor(proposal.person.color)}"><header><i>${escapeHtml(proposal.person.name.slice(0, 1))}</i><p><span>${escapeHtml(proposal.person.origin)} · ${escapeHtml(proposal.person.profession)}</span><strong>${escapeHtml(proposal.title)}</strong></p><b>${proposal.destination.score}</b></header><div class="lmo-autonomy-route"><span>${escapeHtml(proposal.source.name)}</span>${icon('arrow')}<strong>${escapeHtml(proposal.destination.name)}</strong></div><p>${escapeHtml(proposal.summary)}</p><ul>${proposal.reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul><footer><span>${escapeHtml(proposal.activity)}</span><em>批准这次行动</em></footer></button>`).join('')}</div>
+    ${selected ? `<div class="lmo-confirm-bar lmo-autonomy-confirm"><div><strong>让${escapeHtml(selected.person.name)}去${escapeHtml(selected.destination.name)}</strong><span>这只是下一段生活行动，不是永久搬家；位置变化会让旧提案自动失效。</span></div><button class="lmo-primary" data-action="confirm-autonomy-proposal" ${ui.busy ? 'disabled' : ''}>批准自主行动 ${icon('arrow')}</button></div>` : ''}
+  </section>`;
+}
+
+function renderTenantLife(tenantLife, autonomyCenter, relationshipCenter, ui) {
   const selected = tenantLife.residents.find(item => item.id === ui.selectedReactionId && !item.recorded);
   const selectedSpark = relationshipCenter.sparks.find(item => item.id === ui.selectedRelationshipSparkId && !item.recorded);
   return `<section class="lmo-view lmo-tenant-life-view">
     <div class="lmo-section-heading"><div><span>TENANT EMBODIMENT ENGINE</span><h2>同一间房，换一个人就会产生完全不同的生活反应</h2></div><p>代码读取人物职业、性格、来源世界和房间真实状态；确认前不写人物，不调用 AI。</p></div>
     <article class="lmo-tenant-life-hero" data-embodiment-signature="${escapeHtml(tenantLife.signature)}"><div>${icon('person')}<span><strong>${tenantLife.residents.length}</strong><small>位具身人物</small></span></div><p><span>不是统一满意度</span><strong>${escapeHtml(tenantLife.buildingName)}里的每个人，都用自己的偏好感受建筑</strong><small>装修决定空间提供什么，人物决定什么细节会被真正看见。</small></p><code>${escapeHtml(tenantLife.signature)}</code></article>
     ${tenantLife.encounters.length ? `<div class="lmo-encounter-strip">${tenantLife.encounters.map(item => `<article>${icon('sparkle')}<p><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.summary)}</small></p><span>${escapeHtml(item.names.join(' × '))}</span></article>`).join('')}</div>` : ''}
+    ${renderTenantAutonomy(autonomyCenter, ui)}
     ${relationshipCenter.sparks.length ? `<div class="lmo-section-heading compact"><div><span>RELATIONSHIP SPARKS</span><h2>只有真的在同一间房里，关系才有发生地点</h2></div><p>分数用于解释这次相遇的潜力，不会每天衰减，也不会强制失败。</p></div><div class="lmo-relationship-grid">${relationshipCenter.sparks.map(spark => `<button class="lmo-relationship-card ${spark.id === ui.selectedRelationshipSparkId ? 'selected' : ''} ${spark.recorded ? 'recorded' : ''}" data-action="choose-relationship-spark" data-spark-id="${escapeHtml(spark.id)}" style="--score:${spark.score}" ${spark.recorded ? 'disabled' : ''}><header><div>${spark.people.map(person => `<i style="--person-accent:${safeColor(person.color)}">${escapeHtml(person.name.slice(0, 1))}</i>`).join('')}</div><span><b>${spark.score}</b><small>火花强度</small></span></header><strong>${escapeHtml(spark.title)}</strong><p>${escapeHtml(spark.summary)}</p><ul>${spark.reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul><footer><span>${escapeHtml(spark.spaceName)}</span><em>${spark.recorded ? '已经记录' : spark.existing.left || spark.existing.right ? `现有：${escapeHtml(spark.existing.left || spark.existing.right)}` : '新的关系可能'}</em></footer></button>`).join('')}</div>` : ''}
     ${selectedSpark ? `<div class="lmo-confirm-bar lmo-relationship-confirm"><div><strong>确认「${escapeHtml(selectedSpark.title)}」</strong><span>只在两人仍处于${escapeHtml(selectedSpark.spaceName)}时双向写入关系，并创建正文、微信和建筑草稿。</span></div><button class="lmo-primary" data-action="confirm-relationship-spark" ${ui.busy ? 'disabled' : ''}>记录关系火花 ${icon('sparkle')}</button></div>` : ''}
     ${renderRelationshipNetwork(relationshipCenter)}
@@ -428,7 +395,7 @@ function renderEvents(state, portfolio, linkCenter, contextCapsule, ui) {
 }
 
 const operationKindLabels = Object.freeze({
-  takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募', exploration: '探索感知', movement: '人物移动', scene: '建筑场景', reaction: '人物感受', relationship: '关系火花', 'relationship-scene': '双人生活', management: '经营操作',
+  takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募', exploration: '探索感知', movement: '人物移动', autonomy: '自主行动', scene: '建筑场景', reaction: '人物感受', relationship: '关系火花', 'relationship-scene': '双人生活', management: '经营操作',
 });
 
 function renderSpatial(spatialCenter, current, ui) {
@@ -472,12 +439,12 @@ function renderHistory(historyCenter) {
   </section>`;
 }
 
-export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, relationshipCenter, memory, pulse, twin }) {
+export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin }) {
   let content;
   if (ui.section === 'portfolio') content = renderPortfolio(state, portfolio);
   else if (ui.section === 'building') content = renderBuilding(current, identityCenter);
   else if (ui.section === 'pulse') content = renderPulse(pulse, ui);
-  else if (ui.section === 'tenants') content = renderTenantLife(tenantLife, relationshipCenter, ui);
+  else if (ui.section === 'tenants') content = renderTenantLife(tenantLife, autonomyCenter, relationshipCenter, ui);
   else if (ui.section === 'twin') content = renderTwin(twin, ui, pulse, tenantLife, memory);
   else if (ui.section === 'takeover') content = renderTakeover(state, ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
   else if (ui.section === 'renovation') content = renderRenovation(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);

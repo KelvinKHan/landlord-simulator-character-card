@@ -1,8 +1,9 @@
 import { renderConsole } from './templates.js';
+import { handleAutonomyAction } from './autonomy-actions.js';
 import { handleRelationshipAction } from './relationship-actions.js';
 import { detectDocumentTheme, extractNarrativeProposals, isOwnedBuilding as owned } from './workflow-actions.js';
 
-export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, relationships = null, perception = null, identities = null, layouts = null, memories = null, operations = null, bridges = null, compiler, logger }) {
+export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, autonomy = null, relationships = null, perception = null, identities = null, layouts = null, memories = null, operations = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -15,6 +16,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     twinLayer: 'layout',
     selectedPulseSceneId: null,
     selectedReactionId: null,
+    selectedAutonomyProposalId: null,
     selectedRelationshipSparkId: null,
     selectedRelationshipSceneId: null,
     previewLinkIds: [],
@@ -53,6 +55,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     const memory = memories?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'memory_unavailable', totalEvents: 0, activeSpaces: 0, spaces: [], unplaced: [] };
     const pulse = operations?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'pulse_unavailable', total: 0, state: '尚未加载', metrics: { comfort: 0, function: 0, vitality: 0, appeal: 0 }, spaces: [], synergies: [], scenes: [], residentCount: 0, originCount: 0 };
     const tenantLife = embodiment?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'embodied_unavailable', residents: [], encounters: [] };
+    const autonomyCenter = autonomy?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'autonomy_unavailable', proposals: [] };
     const relationshipCenter = relationships?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, sparks: [], scenes: [], network: null };
     const historyCenter = history
       ? { ...history.summary(), entries: history.list({ limit: 20 }) }
@@ -69,7 +72,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       narrativeMode: state.运行模式 === '真实' ? 'ai' : 'local',
       narrativeCapabilities: narrativeIntents?.capabilities() ?? { local: true, ai: false },
     };
-    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, relationshipCenter, memory, pulse, twin };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin };
   }
 
   function resetWorkflow({ keepSpace = false } = {}) {
@@ -192,6 +195,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
         setNotice('这份感受已经进入人物状态，并生成正文、微信和建筑草稿。', 'success');
       });
     }
+    if (action.includes('autonomy')) return handleAutonomyAction({ action, button, data, ui, store, render, withBusy, recordOperation, setNotice });
     if (action.includes('relationship')) return handleRelationshipAction({ action, button, data, ui, store, render, withBusy, recordOperation, setNotice });
     if (action === 'undo-operation' || action === 'redo-operation') {
       if (!history) throw new Error('经营回溯服务尚未加载');

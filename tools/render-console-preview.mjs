@@ -10,6 +10,7 @@ import { compileBuildingOperations } from '../scripts/src/buildings/operations-e
 import { createDefaultLandlordState } from '../scripts/src/model/default-state.js';
 import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js';
 import { compileContextCapsule } from '../scripts/src/services/context-capsule-service.js';
+import { compileTenantAutonomy } from '../scripts/src/tenants/autonomy-engine.js';
 import { compileTenantEmbodiment } from '../scripts/src/tenants/embodiment-engine.js';
 import { compileRelationshipSparks } from '../scripts/src/tenants/relationship-engine.js';
 import { renderConsole } from '../scripts/src/ui/console/templates.js';
@@ -93,6 +94,7 @@ const spatialCenter = {
 };
 const pulse = compileBuildingOperations(state, current.id);
 const tenantLife = compileTenantEmbodiment(state, current.id);
+const autonomyCenter = compileTenantAutonomy(state, current.id);
 const previewRelationshipSpark = compileRelationshipSparks(state, current.id).sparks[0];
 state.人物列表.preview_person_linxia.关系.preview_person_shaoqing = previewRelationshipSpark.label;
 state.人物列表.preview_person_shaoqing.关系.preview_person_linxia = previewRelationshipSpark.label;
@@ -107,6 +109,7 @@ const pages = {
   building: { ui: { section: 'building' }, task: null },
   pulse: { ui: { section: 'pulse', selectedPulseSceneId: pulse.scenes[0]?.id }, task: null },
   tenants: { ui: { section: 'tenants', selectedReactionId: tenantLife.residents[0]?.id, selectedRelationshipSparkId: null, selectedRelationshipSceneId: relationshipCenter.scenes[0]?.id }, task: null },
+  autonomy: { ui: { section: 'tenants', selectedReactionId: null, selectedAutonomyProposalId: autonomyCenter.proposals[0]?.id, selectedRelationshipSparkId: null }, task: null, scrollTop: 260 },
   social: { ui: { section: 'tenants', selectedReactionId: null, selectedRelationshipSparkId: null }, task: null, scrollTop: 520 },
   duo: { ui: { section: 'tenants', selectedReactionId: null, selectedRelationshipSparkId: null, selectedRelationshipSceneId: relationshipCenter.scenes[0]?.id }, task: null, scrollTop: 980 },
   takeover: {
@@ -139,7 +142,7 @@ const pages = {
 await fs.mkdir(outputDirectory, { recursive: true });
 
 for (const [name, page] of Object.entries(pages)) {
-  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, relationshipCenter, memory, pulse, twin });
+  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin });
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),

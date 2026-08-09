@@ -14,7 +14,7 @@ export const productModuleManifest = [
     entry: 'scripts/modules/landlord-core/index.js',
     critical: false,
     requires: ['landlord.schema'],
-    provides: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.relationships', 'building.compiler', 'building.layout', 'building.memories', 'building.operations', 'building.renovationVisual', 'building.routes'],
+    provides: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.autonomy', 'tenant.relationships', 'building.compiler', 'building.layout', 'building.memories', 'building.operations', 'building.renovationVisual', 'building.routes'],
     features: [
       'MVU 事务写入',
       '多建筑编译',
@@ -30,6 +30,7 @@ export const productModuleManifest = [
       '人物移动路线校验、同步提案、冲突检测与确认写入',
       '从装修、设施、人物与空间用途实时编译建筑运行脉冲和可激活场景',
       '按人物职业、性格和来源世界计算空间契合、偏好反应与具身生活建议',
+      '让人物根据职业、性格与真实空间状态提出可由玩家批准的自主行动',
       '从剧情片段本地或显式 AI 提取人物移动意图并交给空间同步复核',
       '把当前建筑相关事实压缩成有字符预算、可预览的一次性正文上下文胶囊',
       '按真实同屋位置、来源世界、职业和空间体感计算双向关系火花',
@@ -43,7 +44,7 @@ export const productModuleManifest = [
     name: '房东经营中枢',
     entry: 'scripts/modules/landlord-console/index.js',
     critical: false,
-    requires: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.relationships', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'building.compiler', 'building.layout', 'building.memories', 'building.operations', 'ui.floatingMenu'],
+    requires: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.autonomy', 'tenant.relationships', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'building.compiler', 'building.layout', 'building.memories', 'building.operations', 'ui.floatingMenu'],
     provides: ['landlord.console'],
     legacyRequires: ['FloatingMenuManager'],
     features: [
@@ -56,6 +57,7 @@ export const productModuleManifest = [
       '人物位置同步提案、路线预览与冲突队列',
       '建筑运行脉冲、空间体感、协同效应与可确认场景',
       '租客空间契合度、具身反应、同屋相遇与更合适空间建议',
+      '租客自主行动提案、职业化活动解释、位置复核与玩家批准移动',
       '数字孪生空间结构、运行体感与租客感受三层传感叠图',
       '剧情片段解析、本地/AI 提取模式与结构化移动提案',
       '当前建筑上下文胶囊预览、预算显示与一次性正文注入',
