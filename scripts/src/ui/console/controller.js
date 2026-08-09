@@ -4,7 +4,7 @@ function owned(building) {
   return building && ['总部', '已接管'].includes(building.status);
 }
 
-export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, embodiment = null, perception = null, identities = null, layouts = null, operations = null, bridges = null, compiler, logger }) {
+export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, embodiment = null, perception = null, identities = null, layouts = null, operations = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -20,6 +20,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     previewLinkIds: [],
     selectedMovePersonId: null,
     selectedMoveSpaceId: null,
+    lastNarrativeExtraction: null,
     selectedOptionId: null,
     taskId: null,
     busy: false,
@@ -61,6 +62,8 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       spaces: current.floors.flatMap(floor => floor.spaces).map(space => ({ ...space, floorName: current.floors.find(floor => floor.spaces.some(item => item.id === space.id))?.name ?? '' })),
       proposals: spatialSync?.list({ limit: 20 }) ?? [],
       counts: spatialSync?.counts() ?? { 待确认: 0, 冲突: 0, 已应用: 0, 已忽略: 0, 写入中: 0 },
+      narrativeMode: state.运行模式 === '真实' ? 'ai' : 'local',
+      narrativeCapabilities: narrativeIntents?.capabilities() ?? { local: true, ai: false },
     };
     return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, tenantLife, pulse, twin };
   }
@@ -200,6 +203,18 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     if (action === 'choose-spatial-person') {
       ui.selectedMovePersonId = button.dataset.personId;
       return render();
+    }
+    if (action === 'extract-narrative-intents') {
+      if (!narrativeIntents || !spatialSync) throw new Error('剧情空间提取服务尚未加载');
+      const text = root.querySelector('#lmo-narrative-fragment')?.value?.trim();
+      if (!text) throw new Error('请先粘贴一段需要解析的剧情文字');
+      return withBusy(async () => {
+        const result = await narrativeIntents.extract(text, { mode: data.spatialCenter.narrativeMode });
+        if (!result.intents.length) throw new Error(result.unresolved.length ? `没有形成可确认移动：${result.unresolved[0]}` : '没有识别到人物移动');
+        spatialSync.propose(result.intents, { source: `narrative-${result.mode}` });
+        ui.lastNarrativeExtraction = { mode: result.mode, count: result.intents.length, unresolved: result.unresolved.length };
+        setNotice(`已提取 ${result.intents.length} 条移动意图；仍需逐条确认后才会改动人物位置。`, 'success');
+      });
     }
     if (action === 'choose-spatial-space') {
       ui.selectedMoveSpaceId = button.dataset.spaceId;

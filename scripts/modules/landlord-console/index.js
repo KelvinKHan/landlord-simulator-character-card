@@ -11,6 +11,7 @@ export function activate(context) {
   const events = context.services.require('landlord.events');
   const history = context.services.require('landlord.history');
   const spatialSync = context.services.require('landlord.spatialSync');
+  const narrativeIntents = context.services.require('landlord.narrativeIntents');
   const embodiment = context.services.require('tenant.embodiment');
   const perception = context.services.require('landlord.perception');
   const identities = context.services.require('landlord.identities');
@@ -30,6 +31,7 @@ export function activate(context) {
     events,
     history,
     spatialSync,
+    narrativeIntents,
     embodiment,
     perception,
     identities,

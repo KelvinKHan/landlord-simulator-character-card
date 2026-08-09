@@ -8,6 +8,7 @@ import { createTenantEmbodimentService } from '../../src/tenants/embodiment-engi
 import { createBuildingEventBus } from '../../src/events/building-event-bus.js';
 import { managementMockRecipes } from '../../src/mock/management-recipes.js';
 import { createLandlordStore } from '../../src/services/landlord-store.js';
+import { createNarrativeIntentService } from '../../src/services/narrative-intent-service.js';
 import { createOperationJournal } from '../../src/services/operation-journal-service.js';
 import { createSpatialSyncService } from '../../src/services/spatial-sync-service.js';
 import { createPerceptionService } from '../../src/services/perception-service.js';
@@ -45,6 +46,11 @@ export function activate(context) {
   const renovationVisuals = createRenovationVisualService();
   const routes = createSpatialRouteService();
   const spatialSync = createSpatialSyncService({ store });
+  const narrativeIntents = createNarrativeIntentService({
+    store,
+    tavern: context.tavern,
+    isAiEnabled: () => store.getState().运行模式 === '真实',
+  });
   const embodiment = createTenantEmbodimentService();
   const bridges = createChannelBridgeService({
     events,
@@ -63,6 +69,7 @@ export function activate(context) {
   context.services.register('building.renovationVisual', renovationVisuals);
   context.services.register('building.routes', routes);
   context.services.register('landlord.spatialSync', spatialSync);
+  context.services.register('landlord.narrativeIntents', narrativeIntents);
   context.services.register('tenant.embodiment', embodiment);
   context.services.register('landlord.bridges', bridges);
   context.services.register('building.compiler', compiler);

@@ -9,6 +9,7 @@ import { createBuildingEventBus } from '../scripts/src/events/building-event-bus
 import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js';
 import { createLandlordStore } from '../scripts/src/services/landlord-store.js';
 import { createMockTaskService } from '../scripts/src/services/mock-task-service.js';
+import { createNarrativeIntentService } from '../scripts/src/services/narrative-intent-service.js';
 import { createOperationJournal } from '../scripts/src/services/operation-journal-service.js';
 import { createSpatialSyncService } from '../scripts/src/services/spatial-sync-service.js';
 import { createPerceptionService } from '../scripts/src/services/perception-service.js';
@@ -81,6 +82,7 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
   const historyIds = createIds();
   const history = createOperationJournal({ store, idFactory: () => historyIds('operation') });
   const spatialSync = createSpatialSyncService({ store, idFactory: () => historyIds('spatial') });
+  const narrativeIntents = createNarrativeIntentService({ store });
   const perception = createPerceptionService({ store });
   const identities = createTenantIdentityService({ store });
   const dispatchedLinks = [];
@@ -99,6 +101,7 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     events,
     history,
     spatialSync,
+    narrativeIntents,
     perception,
     identities,
     bridges,
@@ -226,6 +229,16 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     click(dom.window.document, '[data-action="confirm-spatial-proposal"]');
     await waitFor(() => assert.equal(store.getState().人物列表.person_mock_医院_linxia.所在空间ID, destination.dataset.spaceId));
     assert.match(dom.window.document.body.textContent, /人物位置与建筑占用记录已经同步/);
+
+    const narrativeTarget = [...dom.window.document.querySelectorAll('[data-action="choose-spatial-space"]')]
+      .find(element => element.dataset.spaceId !== destination.dataset.spaceId);
+    const narrativeTargetName = narrativeTarget.querySelector('strong').textContent;
+    dom.window.document.querySelector('#lmo-narrative-fragment').value = `林夏走进${narrativeTargetName}，正在观察这里的生活。`;
+    click(dom.window.document, '[data-action="extract-narrative-intents"]');
+    await waitFor(() => assert.equal(spatialSync.list()[0].source, 'narrative-local'));
+    assert.match(dom.window.document.body.textContent, /已提取 1 条移动意图/);
+    click(dom.window.document, '[data-action="confirm-spatial-proposal"]');
+    await waitFor(() => assert.equal(store.getState().人物列表.person_mock_医院_linxia.所在空间ID, narrativeTarget.dataset.spaceId));
 
     click(dom.window.document, '[data-action="navigate"][data-section="pulse"]');
     assert.match(dom.window.document.body.textContent, /建筑不是房间清单/);
