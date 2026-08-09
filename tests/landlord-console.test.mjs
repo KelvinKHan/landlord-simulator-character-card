@@ -192,7 +192,13 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     assert.equal(dom.window.document.querySelectorAll('[data-assignment-person]').length, 1);
     assert.equal(dom.window.document.querySelectorAll('.lmo-assignment-cell').length, 2);
     assert.match(dom.window.document.body.textContent, /计算只读 · 不调用 AI · 不自动搬动人物/);
+    assert.ok(dom.window.document.querySelector('[data-life-flow]'));
+    assert.equal(dom.window.document.querySelectorAll('[data-flow-person]').length, 1);
+    assert.equal(dom.window.document.querySelectorAll('[data-flow-stop]').length, 4);
     click(dom.window.document, '.lmo-portfolio-assignment [data-action="navigate"][data-section="spatial"]');
+    assert.match(dom.window.document.body.textContent, /让人物位置先通过建筑结构校验/);
+    click(dom.window.document, '[data-action="navigate"][data-section="portfolio"]');
+    click(dom.window.document, '.lmo-life-flow [data-action="navigate"][data-section="spatial"]');
     assert.match(dom.window.document.body.textContent, /让人物位置先通过建筑结构校验/);
 
     click(dom.window.document, '[data-action="navigate"][data-section="history"]');

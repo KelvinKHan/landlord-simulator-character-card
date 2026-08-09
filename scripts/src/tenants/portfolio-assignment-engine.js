@@ -56,6 +56,7 @@ function evaluatePlacement(state, personId, person, building, operationMap) {
     fit: best.fit,
     matchedTags: best.matchedTags,
     currentSpace: best.currentSpace,
+    spaces: Object.freeze(spaces),
     alternatives: Object.freeze(spaces.slice(1, 3)),
   });
 }

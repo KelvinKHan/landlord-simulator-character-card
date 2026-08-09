@@ -7,6 +7,7 @@ import { createRenovationVisualService } from '../../src/renovation/visual-engin
 import { createSpatialRouteService } from '../../src/spatial/route-engine.js';
 import { createTenantEmbodimentService } from '../../src/tenants/embodiment-engine.js';
 import { createPortfolioAssignmentService } from '../../src/tenants/portfolio-assignment-engine.js';
+import { createLifeFlowService } from '../../src/tenants/life-flow-engine.js';
 import { createTenantAutonomyService } from '../../src/tenants/autonomy-engine.js';
 import { createRelationshipService } from '../../src/tenants/relationship-engine.js';
 import { createBuildingEventBus } from '../../src/events/building-event-bus.js';
@@ -59,6 +60,7 @@ export function activate(context) {
   });
   const embodiment = createTenantEmbodimentService();
   const portfolioAssignments = createPortfolioAssignmentService();
+  const lifeFlows = createLifeFlowService();
   const autonomy = createTenantAutonomyService();
   const relationships = createRelationshipService();
   const contextCapsules = createContextCapsuleService({ store });
@@ -83,6 +85,7 @@ export function activate(context) {
   context.services.register('landlord.narrativeIntents', narrativeIntents);
   context.services.register('tenant.embodiment', embodiment);
   context.services.register('tenant.portfolioAssignments', portfolioAssignments);
+  context.services.register('tenant.lifeFlows', lifeFlows);
   context.services.register('tenant.autonomy', autonomy);
   context.services.register('tenant.relationships', relationships);
   context.services.register('landlord.contextCapsules', contextCapsules);

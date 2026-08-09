@@ -121,6 +121,7 @@ const pages = {
   portfolio: { ui: { section: 'portfolio' }, task: null },
   'portfolio-radar': { ui: { section: 'portfolio' }, task: null, state: radarState, portfolio: radarPortfolio, current: radarCurrent, scrollTop: 690 },
   'portfolio-assignment': { ui: { section: 'portfolio' }, task: null, state: radarState, portfolio: radarPortfolio, current: radarCurrent, scrollTop: 1190 },
+  'portfolio-life-flow': { ui: { section: 'portfolio' }, task: null, state: radarState, portfolio: radarPortfolio, current: radarCurrent, scrollTop: 1690 },
   'portfolio-dark': { ui: { section: 'portfolio' }, task: null, theme: 'dark' },
   building: { ui: { section: 'building' }, task: null },
   pulse: { ui: { section: 'pulse', selectedPulseSceneId: pulse.scenes[0]?.id }, task: null },
