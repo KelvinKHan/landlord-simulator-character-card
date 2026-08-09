@@ -173,6 +173,10 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     await waitFor(() => assert.match(dom.window.document.body.textContent, /林夏/));
     click(dom.window.document, '[data-action="choose-option"][data-option-id="person_mock_医院_linxia"]');
     click(dom.window.document, '[data-action="choose-recruit-space"][data-space-id="hospital_ward"]');
+    assert.ok(dom.window.document.querySelector('[data-arrival-projection]'));
+    assert.match(dom.window.document.body.textContent, /ARRIVAL SIMULATION/);
+    assert.match(dom.window.document.body.textContent, /入住预演/);
+    assert.equal(store.getState().人物列表.person_mock_医院_linxia, undefined);
     click(dom.window.document, '[data-action="confirm-recruitment"]');
     await waitFor(() => assert.equal(store.getState().人物列表.person_mock_医院_linxia.姓名, '林夏'));
     assert.match(dom.window.document.body.textContent, /林夏已经正式加入白塔治愈生活馆/);
