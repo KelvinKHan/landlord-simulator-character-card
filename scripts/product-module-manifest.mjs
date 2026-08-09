@@ -14,7 +14,7 @@ export const productModuleManifest = [
     entry: 'scripts/modules/landlord-core/index.js',
     critical: false,
     requires: ['landlord.schema'],
-    provides: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'building.compiler', 'building.layout', 'building.operations', 'building.renovationVisual', 'building.routes'],
+    provides: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.relationships', 'building.compiler', 'building.layout', 'building.operations', 'building.renovationVisual', 'building.routes'],
     features: [
       'MVU 事务写入',
       '多建筑编译',
@@ -32,6 +32,7 @@ export const productModuleManifest = [
       '按人物职业、性格和来源世界计算空间契合、偏好反应与具身生活建议',
       '从剧情片段本地或显式 AI 提取人物移动意图并交给空间同步复核',
       '把当前建筑相关事实压缩成有字符预算、可预览的一次性正文上下文胶囊',
+      '按真实同屋位置、来源世界、职业和空间体感计算双向关系火花',
       '正文一次性提示词注入与微信、新闻的显式草稿投递桥',
     ],
   },
@@ -40,7 +41,7 @@ export const productModuleManifest = [
     name: '房东经营中枢',
     entry: 'scripts/modules/landlord-console/index.js',
     critical: false,
-    requires: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'building.compiler', 'building.layout', 'building.operations', 'ui.floatingMenu'],
+    requires: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.relationships', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'building.compiler', 'building.layout', 'building.operations', 'ui.floatingMenu'],
     provides: ['landlord.console'],
     legacyRequires: ['FloatingMenuManager'],
     features: [
@@ -56,6 +57,7 @@ export const productModuleManifest = [
       '数字孪生空间结构、运行体感与租客感受三层传感叠图',
       '剧情片段解析、本地/AI 提取模式与结构化移动提案',
       '当前建筑上下文胶囊预览、预算显示与一次性正文注入',
+      '同屋人物关系火花预览、成因解释、双向确认与三频道联动',
       '糖果明亮主题与 Rose Pine 暗色主题',
       '桌面与窄屏响应式布局',
     ],

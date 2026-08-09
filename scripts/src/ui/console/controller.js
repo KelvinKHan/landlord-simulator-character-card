@@ -1,11 +1,7 @@
 import { renderConsole } from './templates.js';
-import { extractNarrativeProposals } from './workflow-actions.js';
+import { applyRelationshipSpark, detectDocumentTheme, extractNarrativeProposals, isOwnedBuilding as owned } from './workflow-actions.js';
 
-function owned(building) {
-  return building && ['总部', '已接管'].includes(building.status);
-}
-
-export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, perception = null, identities = null, layouts = null, operations = null, bridges = null, compiler, logger }) {
+export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, relationships = null, perception = null, identities = null, layouts = null, operations = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -18,6 +14,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     twinLayer: 'layout',
     selectedPulseSceneId: null,
     selectedReactionId: null,
+    selectedRelationshipSparkId: null,
     previewLinkIds: [],
     contextCapsuleVisible: false,
     selectedMovePersonId: null,
@@ -53,6 +50,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     const twin = layouts?.compile(current) ?? { buildingId: current.id, name: current.name, theme: current.theme, floors: [], metrics: { floors: 0, nodes: 0, edges: 0 } };
     const pulse = operations?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'pulse_unavailable', total: 0, state: '尚未加载', metrics: { comfort: 0, function: 0, vitality: 0, appeal: 0 }, spaces: [], synergies: [], scenes: [], residentCount: 0, originCount: 0 };
     const tenantLife = embodiment?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'embodied_unavailable', residents: [], encounters: [] };
+    const relationshipCenter = relationships?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, sparks: [] };
     const historyCenter = history
       ? { ...history.summary(), entries: history.list({ limit: 20 }) }
       : { busy: false, count: 0, appliedCount: 0, canUndo: false, canRedo: false, undoLabel: '', redoLabel: '', blockedUndo: false, entries: [] };
@@ -68,7 +66,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       narrativeMode: state.运行模式 === '真实' ? 'ai' : 'local',
       narrativeCapabilities: narrativeIntents?.capabilities() ?? { local: true, ai: false },
     };
-    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, pulse, twin };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, relationshipCenter, pulse, twin };
   }
 
   function resetWorkflow({ keepSpace = false } = {}) {
@@ -79,13 +77,10 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
   }
 
   function resetTwin() {
-    ui.focusedFloorId = null;
-    ui.twinSpaceId = null;
+    Object.assign(ui, { focusedFloorId: null, twinSpaceId: null });
   }
 
-  function setNotice(text, type = 'info') {
-    ui.notice = { text, type };
-  }
+  function setNotice(text, type = 'info') { ui.notice = { text, type }; }
 
   function render() {
     if (!visible || disposed) return;
@@ -93,7 +88,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     ui.targetBuilding = data.targetBuilding;
     const task = ui.taskId ? tasks.get(ui.taskId) : null;
     root.innerHTML = renderConsole({ ...data, ui, task });
-    root.querySelector('.lmo-backdrop').dataset.theme = detectTheme(document);
+    root.querySelector('.lmo-backdrop').dataset.theme = detectDocumentTheme(document);
   }
 
   async function withBusy(work) {
@@ -192,6 +187,18 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
         await recordOperation('reaction', `记录${reaction.name}的空间感受`, () => store.recordTenantReaction({ personId: reaction.personId, reaction }));
         ui.selectedReactionId = null;
         setNotice('这份感受已经进入人物状态，并生成正文、微信和建筑草稿。', 'success');
+      });
+    }
+    if (action === 'choose-relationship-spark') {
+      ui.selectedRelationshipSparkId = button.dataset.sparkId;
+      return render();
+    }
+    if (action === 'confirm-relationship-spark') {
+      const spark = data.relationshipCenter.sparks.find(item => item.id === ui.selectedRelationshipSparkId);
+      return withBusy(async () => {
+        await applyRelationshipSpark({ spark, store, recordOperation });
+        ui.selectedRelationshipSparkId = null;
+        setNotice('这次关系火花已经双向写入人物关系，并生成正文、微信和建筑草稿。', 'success');
       });
     }
     if (action === 'undo-operation' || action === 'redo-operation') {
@@ -489,10 +496,4 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       root = null;
     },
   });
-}
-
-function detectTheme(document) {
-  const classes = `${document.documentElement?.className ?? ''} ${document.body?.className ?? ''}`.toLowerCase();
-  if (classes.includes('dark')) return 'dark';
-  return globalThis.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }

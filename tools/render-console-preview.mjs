@@ -10,6 +10,7 @@ import { createDefaultLandlordState } from '../scripts/src/model/default-state.j
 import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js';
 import { compileContextCapsule } from '../scripts/src/services/context-capsule-service.js';
 import { compileTenantEmbodiment } from '../scripts/src/tenants/embodiment-engine.js';
+import { compileRelationshipSparks } from '../scripts/src/tenants/relationship-engine.js';
 import { renderConsole } from '../scripts/src/ui/console/templates.js';
 
 const toolDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -91,6 +92,7 @@ const spatialCenter = {
 };
 const pulse = compileBuildingOperations(state, current.id);
 const tenantLife = compileTenantEmbodiment(state, current.id);
+const relationshipCenter = compileRelationshipSparks(state, current.id);
 const contextCapsule = compileContextCapsule(state, current.id);
 
 const pages = {
@@ -98,7 +100,7 @@ const pages = {
   'portfolio-dark': { ui: { section: 'portfolio' }, task: null, theme: 'dark' },
   building: { ui: { section: 'building' }, task: null },
   pulse: { ui: { section: 'pulse', selectedPulseSceneId: pulse.scenes[0]?.id }, task: null },
-  tenants: { ui: { section: 'tenants', selectedReactionId: tenantLife.residents[0]?.id }, task: null },
+  tenants: { ui: { section: 'tenants', selectedReactionId: tenantLife.residents[0]?.id, selectedRelationshipSparkId: relationshipCenter.sparks[0]?.id }, task: null },
   takeover: {
     ui: { section: 'takeover', targetBuilding: hospital, selectedOptionId: 'multiverse-medical', busy: false },
     task: { status: 'ready', preview: takeoverPreview },
@@ -128,7 +130,7 @@ const pages = {
 await fs.mkdir(outputDirectory, { recursive: true });
 
 for (const [name, page] of Object.entries(pages)) {
-  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, pulse, twin });
+  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, relationshipCenter, pulse, twin });
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),
