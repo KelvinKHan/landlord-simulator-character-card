@@ -62,6 +62,18 @@ function scoreFit(person, space, operationSpace, roommateCount) {
   return Object.freeze({ fit, preferences, matches, matchStrength, roommateCount });
 }
 
+export function evaluateTenantSpaceFit({ person, space, operationSpace, roommateCount = 0 }) {
+  if (!person || !space) throw new TypeError('人物和空间都是契合度评估的必需数据');
+  const result = scoreFit(person, space, operationSpace, roommateCount);
+  return Object.freeze({
+    fit: result.fit,
+    preferenceTags: Object.freeze(result.preferences.map(item => item.label)),
+    matchedTags: Object.freeze(result.matches.map(item => item.label)),
+    matchStrength: result.matchStrength,
+    roommateCount: result.roommateCount,
+  });
+}
+
 function reactionCopy(person, space, result) {
   const matched = result.matches.slice(0, 2).map(item => item.label);
   const preference = result.preferences[0]?.label ?? '舒适与安心';

@@ -187,6 +187,14 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     await waitFor(() => assert.equal(store.getState().人物列表.person_mock_医院_linxia.姓名, '林夏'));
     assert.match(dom.window.document.body.textContent, /林夏已经正式加入白塔治愈生活馆/);
 
+    click(dom.window.document, '[data-action="navigate"][data-section="portfolio"]');
+    assert.ok(dom.window.document.querySelector('[data-assignment-signature]'));
+    assert.equal(dom.window.document.querySelectorAll('[data-assignment-person]').length, 1);
+    assert.equal(dom.window.document.querySelectorAll('.lmo-assignment-cell').length, 2);
+    assert.match(dom.window.document.body.textContent, /计算只读 · 不调用 AI · 不自动搬动人物/);
+    click(dom.window.document, '.lmo-portfolio-assignment [data-action="navigate"][data-section="spatial"]');
+    assert.match(dom.window.document.body.textContent, /让人物位置先通过建筑结构校验/);
+
     click(dom.window.document, '[data-action="navigate"][data-section="history"]');
     assert.match(dom.window.document.body.textContent, /经营状态有自己的时间轴/);
     assert.equal(dom.window.document.querySelectorAll('.lmo-history-list>div').length, 3);

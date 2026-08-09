@@ -6,6 +6,7 @@ import { createBuildingOperationsService } from '../../src/buildings/operations-
 import { createRenovationVisualService } from '../../src/renovation/visual-engine.js';
 import { createSpatialRouteService } from '../../src/spatial/route-engine.js';
 import { createTenantEmbodimentService } from '../../src/tenants/embodiment-engine.js';
+import { createPortfolioAssignmentService } from '../../src/tenants/portfolio-assignment-engine.js';
 import { createTenantAutonomyService } from '../../src/tenants/autonomy-engine.js';
 import { createRelationshipService } from '../../src/tenants/relationship-engine.js';
 import { createBuildingEventBus } from '../../src/events/building-event-bus.js';
@@ -57,6 +58,7 @@ export function activate(context) {
     isAiEnabled: () => store.getState().运行模式 === '真实',
   });
   const embodiment = createTenantEmbodimentService();
+  const portfolioAssignments = createPortfolioAssignmentService();
   const autonomy = createTenantAutonomyService();
   const relationships = createRelationshipService();
   const contextCapsules = createContextCapsuleService({ store });
@@ -80,6 +82,7 @@ export function activate(context) {
   context.services.register('landlord.spatialSync', spatialSync);
   context.services.register('landlord.narrativeIntents', narrativeIntents);
   context.services.register('tenant.embodiment', embodiment);
+  context.services.register('tenant.portfolioAssignments', portfolioAssignments);
   context.services.register('tenant.autonomy', autonomy);
   context.services.register('tenant.relationships', relationships);
   context.services.register('landlord.contextCapsules', contextCapsules);
