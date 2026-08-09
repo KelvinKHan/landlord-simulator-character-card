@@ -39,6 +39,8 @@ test('经营中枢构建产物包含所有可玩流程且明确显示本地模�
     '经营时光回溯',
     '装修这个空间',
     'data-renovation-signature',
+    'BUILDING NEURAL PULSE',
+    'data-pulse-signature',
     '叙事—空间同步',
     '校验移动意图',
     '探索下一处',

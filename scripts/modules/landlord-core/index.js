@@ -1,6 +1,7 @@
 import { createManagementAiProvider } from '../../src/ai/management-ai-provider.js';
 import { compileBuilding, compilePortfolio } from '../../src/buildings/compiler.js';
 import { createBuildingLayoutService } from '../../src/buildings/layout-engine.js';
+import { createBuildingOperationsService } from '../../src/buildings/operations-engine.js';
 import { createRenovationVisualService } from '../../src/renovation/visual-engine.js';
 import { createSpatialRouteService } from '../../src/spatial/route-engine.js';
 import { createBuildingEventBus } from '../../src/events/building-event-bus.js';
@@ -39,6 +40,7 @@ export function activate(context) {
   const perception = createPerceptionService({ store });
   const identities = createTenantIdentityService({ store });
   const layouts = createBuildingLayoutService();
+  const operations = createBuildingOperationsService();
   const renovationVisuals = createRenovationVisualService();
   const routes = createSpatialRouteService();
   const spatialSync = createSpatialSyncService({ store });
@@ -55,6 +57,7 @@ export function activate(context) {
   context.services.register('landlord.perception', perception);
   context.services.register('landlord.identities', identities);
   context.services.register('building.layout', layouts);
+  context.services.register('building.operations', operations);
   context.services.register('building.renovationVisual', renovationVisuals);
   context.services.register('building.routes', routes);
   context.services.register('landlord.spatialSync', spatialSync);

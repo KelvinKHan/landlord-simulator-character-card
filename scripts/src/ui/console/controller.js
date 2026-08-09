@@ -4,7 +4,7 @@ function owned(building) {
   return building && ['总部', '已接管'].includes(building.status);
 }
 
-export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, perception = null, identities = null, layouts = null, bridges = null, compiler, logger }) {
+export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, perception = null, identities = null, layouts = null, operations = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -14,6 +14,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     selectedSpaceId: null,
     focusedFloorId: null,
     twinSpaceId: null,
+    selectedPulseSceneId: null,
     previewLinkIds: [],
     selectedMovePersonId: null,
     selectedMoveSpaceId: null,
@@ -44,6 +45,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       : { counts: { 正文: 0, 微信: 0, 新闻: 0, 建筑: 0 }, pending: [], capabilities: {}, previewDrafts: [] };
     const identityCenter = { residents: identities?.listForBuilding(current.id) ?? [] };
     const twin = layouts?.compile(current) ?? { buildingId: current.id, name: current.name, theme: current.theme, floors: [], metrics: { floors: 0, nodes: 0, edges: 0 } };
+    const pulse = operations?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'pulse_unavailable', total: 0, state: '尚未加载', metrics: { comfort: 0, function: 0, vitality: 0, appeal: 0 }, spaces: [], synergies: [], scenes: [], residentCount: 0, originCount: 0 };
     const historyCenter = history
       ? { ...history.summary(), entries: history.list({ limit: 20 }) }
       : { busy: false, count: 0, appliedCount: 0, canUndo: false, canRedo: false, undoLabel: '', redoLabel: '', blockedUndo: false, entries: [] };
@@ -57,7 +59,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       proposals: spatialSync?.list({ limit: 20 }) ?? [],
       counts: spatialSync?.counts() ?? { 待确认: 0, 冲突: 0, 已应用: 0, 已忽略: 0, 写入中: 0 },
     };
-    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, twin };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, pulse, twin };
   }
 
   function resetWorkflow({ keepSpace = false } = {}) {
@@ -150,6 +152,19 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       ui.focusedFloorId = button.dataset.floorId;
       ui.twinSpaceId = button.dataset.spaceId;
       return render();
+    }
+    if (action === 'choose-pulse-scene') {
+      ui.selectedPulseSceneId = button.dataset.sceneId;
+      return render();
+    }
+    if (action === 'confirm-pulse-scene') {
+      const scene = data.pulse.scenes.find(item => item.id === ui.selectedPulseSceneId);
+      if (!scene || scene.activated) throw new Error('请选择一个尚未点亮的建筑场景');
+      return withBusy(async () => {
+        await recordOperation('scene', `点亮${scene.title}`, () => store.activateBuildingScene({ buildingId: data.current.id, scene }));
+        ui.selectedPulseSceneId = null;
+        setNotice('场景已经写入建筑记忆，人物状态与四频道草稿同步更新。', 'success');
+      });
     }
     if (action === 'undo-operation' || action === 'redo-operation') {
       if (!history) throw new Error('经营回溯服务尚未加载');

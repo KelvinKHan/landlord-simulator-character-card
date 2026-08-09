@@ -14,7 +14,7 @@ export const productModuleManifest = [
     entry: 'scripts/modules/landlord-core/index.js',
     critical: false,
     requires: ['landlord.schema'],
-    provides: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'landlord.spatialSync', 'building.compiler', 'building.layout', 'building.renovationVisual', 'building.routes'],
+    provides: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'landlord.spatialSync', 'building.compiler', 'building.layout', 'building.operations', 'building.renovationVisual', 'building.routes'],
     features: [
       'MVU 事务写入',
       '多建筑编译',
@@ -28,6 +28,7 @@ export const productModuleManifest = [
       '基于空间尺寸与相邻关系的建筑数字孪生',
       '把装修配色、材质、照明与家具编译为稳定视觉令牌',
       '人物移动路线校验、同步提案、冲突检测与确认写入',
+      '从装修、设施、人物与空间用途实时编译建筑运行脉冲和可激活场景',
       '正文一次性提示词注入与微信、新闻的显式草稿投递桥',
     ],
   },
@@ -36,7 +37,7 @@ export const productModuleManifest = [
     name: '房东经营中枢',
     entry: 'scripts/modules/landlord-console/index.js',
     critical: false,
-    requires: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.spatialSync', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'building.compiler', 'building.layout', 'ui.floatingMenu'],
+    requires: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.spatialSync', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'building.compiler', 'building.layout', 'building.operations', 'ui.floatingMenu'],
     provides: ['landlord.console'],
     legacyRequires: ['FloatingMenuManager'],
     features: [
@@ -47,6 +48,7 @@ export const productModuleManifest = [
       '多频道联动待办与消费状态',
       '经营操作时间线与安全撤销/重做',
       '人物位置同步提案、路线预览与冲突队列',
+      '建筑运行脉冲、空间体感、协同效应与可确认场景',
       '糖果明亮主题与 Rose Pine 暗色主题',
       '桌面与窄屏响应式布局',
     ],

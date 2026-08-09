@@ -172,6 +172,7 @@ export const Schema = z.object({
               状态: z.enum(['待处理', '进行中', '已完成', '已忽略']).prefault('待处理'),
               摘要: z.string().prefault('暂无摘要'),
               发生时间: z.string().prefault('刚刚'),
+              场景键: z.string().prefault(''),
               参与者: z.record(z.string().describe('人物ID'), z.string().prefault('参与')).prefault({}),
             })
             .prefault({}),

@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compilePortfolio } from '../scripts/src/buildings/compiler.js';
 import { createBuildingLayout } from '../scripts/src/buildings/layout-engine.js';
+import { compileBuildingOperations } from '../scripts/src/buildings/operations-engine.js';
 import { createDefaultLandlordState } from '../scripts/src/model/default-state.js';
 import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js';
 import { renderConsole } from '../scripts/src/ui/console/templates.js';
@@ -14,6 +15,10 @@ const projectRoot = path.resolve(toolDirectory, '..');
 const outputDirectory = process.argv[2] ?? '/tmp/landlord-console-preview';
 const styles = await fs.readFile(path.join(projectRoot, 'scripts/modules/landlord-console/styles.css'), 'utf8');
 const state = createDefaultLandlordState();
+state.人物列表.preview_person_linxia = { 姓名: '林夏', 来源世界: '近未来都市', 身份类型: '租客', 职业: '空间摄影师', 所在建筑ID: 'building_headquarters', 所在空间ID: 'living_room', 外貌: '银灰短发', 性格: '敏锐而松弛', 状态: '正在观察客厅', 内心: '这里的光很适合留下第一张照片', 感知度: 100, 视觉身份: { 图标: 'camera', 主色: '#6B8DC9', 纹样: 'grid' }, 关系: {} };
+state.人物列表.preview_person_shaoqing = { 姓名: '邵青', 来源世界: '东方幻想', 身份类型: '租客', 职业: '灵植师', 所在建筑ID: 'building_headquarters', 所在空间ID: 'living_room', 外貌: '墨绿长发', 性格: '安静好奇', 状态: '研究现代家具', 内心: '这些器物没有灵力却很方便', 感知度: 100, 视觉身份: { 图标: 'leaf', 主色: '#55B7A5', 纹样: 'leaves' }, 关系: {} };
+state.建筑列表.building_headquarters.空间列表.living_room.占用者 = { preview_person_linxia: '租客', preview_person_shaoqing: '租客' };
+state.建筑列表.building_headquarters.空间列表.living_room.装修 = { 风格: '跨世界会客厅', 配色: { 主色: '#E8E4FF', 点缀: '#55B7A5' }, 材质: { 墙面: '半透明灵质玻璃', 地面: '暖木' }, 家具: { 主沙发: '云朵沙发', 展示台: '漂浮陈列台' }, 照明: '自然柔光与灵光', 氛围: '梦幻而舒适', 完成度: 100 };
 const portfolio = compilePortfolio(state);
 const current = portfolio.headquarters;
 const hospital = portfolio.available.find(building => building.type === '医院');
@@ -82,11 +87,13 @@ const spatialCenter = {
     { id: 'spatial_preview_conflict', personId: 'preview_person_shaoqing', buildingId: current.id, spaceId: 'unknown_room', activity: '寻找不存在的密室', status: '冲突', reason: '目标空间尚未被发现', route: { personName: '邵青', destinationName: '未知密室', path: [] } },
   ],
 };
+const pulse = compileBuildingOperations(state, current.id);
 
 const pages = {
   portfolio: { ui: { section: 'portfolio' }, task: null },
   'portfolio-dark': { ui: { section: 'portfolio' }, task: null, theme: 'dark' },
   building: { ui: { section: 'building' }, task: null },
+  pulse: { ui: { section: 'pulse', selectedPulseSceneId: pulse.scenes[0]?.id }, task: null },
   takeover: {
     ui: { section: 'takeover', targetBuilding: hospital, selectedOptionId: 'multiverse-medical', busy: false },
     task: { status: 'ready', preview: takeoverPreview },
@@ -114,7 +121,7 @@ const pages = {
 await fs.mkdir(outputDirectory, { recursive: true });
 
 for (const [name, page] of Object.entries(pages)) {
-  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, twin });
+  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, pulse, twin });
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),

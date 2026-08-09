@@ -10,6 +10,7 @@ const icons = Object.freeze({
   tasks: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9h6M9 13h6M9 17h3M8 2v3M16 2v3"/></svg>',
   history: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6M12 7v5l3 2"/></svg>',
   route: '<svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3v-6a3 3 0 0 1 3-3"/></svg>',
+  pulse: '<svg viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6"/><circle cx="12" cy="12" r="9"/></svg>',
   close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
   arrow: '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
   sparkle: '<svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
@@ -71,6 +72,7 @@ function renderSidebar(state, ui, portfolio) {
     <nav>
       ${navItem('portfolio', ui.section, '资产总览', 'buildings')}
       ${navItem('building', ui.section, '当前建筑', 'home')}
+      ${navItem('pulse', ui.section, '运行脉冲', 'pulse')}
       ${navItem('twin', ui.section, '数字孪生', 'room')}
       ${navItem('renovation', ui.section, '装修中心', 'renovate')}
       ${navItem('recruitment', ui.section, '招募中心', 'recruit')}
@@ -100,6 +102,7 @@ function sectionTitle(section, current) {
   if (section === 'portfolio') return '我的建筑版图';
   if (section === 'renovation') return '装修具现化中心';
   if (section === 'twin') return '建筑数字孪生';
+  if (section === 'pulse') return '建筑运行脉冲';
   if (section === 'recruitment') return '跨世界招募中心';
   if (section === 'takeover') return '建筑接管提案';
   if (section === 'tasks') return '统一任务中心';
@@ -258,6 +261,27 @@ function renderRecruitment(state, building, task, selectedSpaceId, selectedId, b
   </section>`;
 }
 
+const pulseMetricMeta = Object.freeze({
+  comfort: ['舒适体感', '空间是否让人愿意停留'],
+  function: ['功能兑现', '设施与用途是否真正可用'],
+  vitality: ['生活活力', '人物是否让建筑运转起来'],
+  appeal: ['空间吸引', '装修是否形成独特记忆点'],
+});
+
+function renderPulse(pulse, ui) {
+  const selected = pulse.scenes.find(scene => scene.id === ui.selectedPulseSceneId && !scene.activated);
+  return `<section class="lmo-view lmo-pulse-view">
+    <div class="lmo-section-heading"><div><span>BUILDING NEURAL PULSE</span><h2>建筑不是房间清单，而是一套正在运行的生活系统</h2></div><p>所有数值都从 MVU 里的装修、设施、人物和用途实时计算；不调用 AI，也不制造硬性惩罚。</p></div>
+    <article class="lmo-pulse-hero" data-pulse-signature="${escapeHtml(pulse.signature)}"><div class="lmo-pulse-orb" style="--pulse-total:${pulse.total}"><span>${pulse.total}</span><small>综合脉冲</small><i></i><i></i></div><div><span>LIVE STATE · ${escapeHtml(pulse.signature)}</span><h3>${escapeHtml(pulse.buildingName)}正在「${escapeHtml(pulse.state)}」</h3><p>${pulse.residentCount} 位人物、${pulse.originCount} 种来源世界和 ${pulse.spaces.length} 个已知空间共同构成此刻的建筑体感。装修或招募发生变化，这里会立即重新计算。</p></div></article>
+    <div class="lmo-pulse-metrics">${Object.entries(pulse.metrics).map(([key, value]) => `<article style="--score:${value};--metric-accent:var(--active-accent)"><div><span>${value}</span><i></i></div><p><strong>${escapeHtml(pulseMetricMeta[key]?.[0] ?? key)}</strong><small>${escapeHtml(pulseMetricMeta[key]?.[1] ?? '')}</small></p></article>`).join('')}</div>
+    <div class="lmo-pulse-layout"><article class="lmo-panel"><div class="lmo-panel-title"><div>${icon('pulse')}<span><strong>空间体感矩阵</strong><small>不是账单：它告诉你下一处值得装修或放人的空间</small></span></div></div><div class="lmo-pulse-space-list">${pulse.spaces.map(space => `<div class="status-${escapeHtml(space.status)}"><span><b>${space.total}</b><small>${escapeHtml(space.status)}</small></span><p><strong>${escapeHtml(space.name)}</strong><small>${escapeHtml(space.purpose)} · ${space.occupantNames.length ? escapeHtml(space.occupantNames.join('、')) : '等待人物进入'}</small></p><div><i title="舒适" style="--mini:${space.metrics.comfort}"></i><i title="功能" style="--mini:${space.metrics.function}"></i><i title="活力" style="--mini:${space.metrics.vitality}"></i><i title="吸引" style="--mini:${space.metrics.appeal}"></i></div></div>`).join('')}</div></article>
+      <aside class="lmo-panel lmo-synergy-panel"><div class="lmo-panel-title"><div>${icon('sparkle')}<span><strong>建筑协同效应</strong><small>装修、人物与设施组合后出现的额外价值</small></span></div></div>${pulse.synergies.length ? `<div class="lmo-synergy-list">${pulse.synergies.map(item => `<div><span>${escapeHtml(item.level)}</span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.description)}</p></div>`).join('')}</div>` : emptyState('协同仍在孕育', '完成一次装修并安排人物进入，就会出现第一组人屋共鸣。')}</aside></div>
+    <div class="lmo-section-heading compact"><div><span>PLAYABLE MOMENTS</span><h2>从真实建筑状态里长出来的今日舞台</h2></div><p>点击只会选中预览；再次确认才会更新人物状态、建筑记忆和四频道草稿。</p></div>
+    <div class="lmo-scene-grid">${pulse.scenes.map(scene => `<button class="lmo-scene-card ${scene.id === ui.selectedPulseSceneId ? 'selected' : ''} ${scene.activated ? 'activated' : ''}" data-action="choose-pulse-scene" data-scene-id="${escapeHtml(scene.id)}" ${scene.activated ? 'disabled' : ''}><header><span>${escapeHtml(scene.kind)}</span><em>${scene.activated ? '已经发生' : escapeHtml(scene.spaceName)}</em></header><h3>${escapeHtml(scene.title)}</h3><p>${escapeHtml(scene.tagline)}</p>${tags(scene.impacts)}<small>${escapeHtml(scene.summary)}</small></button>`).join('')}</div>
+    ${selected ? `<div class="lmo-confirm-bar lmo-pulse-confirm"><div><strong>准备点亮「${escapeHtml(selected.title)}」</strong><span>确认后才会把它写成真正发生过的建筑场景；随后仍可从经营回溯撤销。</span></div><button class="lmo-primary" data-action="confirm-pulse-scene" ${ui.busy ? 'disabled' : ''}>确认点亮 ${icon('sparkle')}</button></div>` : ''}
+  </section>`;
+}
+
 const taskStatusLabels = Object.freeze({
   created: '已创建', queued: '排队中', running: '执行中', retrying: '重试中',
   'waiting-retry': '等待重试', ready: '待确认', applying: '写入中', confirmed: '已确认',
@@ -314,7 +338,7 @@ function renderEvents(state, portfolio, linkCenter) {
 }
 
 const operationKindLabels = Object.freeze({
-  takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募', exploration: '探索感知', movement: '人物移动', management: '经营操作',
+  takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募', exploration: '探索感知', movement: '人物移动', scene: '建筑场景', management: '经营操作',
 });
 
 function renderSpatial(spatialCenter, current, ui) {
@@ -356,10 +380,11 @@ function renderHistory(historyCenter) {
   </section>`;
 }
 
-export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, twin }) {
+export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, pulse, twin }) {
   let content;
   if (ui.section === 'portfolio') content = renderPortfolio(state, portfolio);
   else if (ui.section === 'building') content = renderBuilding(current, identityCenter);
+  else if (ui.section === 'pulse') content = renderPulse(pulse, ui);
   else if (ui.section === 'twin') content = renderTwin(twin, ui);
   else if (ui.section === 'takeover') content = renderTakeover(state, ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
   else if (ui.section === 'renovation') content = renderRenovation(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);

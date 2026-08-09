@@ -280,6 +280,38 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
       });
     },
 
+    async activateBuildingScene({ buildingId, scene }) {
+      return commit('点亮建筑场景', state => {
+        const building = state.建筑列表[buildingId];
+        if (!building) throw new Error(`建筑不存在：${buildingId}`);
+        if (!['总部', '已接管'].includes(building.接管状态)) throw new Error('尚未接管的建筑不能点亮场景');
+        if (!scene || scene.buildingId !== buildingId || !scene.id) throw new Error('建筑场景与当前建筑不匹配');
+        const space = building.空间列表?.[scene.spaceId];
+        if (!space) throw new Error(`场景空间不存在：${scene.spaceId}`);
+        if (Object.values(state.事件列表).some(event => event.场景键 === scene.id)) throw new Error('这个建筑场景已经点亮过了');
+        const participants = {};
+        for (const personId of scene.participantIds ?? []) {
+          const person = state.人物列表[personId];
+          if (!person || person.所在建筑ID !== buildingId) continue;
+          person.状态 = scene.activity || `正在参与${scene.title}`;
+          participants[personId] = '场景参与者';
+        }
+        building.经营摘要.今日亮点 = scene.title;
+        building.经营摘要.活跃度 = Math.min(100, Number(building.经营摘要.活跃度 ?? 0) + 5);
+        appendDomainEvent(state, {
+          标题: scene.title,
+          类型: '建筑场景',
+          建筑ID: buildingId,
+          空间ID: scene.spaceId,
+          状态: '已完成',
+          摘要: scene.summary,
+          发生时间: '刚刚',
+          场景键: scene.id,
+          参与者: participants,
+        });
+      });
+    },
+
     async setDeliveryStatus(deliveryId, status) {
       if (!['待分发', '已读取', '已忽略'].includes(status)) throw new Error(`不支持的联动状态：${status}`);
       return commit('更新联动队列', state => {

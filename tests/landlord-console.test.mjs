@@ -4,6 +4,7 @@ import { JSDOM } from 'jsdom';
 import { z } from 'zod';
 import { compileBuilding, compilePortfolio } from '../scripts/src/buildings/compiler.js';
 import { createBuildingLayoutService } from '../scripts/src/buildings/layout-engine.js';
+import { createBuildingOperationsService } from '../scripts/src/buildings/operations-engine.js';
 import { createBuildingEventBus } from '../scripts/src/events/building-event-bus.js';
 import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js';
 import { createLandlordStore } from '../scripts/src/services/landlord-store.js';
@@ -101,6 +102,7 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     identities,
     bridges,
     layouts: createBuildingLayoutService(),
+    operations: createBuildingOperationsService(),
     compiler: { compileBuilding, compilePortfolio },
     logger: { error: () => {} },
   });
@@ -214,6 +216,14 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     click(dom.window.document, '[data-action="confirm-spatial-proposal"]');
     await waitFor(() => assert.equal(store.getState().人物列表.person_mock_医院_linxia.所在空间ID, destination.dataset.spaceId));
     assert.match(dom.window.document.body.textContent, /人物位置与建筑占用记录已经同步/);
+
+    click(dom.window.document, '[data-action="navigate"][data-section="pulse"]');
+    assert.match(dom.window.document.body.textContent, /建筑不是房间清单/);
+    assert.ok(dom.window.document.querySelector('[data-pulse-signature]'));
+    click(dom.window.document, '[data-action="choose-pulse-scene"]');
+    click(dom.window.document, '[data-action="confirm-pulse-scene"]');
+    await waitFor(() => assert.ok(Object.values(store.getState().事件列表).some(event => event.类型 === '建筑场景')));
+    assert.match(dom.window.document.body.textContent, /场景已经写入建筑记忆/);
   } finally {
     controller.dispose();
     events.dispose();
