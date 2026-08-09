@@ -1,3 +1,5 @@
+import { createLocalCoCreationPlans } from '../tenants/co-creation-engine.js';
+
 function takeoverDirections(building) {
   const shared = {
     hospital: [
@@ -183,6 +185,11 @@ export const managementMockRecipes = Object.freeze({
     buildingId: building.id,
     spaceId: space.id,
     plans: renovationPlans(building, space),
+  }),
+  coCreation: async ({ project, building }) => ({
+    source: 'local-mock',
+    projectId: project.id,
+    plans: createLocalCoCreationPlans(project, building),
   }),
   recruitment: async ({ building }) => ({
     source: 'local-mock',

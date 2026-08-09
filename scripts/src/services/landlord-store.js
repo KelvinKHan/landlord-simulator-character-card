@@ -2,6 +2,7 @@ import { cloneLandlordState, createDefaultLandlordState } from '../model/default
 import { applyAcquisitionDirection } from '../buildings/acquisition-projection-engine.js';
 import { assertLandlordState } from '../model/validate-state.js';
 import { applyChangeSet } from '../state/change-set.js';
+import { createRenovationVisual } from '../renovation/visual-engine.js';
 
 function defaultIdFactory(prefix) {
   const random = Math.random().toString(36).slice(2, 8);
@@ -81,6 +82,21 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
     space.感知度 = 100;
     const floor = building.楼层列表?.[space.楼层ID];
     if (floor) floor.感知度 = 100;
+  }
+
+  function applyPlanToSpace(space, plan) {
+    if (!plan?.name || !plan.style || !plan.resultDescription) throw new Error('装修方案内容不完整');
+    space.装修 = {
+      风格: plan.style,
+      配色: cloneLandlordState(plan.palette ?? {}),
+      材质: cloneLandlordState(plan.materials ?? {}),
+      家具: cloneLandlordState(plan.furniture ?? {}),
+      照明: plan.lighting,
+      氛围: plan.atmosphere,
+      完成度: 100,
+    };
+    space.状态 = '正常';
+    space.描述 = plan.resultDescription;
   }
 
   return Object.freeze({
@@ -174,18 +190,8 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
         const space = building?.空间列表?.[spaceId];
         if (!space) throw new Error(`装修目标不存在：${buildingId}/${spaceId}`);
         if (!['总部', '已接管'].includes(building.接管状态)) throw new Error('尚未接管的建筑不能装修');
-        space.装修 = {
-          风格: plan.style,
-          配色: cloneLandlordState(plan.palette ?? {}),
-          材质: cloneLandlordState(plan.materials ?? {}),
-          家具: cloneLandlordState(plan.furniture ?? {}),
-          照明: plan.lighting,
-          氛围: plan.atmosphere,
-          完成度: 100,
-        };
+        applyPlanToSpace(space, plan);
         revealManagedSpace(building, space);
-        space.状态 = '正常';
-        space.描述 = plan.resultDescription ?? space.描述;
         building.经营摘要.今日亮点 = `${space.名称}完成了「${plan.name}」改造`;
         appendDomainEvent(state, {
           标题: `${space.名称}焕然一新`,
@@ -197,6 +203,47 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
           发生时间: '刚刚',
           参与者: {},
         });
+      });
+    },
+
+    async applyCoCreationRenovation({ project, plan }) {
+      return commit('具现双人共创装修', state => {
+        if (!project?.id || project.personIds?.length !== 2) throw new Error('共创装修项目内容无效');
+        const building = state.建筑列表[project.buildingId];
+        const space = building?.空间列表?.[project.spaceId];
+        if (!space || !['总部', '已接管'].includes(building.接管状态)) throw new Error('共创装修的目标空间不可用');
+        const sourceEvent = state.事件列表[project.sourceEventId];
+        if (!sourceEvent || sourceEvent.类型 !== '关系场景' || sourceEvent.场景键 !== project.sourceSceneKey) {
+          throw new Error('共创装修所依赖的双人生活场景已经失效');
+        }
+        if (Object.values(state.事件列表).some(event => event.场景键 === project.id)) throw new Error('这次人物交汇已经完成过共创装修');
+        const currentSignature = createRenovationVisual(space.装修, { fallbackAccent: building.主题?.主色 }).signature;
+        if (currentSignature !== project.expectedRenovationSignature) throw new Error('房间装修已经变化，请重新生成共创方案');
+        const participants = {};
+        for (const personId of project.personIds) {
+          const person = state.人物列表[personId];
+          const expected = project.expectedLocations?.[personId];
+          if (!person || person.所在建筑ID !== expected?.buildingId || person.所在空间ID !== expected?.spaceId) {
+            throw new Error('共创人物的位置已经变化，请重新生成方案');
+          }
+          person.状态 = `正在共同使用${space.名称}的新设计`;
+          participants[personId] = '共创设计者';
+        }
+        applyPlanToSpace(space, plan);
+        revealManagedSpace(building, space);
+        building.经营摘要.今日亮点 = `${project.people.map(person => person.name).join('与')}共同完成「${plan.name}」`;
+        building.经营摘要.活跃度 = Math.min(100, Number(building.经营摘要.活跃度 ?? 0) + 6);
+        appendDomainEvent(state, {
+          标题: `${space.名称}诞生了「${plan.name}」`,
+          类型: '共创装修',
+          建筑ID: project.buildingId,
+          空间ID: project.spaceId,
+          状态: '已完成',
+          摘要: plan.resultDescription,
+          发生时间: '刚刚',
+          场景键: project.id,
+          参与者: participants,
+        }, { channels: ['正文', '微信', '建筑'] });
       });
     },
 

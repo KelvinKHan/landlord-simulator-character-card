@@ -15,6 +15,7 @@ export function activate(context) {
   const embodiment = context.services.require('tenant.embodiment');
   const autonomy = context.services.require('tenant.autonomy');
   const relationships = context.services.require('tenant.relationships');
+  const coCreations = context.services.require('tenant.coCreations');
   const contextCapsules = context.services.require('landlord.contextCapsules');
   const perception = context.services.require('landlord.perception');
   const identities = context.services.require('landlord.identities');
@@ -39,6 +40,7 @@ export function activate(context) {
     embodiment,
     autonomy,
     relationships,
+    coCreations,
     contextCapsules,
     perception,
     identities,

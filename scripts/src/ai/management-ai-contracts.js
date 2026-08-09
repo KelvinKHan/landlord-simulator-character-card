@@ -52,6 +52,7 @@ const recruitmentCandidate = z.object({
 export const ManagementAiSchemas = Object.freeze({
   takeover: z.object({ directions: z.array(takeoverDirection).length(3) }),
   renovation: z.object({ plans: z.array(renovationPlan).length(3) }),
+  coCreation: z.object({ plans: z.array(renovationPlan).length(3) }),
   recruitment: z.object({ candidates: z.array(recruitmentCandidate).length(3) }),
 });
 

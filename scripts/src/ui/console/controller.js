@@ -1,12 +1,13 @@
 import { renderConsole } from './templates.js';
 import { handleAutonomyAction } from './autonomy-actions.js';
 import { createConsoleUiState } from './console-state.js';
+import { handleCoCreationAction } from './co-creation-actions.js';
 import { handleLifeCollisionAction } from './life-collision-actions.js';
 import { handleRelationshipAction } from './relationship-actions.js';
 import { compileOwnedSpatialTargets } from './spatial-view-model.js';
 import { detectDocumentTheme, extractNarrativeProposals, isOwnedBuilding as owned } from './workflow-actions.js';
 
-export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, autonomy = null, relationships = null, perception = null, identities = null, layouts = null, memories = null, operations = null, bridges = null, compiler, logger }) {
+export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, autonomy = null, relationships = null, coCreations = null, perception = null, identities = null, layouts = null, memories = null, operations = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -39,6 +40,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     const tenantLife = embodiment?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'embodied_unavailable', residents: [], encounters: [] };
     const autonomyCenter = autonomy?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'autonomy_unavailable', proposals: [] };
     const relationshipCenter = relationships?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, sparks: [], scenes: [], network: null };
+    const coCreationCenter = coCreations?.compile(state, current.id) ?? { signature: 'co_creation_unavailable', projects: [], focus: null, metrics: { projects: 0, ready: 0, crossWorld: 0, people: 0 } };
     const historyCenter = history
       ? { ...history.summary(), entries: history.list({ limit: 20 }) }
       : { busy: false, count: 0, appliedCount: 0, canUndo: false, canRedo: false, undoLabel: '', redoLabel: '', blockedUndo: false, entries: [] };
@@ -54,12 +56,14 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       narrativeMode: state.运行模式 === '真实' ? 'ai' : 'local',
       narrativeCapabilities: narrativeIntents?.capabilities() ?? { local: true, ai: false },
     };
-    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, coCreationCenter, memory, pulse, twin };
   }
 
   function resetWorkflow({ keepSpace = false } = {}) {
     ui.taskId = null;
     ui.selectedOptionId = null;
+    ui.selectedCoCreationProjectId = null;
+    ui.selectedCoCreationPlanId = null;
     if (!keepSpace) ui.selectedSpaceId = null;
     ui.notice = null;
   }
@@ -179,6 +183,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     }
     if (action.includes('autonomy')) return handleAutonomyAction({ action, button, data, ui, store, render, withBusy, recordOperation, setNotice });
     if (action.includes('life-collision')) return handleLifeCollisionAction({ action, button, ui, store, render, withBusy, recordOperation, setNotice });
+    if (action.includes('co-creation')) return handleCoCreationAction({ action, button, ui, store, tasks, render, runTask, withBusy, recordOperation, setNotice });
     if (action.includes('relationship')) return handleRelationshipAction({ action, button, data, ui, store, render, withBusy, recordOperation, setNotice });
     if (action === 'undo-operation' || action === 'redo-operation') {
       if (!history) throw new Error('经营回溯服务尚未加载');

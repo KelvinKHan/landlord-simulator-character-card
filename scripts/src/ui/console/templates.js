@@ -1,23 +1,13 @@
 import { createRenovationVisual } from '../../renovation/visual-engine.js';
-import { compileRenovationProjection } from '../../renovation/projection-engine.js';
 import { emptyState, escapeHtml, icon, safeColor, tags } from './template-helpers.js';
+import { renderCoCreationCenter } from './co-creation-template.js';
 import { renderArrivalProjection } from './recruitment-preview-template.js';
 import { renderAcquisitionProjection } from './takeover-preview-template.js';
 import { renderPortfolioRadar } from './portfolio-radar-template.js';
 import { renderPortfolioAssignmentMatrix } from './portfolio-assignment-template.js';
 import { renderLifeFlow } from './life-flow-template.js';
 import { renderLifeCollisions } from './life-collision-template.js';
-
-function renovationVisualStyle(visual) {
-  return `--room-base:${safeColor(visual.css.base)};--room-accent:${safeColor(visual.css.accent)};--room-secondary:${safeColor(visual.css.secondary)};--room-glow:${safeColor(visual.css.glow)};--room-text:${safeColor(visual.css.text, '#283044')}`;
-}
-
-function renderRenovationVisual(visual, { compact = false } = {}) {
-  const furniture = visual.furniture.length
-    ? visual.furniture.map(item => `<i title="${escapeHtml(item.label)}">${escapeHtml(item.marker)}</i>`).join('')
-    : '<i class="empty">空</i>';
-  return `<div class="lmo-renovation-visual material-${escapeHtml(visual.material)} lighting-${escapeHtml(visual.lightingMode)} ${compact ? 'compact' : ''}" style="${renovationVisualStyle(visual)}"><span class="lmo-visual-light"></span><div class="lmo-visual-room"><em>${escapeHtml(visual.style)}</em><div>${furniture}</div></div><footer>${visual.colors.slice(0, 4).map(color => `<i style="--swatch:${safeColor(color.value)}" title="${escapeHtml(color.name)}"></i>`).join('')}<span>${escapeHtml(visual.atmosphere)}</span></footer></div>`;
-}
+import { renovationVisualStyle, renderRenovationProjection, renderRenovationVisual } from './renovation-view-helpers.js';
 
 function navItem(section, current, label, iconName) {
   return `<button class="lmo-nav-item ${section === current ? 'active' : ''}" data-action="navigate" data-section="${section}">${icon(iconName)}<span>${label}</span></button>`;
@@ -260,20 +250,12 @@ function ownedSpaceOptions(building, selectedSpaceId, action = 'choose-workflow-
   return building.floors.flatMap(floor => floor.spaces).map(space => `<button class="lmo-compact-space ${selectedSpaceId === space.id ? 'selected' : ''}" data-action="${action}" data-space-id="${escapeHtml(space.id)}"><span>${escapeHtml(space.type)}</span><strong>${escapeHtml(space.name)}</strong><small>${escapeHtml(space.status)} · ${escapeHtml(space.size)}</small></button>`).join('');
 }
 
-function renderRenovationProjection(twin, space, plan, building) {
-  const projection = compileRenovationProjection(twin, space.id, plan, building.theme?.主色);
-  if (!projection) return '';
-  const nodes = projection.nodes.map(node => `<div class="lmo-hologram-node material-${escapeHtml(node.visual.material)} ${node.projected ? 'projected' : ''}" data-space-id="${escapeHtml(node.id)}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%;${renovationVisualStyle(node.visual)}"><strong>${escapeHtml(node.name)}</strong><small>${node.projected ? '装修投影' : escapeHtml(node.visual.style)}</small></div>`).join('');
-  const edges = projection.edges.map(edge => `<line x1="${edge.fromPoint.x}" y1="${edge.fromPoint.y}" x2="${edge.toPoint.x}" y2="${edge.toPoint.y}"/>`).join('');
-  return `<article class="lmo-renovation-hologram" data-renovation-projection="${escapeHtml(projection.signature)}"><header><div><span>RENOVATION HOLOGRAM</span><h3>${escapeHtml(projection.floorName)}·装修全息投影</h3><p>方案已经投射进真实数字孪生；此刻仍未写入 MVU。</p></div><em>${projection.nodes.length} 个空间 · 目标 ${escapeHtml(projection.targetName)}</em></header><div class="lmo-hologram-layout"><div class="lmo-hologram-stage"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${edges}</svg>${nodes}</div><aside><span>BEFORE / AFTER</span><div><section><small>当前状态</small>${renderRenovationVisual(projection.before, { compact: true })}</section><section><small>确认之后</small>${renderRenovationVisual(projection.after, { compact: true })}</section></div>${tags(projection.impacts)}<p>只有点击“应用装修”后，空间描述、材质、配色与事件才会一起改变。</p></aside></div></article>`;
-}
-
-function renderRenovation(state, building, task, selectedSpaceId, selectedId, busy, twin) {
+function renderRenovation(state, building, task, selectedSpaceId, selectedId, busy, twin, coCreationCenter, ui) {
   const mode = taskModeCopy(state);
-  const plans = task?.status === 'ready' ? task.preview.plans : [];
+  const plans = task?.kind === 'renovation' && task.status === 'ready' ? task.preview.plans : [];
   const space = building.floors.flatMap(floor => floor.spaces).find(item => item.id === selectedSpaceId);
   const selectedPlan = plans.find(plan => plan.id === selectedId);
-  const markup = `<section class="lmo-view lmo-workflow">${workflowSteps(plans.length ? 2 : selectedSpaceId ? 1 : 0)}
+  const markup = `<section class="lmo-view lmo-workflow">${renderCoCreationCenter(coCreationCenter, state, building, task, ui, twin)}${workflowSteps(plans.length ? 2 : selectedSpaceId ? 1 : 0)}
     <div class="lmo-two-column"><aside class="lmo-selector"><span class="lmo-kicker">选择装修目标</span><h2>${escapeHtml(building.name)}</h2><div class="lmo-compact-list">${ownedSpaceOptions(building, selectedSpaceId)}</div></aside>
     <div class="lmo-workspace">${!space ? emptyState('先选择一个空间', '可以从一个房间开始，不需要一次装修整栋建筑。') : !plans.length ? `<div class="lmo-preview-room"><span>${escapeHtml(space.type)} · ${escapeHtml(space.size)}</span><h2>${escapeHtml(space.name)}</h2><p>${escapeHtml(space.description)}</p><div class="lmo-current-style"><small>当前装修</small><strong>${escapeHtml(space.renovation?.风格)}</strong><span>${escapeHtml(space.renovation?.氛围)}</span></div><button class="lmo-primary" data-action="run-renovation" ${busy ? 'disabled' : ''}>${icon('sparkle')} ${busy ? '正在整理…' : `${mode.verb}方案`}</button></div>` : `<div class="lmo-renovation-plans">${plans.map(plan => { const visual = createRenovationVisual(plan, { fallbackAccent: building.theme?.主色 }); return `<button class="lmo-renovation-card ${selectedId === plan.id ? 'selected' : ''}" data-action="choose-option" data-option-id="${escapeHtml(plan.id)}" data-renovation-signature="${escapeHtml(visual.signature)}">${renderRenovationVisual(visual, { compact: true })}<span>${escapeHtml(plan.style)}</span><h3>${escapeHtml(plan.name)}</h3><p>${escapeHtml(plan.tagline)}</p>${tags(plan.impacts)}<small>${escapeHtml(plan.lighting)}</small></button>`; }).join('')}</div>${selectedPlan ? renderRenovationProjection(twin, space, selectedPlan, building) : ''}<div class="lmo-confirm-bar"><div><strong>${selectedId ? '装修效果已经投射到数字孪生' : '挑选最喜欢的方案'}</strong><span>确认后会改变空间描述、配色、材质和事件记录。</span></div><button class="lmo-primary" data-action="confirm-renovation" ${selectedId && !busy ? '' : 'disabled'}>应用装修 ${icon('arrow')}</button></div>`}</div></div>
   </section>`;
@@ -373,7 +355,7 @@ const taskStatusLabels = Object.freeze({
   failed: '失败', cancelled: '已取消',
 });
 
-const taskKindLabels = Object.freeze({ takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募' });
+const taskKindLabels = Object.freeze({ takeover: '建筑接管', renovation: '空间装修', coCreation: '人物共创装修', recruitment: '人物招募' });
 
 function renderTasks(taskCenter) {
   const ai = taskCenter.capabilities.find(item => item.mode === 'ai');
@@ -473,7 +455,7 @@ function renderHistory(historyCenter) {
   </section>`;
 }
 
-export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin }) {
+export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, coCreationCenter, memory, pulse, twin }) {
   let content;
   if (ui.section === 'portfolio') content = renderPortfolio(state, portfolio, ui);
   else if (ui.section === 'building') content = renderBuilding(current, identityCenter);
@@ -481,7 +463,7 @@ export function renderConsole({ state, portfolio, current, ui, task, taskCenter,
   else if (ui.section === 'tenants') content = renderTenantLife(tenantLife, autonomyCenter, relationshipCenter, ui);
   else if (ui.section === 'twin') content = renderTwin(twin, ui, pulse, tenantLife, memory);
   else if (ui.section === 'takeover') content = renderTakeover(state, ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
-  else if (ui.section === 'renovation') content = renderRenovation(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy, twin);
+  else if (ui.section === 'renovation') content = renderRenovation(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy, twin, coCreationCenter, ui);
   else if (ui.section === 'recruitment') content = renderRecruitment(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
   else if (ui.section === 'tasks') content = renderTasks(taskCenter);
   else if (ui.section === 'history') content = renderHistory(historyCenter);

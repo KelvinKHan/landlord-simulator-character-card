@@ -23,6 +23,15 @@ function direction(id) {
   };
 }
 
+function renovationPlan(id) {
+  return {
+    id, name: `共创方案${id}`, style: '双世界融合', tagline: '让两人的生活方式共同改变空间',
+    palette: { 主色: '#6B8DC9', 点缀: '#55B7A5' }, materials: { 墙面: '可变记忆界面' },
+    furniture: { center: '双人共创台' }, lighting: '分层情景光', atmosphere: '自由而有故事感',
+    resultDescription: '房间同时回应两位人物的世界与职业。', impacts: ['人物设定可见', '解锁共同生活'],
+  };
+}
+
 test('经营 AI 提供器只有显式启用后才允许调用酒馆助手', async () => {
   let enabled = false;
   let calls = 0;
@@ -101,4 +110,29 @@ test('经营 AI 在请求开始前响应取消信号', async () => {
     provider.run('takeover', {}, { signal: controller.signal }),
     error => error?.name === 'AbortError',
   );
+});
+
+test('人物共创装修复用结构化 AI 合同并保留项目身份', async () => {
+  let received;
+  const provider = createManagementAiProvider({
+    tavern: {
+      has: () => true,
+      generateStructured: async config => {
+        received = config;
+        return { plans: [renovationPlan('a'), renovationPlan('b'), renovationPlan('c')] };
+      },
+    },
+    isEnabled: () => true,
+    logger: { info() {} },
+  });
+  const result = await provider.run('coCreation', {
+    project: { id: 'co_creation_test', people: [{ name: '林夏', profession: '摄影师' }, { name: '邵青', profession: '灵植师' }] },
+    space: { name: '客厅' },
+  }, { signal: new AbortController().signal, taskId: 'task_co_creation', attempt: 1 });
+
+  assert.equal(result.projectId, 'co_creation_test');
+  assert.equal(result.plans.length, 3);
+  assert.equal(received.schemaName, 'landlord_coCreation_preview');
+  assert.match(received.ordered_prompts[0].content, /双人生活场景/);
+  assert.match(received.ordered_prompts[1].content, /摄影师/);
 });

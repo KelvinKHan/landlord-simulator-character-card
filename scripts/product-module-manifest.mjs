@@ -14,7 +14,7 @@ export const productModuleManifest = [
     entry: 'scripts/modules/landlord-core/index.js',
     critical: false,
     requires: ['landlord.schema'],
-    provides: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.portfolioAssignments', 'tenant.lifeFlows', 'tenant.lifeCollisions', 'tenant.autonomy', 'tenant.relationships', 'building.compiler', 'building.layout', 'building.memories', 'building.operations', 'building.renovationVisual', 'building.routes'],
+    provides: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.portfolioAssignments', 'tenant.lifeFlows', 'tenant.lifeCollisions', 'tenant.coCreations', 'tenant.autonomy', 'tenant.relationships', 'building.compiler', 'building.layout', 'building.memories', 'building.operations', 'building.renovationVisual', 'building.routes'],
     features: [
       'MVU 事务写入',
       '多建筑编译',
@@ -23,6 +23,7 @@ export const productModuleManifest = [
       '穷举人物与已接管建筑的真实空间契合度并编译跨楼流动机会',
       '根据契合、运行脉冲与可达路线编译 24 小时跨建筑生活流线和人流波形',
       '检测生活流线的同屋、相邻与同栋交汇，并把玩家锁定的交汇复用原子双人场景写入',
+      '把已确认的双人生活场景编译为本地或 AI 可深化的共创装修项目',
       '接管方向确认前预演建筑身份、感知范围与版图链路升级',
       '本地/AI 双模式统一任务中心',
       '任务排队、取消、重试、超时和预览确认',
@@ -53,7 +54,7 @@ export const productModuleManifest = [
     name: '房东经营中枢',
     entry: 'scripts/modules/landlord-console/index.js',
     critical: false,
-    requires: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.autonomy', 'tenant.relationships', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'building.compiler', 'building.layout', 'building.memories', 'building.operations', 'ui.floatingMenu'],
+    requires: ['landlord.store', 'landlord.tasks', 'landlord.events', 'landlord.history', 'landlord.spatialSync', 'landlord.narrativeIntents', 'landlord.contextCapsules', 'tenant.embodiment', 'tenant.autonomy', 'tenant.relationships', 'tenant.coCreations', 'landlord.perception', 'landlord.identities', 'landlord.bridges', 'building.compiler', 'building.layout', 'building.memories', 'building.operations', 'ui.floatingMenu'],
     provides: ['landlord.console'],
     legacyRequires: ['FloatingMenuManager'],
     features: [
@@ -64,6 +65,7 @@ export const productModuleManifest = [
       '跨建筑人才匹配矩阵、全空间契合投影与只读流动建议',
       '24H 跨建筑生活流线、真实通路预演与建筑人流波形',
       '跨世界生活交汇预言、可达相遇评分与可回溯的玩家锁定场景',
+      '把已发生的人物交汇反向编译为双模式共创装修、全息预演与安全具现',
       '楼层和空间编译视图',
       '装修方案确认前的楼层全息投影、目标高亮与前后视觉对照',
       '本地模拟的接管、装修、招募预览与确认',

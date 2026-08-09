@@ -14,6 +14,7 @@ import { compileContextCapsule } from '../scripts/src/services/context-capsule-s
 import { compileTenantAutonomy } from '../scripts/src/tenants/autonomy-engine.js';
 import { compileTenantEmbodiment } from '../scripts/src/tenants/embodiment-engine.js';
 import { compileLifeCollisions } from '../scripts/src/tenants/life-collision-engine.js';
+import { compileCoCreationProjects } from '../scripts/src/tenants/co-creation-engine.js';
 import { compileRelationshipSparks } from '../scripts/src/tenants/relationship-engine.js';
 import { renderConsole } from '../scripts/src/ui/console/templates.js';
 
@@ -115,7 +116,10 @@ const previewRelationshipSpark = compileRelationshipSparks(state, current.id).sp
 state.人物列表.preview_person_linxia.关系.preview_person_shaoqing = previewRelationshipSpark.label;
 state.人物列表.preview_person_shaoqing.关系.preview_person_linxia = previewRelationshipSpark.label;
 state.事件列表.preview_relationship = { 标题: previewRelationshipSpark.title, 类型: '关系火花', 建筑ID: current.id, 空间ID: previewRelationshipSpark.spaceId, 状态: '已完成', 摘要: previewRelationshipSpark.summary, 发生时间: '刚刚', 场景键: previewRelationshipSpark.id, 参与者: { preview_person_linxia: previewRelationshipSpark.label, preview_person_shaoqing: previewRelationshipSpark.label } };
+state.事件列表.preview_relationship_scene = { 标题: '林夏与邵青的跨世界客厅夜谈', 类型: '关系场景', 建筑ID: current.id, 空间ID: 'living_room', 状态: '已完成', 摘要: '两种生活方式在客厅里第一次真正交汇。', 发生时间: '刚刚', 场景键: 'preview_shared_life_scene', 参与者: { preview_person_linxia: '跨世界同伴', preview_person_shaoqing: '跨世界同伴' } };
 const relationshipCenter = compileRelationshipSparks(state, current.id);
+const coCreationCenter = compileCoCreationProjects(state, current.id);
+const coCreationPreview = await managementMockRecipes.coCreation({ project: coCreationCenter.focus, building: current });
 const memory = compileBuildingMemories(state, current.id);
 const contextCapsule = compileContextCapsule(state, current.id);
 
@@ -134,11 +138,16 @@ const pages = {
   duo: { ui: { section: 'tenants', selectedReactionId: null, selectedRelationshipSparkId: null, selectedRelationshipSceneId: relationshipCenter.scenes[0]?.id }, task: null, scrollTop: 980 },
   takeover: {
     ui: { section: 'takeover', targetBuilding: hospital, selectedOptionId: 'multiverse-medical', busy: false },
-    task: { status: 'ready', preview: takeoverPreview },
+    task: { kind: 'takeover', status: 'ready', preview: takeoverPreview },
   },
   renovation: {
     ui: { section: 'renovation', selectedSpaceId: ownerRoom.id, selectedOptionId: 'world-collision', busy: false },
-    task: { status: 'ready', preview: renovationPreview },
+    task: { kind: 'renovation', status: 'ready', preview: renovationPreview },
+    twin: renovationTwin,
+  },
+  'co-creation': {
+    ui: { section: 'renovation', selectedCoCreationProjectId: coCreationCenter.focus.id, selectedCoCreationPlanId: coCreationPreview.plans[0].id, busy: false },
+    task: { id: 'preview_task_co_creation', kind: 'coCreation', status: 'ready', preview: coCreationPreview },
     twin: renovationTwin,
   },
   recruitment: {
@@ -148,7 +157,7 @@ const pages = {
       selectedOptionId: recruitmentPreview.candidates[0].id,
       busy: false,
     },
-    task: { status: 'ready', preview: recruitmentPreview },
+    task: { kind: 'recruitment', status: 'ready', preview: recruitmentPreview },
   },
   tasks: { ui: { section: 'tasks' }, task: null },
   history: { ui: { section: 'history' }, task: null },
@@ -163,7 +172,7 @@ const pages = {
 await fs.mkdir(outputDirectory, { recursive: true });
 
 for (const [name, page] of Object.entries(pages)) {
-  const rendered = renderConsole({ state: page.state ?? state, portfolio: page.portfolio ?? portfolio, current: page.current ?? current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin: page.twin ?? twin });
+  const rendered = renderConsole({ state: page.state ?? state, portfolio: page.portfolio ?? portfolio, current: page.current ?? current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, coCreationCenter, memory, pulse, twin: page.twin ?? twin });
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),

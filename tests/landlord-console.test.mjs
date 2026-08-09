@@ -20,6 +20,8 @@ import { createTenantIdentityService } from '../scripts/src/services/tenant-iden
 import { createRecipeTaskProvider, createTaskCenter } from '../scripts/src/services/task-center.js';
 import { createTenantEmbodimentService } from '../scripts/src/tenants/embodiment-engine.js';
 import { createTenantAutonomyService } from '../scripts/src/tenants/autonomy-engine.js';
+import { createCoCreationService } from '../scripts/src/tenants/co-creation-engine.js';
+import { createRelationshipService } from '../scripts/src/tenants/relationship-engine.js';
 import { createLandlordConsole } from '../scripts/src/ui/console/controller.js';
 
 globalThis.z = z;
@@ -115,6 +117,8 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     operations: createBuildingOperationsService(),
     embodiment: createTenantEmbodimentService(),
     autonomy: createTenantAutonomyService(),
+    relationships: createRelationshipService(),
+    coCreations: createCoCreationService(),
     compiler: { compileBuilding, compilePortfolio },
     logger: { error: () => {} },
   });
@@ -324,6 +328,33 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     click(dom.window.document, '[data-action="confirm-tenant-reaction"]');
     await waitFor(() => assert.ok(store.getState().人物列表.person_mock_医院_linxia.生活状态.反应键));
     assert.match(dom.window.document.body.textContent, /这份感受已经进入人物状态/);
+
+    const sharedSpaceId = store.getState().人物列表.person_mock_医院_linxia.所在空间ID;
+    click(dom.window.document, '[data-action="navigate"][data-section="recruitment"]');
+    click(dom.window.document, '[data-action="run-recruitment"]');
+    await waitFor(() => assert.match(dom.window.document.body.textContent, /邵青/));
+    click(dom.window.document, '[data-action="choose-option"][data-option-id="person_mock_医院_shaoqing"]');
+    click(dom.window.document, `[data-action="choose-recruit-space"][data-space-id="${sharedSpaceId}"]`);
+    click(dom.window.document, '[data-action="confirm-recruitment"]');
+    await waitFor(() => assert.equal(store.getState().人物列表.person_mock_医院_shaoqing.所在空间ID, sharedSpaceId));
+
+    click(dom.window.document, '[data-action="navigate"][data-section="tenants"]');
+    click(dom.window.document, '[data-action="choose-relationship-spark"]');
+    click(dom.window.document, '[data-action="confirm-relationship-spark"]');
+    await waitFor(() => assert.ok(store.getState().人物列表.person_mock_医院_linxia.关系.person_mock_医院_shaoqing));
+    click(dom.window.document, '[data-action="choose-relationship-scene"]');
+    click(dom.window.document, '[data-action="confirm-relationship-scene"]');
+    await waitFor(() => assert.ok(Object.values(store.getState().事件列表).some(event => event.类型 === '关系场景')));
+
+    click(dom.window.document, '[data-action="navigate"][data-section="renovation"]');
+    assert.ok(dom.window.document.querySelector('[data-co-creation-lab]'));
+    click(dom.window.document, '[data-action="run-co-creation"]');
+    await waitFor(() => assert.equal(dom.window.document.querySelectorAll('[data-co-creation-plan]').length, 3));
+    click(dom.window.document, '[data-action="choose-co-creation-plan"]');
+    assert.ok(dom.window.document.querySelector('[data-renovation-projection]'));
+    click(dom.window.document, '[data-action="confirm-co-creation"]');
+    await waitFor(() => assert.ok(Object.values(store.getState().事件列表).some(event => event.类型 === '共创装修')));
+    assert.match(dom.window.document.body.textContent, /共创装修已具现/);
   } finally {
     controller.dispose();
     events.dispose();

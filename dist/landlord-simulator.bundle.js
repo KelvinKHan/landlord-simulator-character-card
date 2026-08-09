@@ -1858,14 +1858,14 @@ function drawRelationGraph(character, relationEntries, targetDoc) {
     const midY = (centerY + node.y) / 2;
     const angle = Math.atan2(node.y - centerY, node.x - centerX);
     const distance = Math.sqrt(Math.pow(node.x - centerX, 2) + Math.pow(node.y - centerY, 2));
-    const text2 = node.relation;
-    const metrics = ctx.measureText(text2);
+    const text3 = node.relation;
+    const metrics = ctx.measureText(text3);
     const textWidth = metrics.width;
     const textHeight = 16;
     ctx.fillStyle = isDarkTheme ? "rgba(0, 0, 0, 0.7)" : "rgba(255, 255, 255, 0.9)";
     ctx.fillRect(midX - textWidth / 2 - 4, midY - textHeight / 2, textWidth + 8, textHeight);
     ctx.fillStyle = lineColor;
-    ctx.fillText(text2, midX, midY);
+    ctx.fillText(text3, midX, midY);
   });
   nodes.forEach((node) => {
     ctx.beginPath();
@@ -3655,13 +3655,13 @@ var init__4 = __esm({
         var id = appConfig.id;
         var name = appConfig.name;
         var icon2 = appConfig.icon;
-        var color = appConfig.color;
+        var color2 = appConfig.color;
         var order = appConfig.order || 99;
         if (!id || !name) {
           console.error("[PhoneSystem] \u6CE8\u518CAPP\u5931\u8D25\uFF1A\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570");
           return false;
         }
-        this.registeredApps.set(id, { id, name, icon: icon2, color, order });
+        this.registeredApps.set(id, { id, name, icon: icon2, color: color2, order });
         console.log("[PhoneSystem] APP\u5DF2\u6CE8\u518C:", name);
         this.emit("app-registered", { id, name });
         if (this.iframeWindow) {
@@ -3963,12 +3963,12 @@ var init__4 = __esm({
             for (var i = ctx.chat.length - 1; i >= 0 && (aiMessages.length < 3 || userMessages.length < 3); i--) {
               var msg = ctx.chat[i];
               if (msg && msg.mes) {
-                var text2 = msg.mes.replace(/<[^>]*>/g, "").replace(/\{\{[^}]*\}\}/g, "").replace(/\[\[[^\]]*\]\]/g, "").trim();
-                if (text2) {
+                var text3 = msg.mes.replace(/<[^>]*>/g, "").replace(/\{\{[^}]*\}\}/g, "").replace(/\[\[[^\]]*\]\]/g, "").trim();
+                if (text3) {
                   if (msg.is_user === true && userMessages.length < 3) {
-                    userMessages.unshift("\u73A9\u5BB6\uFF1A" + text2);
+                    userMessages.unshift("\u73A9\u5BB6\uFF1A" + text3);
                   } else if (msg.is_user !== true && aiMessages.length < 3) {
-                    aiMessages.unshift("AI\uFF1A" + text2);
+                    aiMessages.unshift("AI\uFF1A" + text3);
                   }
                 }
               }
@@ -5308,8 +5308,8 @@ ${tenantName}\u76EE\u524D[\u63CF\u8FF0\u5F53\u524D\u7684\u76EE\u6807\u3001\u613F
             var messages = ctx.chat.slice(-depth);
             return messages.map(function(msg, index) {
               var speaker = msg.is_user ? "\u73A9\u5BB6" : "AI";
-              var text2 = (msg.mes || "").replace(/<[^>]*>/g, "").replace(/\{\{[^}]*\}\}/g, "").substring(0, 500);
-              return "[\u7B2C" + (ctx.chat.length - depth + index + 1) + "\u697C] " + speaker + "\uFF1A" + text2;
+              var text3 = (msg.mes || "").replace(/<[^>]*>/g, "").replace(/\{\{[^}]*\}\}/g, "").substring(0, 500);
+              return "[\u7B2C" + (ctx.chat.length - depth + index + 1) + "\u697C] " + speaker + "\uFF1A" + text3;
             }).join("\n\n");
           } catch (e) {
             console.error("[\u79DF\u5BA2\u5206\u6790] \u83B7\u53D6\u5BF9\u8BDD\u5931\u8D25:", e);
@@ -5462,9 +5462,9 @@ ${tenantName}\u76EE\u524D[\u63CF\u8FF0\u5F53\u524D\u7684\u76EE\u6807\u3001\u613F
           return result || "";
         },
         // ============ 解析分析结果 ============
-        parseAnalysisResult: function(text2) {
+        parseAnalysisResult: function(text3) {
           try {
-            var jsonMatch = text2.match(/\{[\s\S]*\}/);
+            var jsonMatch = text3.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
               return JSON.parse(jsonMatch[0]);
             }
@@ -5914,9 +5914,9 @@ var init__8 = __esm({
           self.element.querySelector(".queue-widget-toggle").textContent = self.isMinimized ? "+" : "\u2212";
         },
         // HTML转义
-        escapeHtml: function(text2) {
+        escapeHtml: function(text3) {
           var div = document.createElement("div");
-          div.textContent = text2;
+          div.textContent = text3;
           return div.innerHTML;
         }
       };
@@ -6083,16 +6083,16 @@ var init__9 = __esm({
         },
         // ==================== 联动上下文获取（重构版） ====================
         // 调用ST正则引擎过滤文本（应用勾选了"仅Prompt"的正则）
-        applyRegexFilter: function(text2) {
+        applyRegexFilter: function(text3) {
           try {
             const getRegexedString = window.parent.getRegexedString;
             if (typeof getRegexedString === "function") {
-              return getRegexedString(text2, 2, { isPrompt: true });
+              return getRegexedString(text3, 2, { isPrompt: true });
             }
-            return text2.replace(/<UpdateVariable>[\s\S]*?<\/UpdateVariable>/g, "").replace(/<Analysis>[\s\S]*?<\/Analysis>/g, "").replace(/<JSONPatch>[\s\S]*?<\/JSONPatch>/g, "").trim();
+            return text3.replace(/<UpdateVariable>[\s\S]*?<\/UpdateVariable>/g, "").replace(/<Analysis>[\s\S]*?<\/Analysis>/g, "").replace(/<JSONPatch>[\s\S]*?<\/JSONPatch>/g, "").trim();
           } catch (e) {
             console.warn("[ChatCore] \u6B63\u5219\u8FC7\u6EE4\u5931\u8D25:", e);
-            return text2;
+            return text3;
           }
         },
         // 获取增强上下文（正文剧情 + 跨聊天记录）
@@ -6235,39 +6235,39 @@ ${cleanContent}
         },
         // 格式化租客信息为文本
         formatTenantInfo: function(tenantName, info) {
-          let text2 = `\u3010${tenantName}\u3011
+          let text3 = `\u3010${tenantName}\u3011
 `;
           if (info.mvuData) {
             const d = info.mvuData;
-            text2 += `\u5E74\u9F84: ${d.\u5E74\u9F84 || "\u672A\u77E5"}
+            text3 += `\u5E74\u9F84: ${d.\u5E74\u9F84 || "\u672A\u77E5"}
 `;
-            text2 += `\u804C\u4E1A: ${d.\u804C\u4E1A || "\u672A\u77E5"}
+            text3 += `\u804C\u4E1A: ${d.\u804C\u4E1A || "\u672A\u77E5"}
 `;
-            text2 += `\u6027\u683C: ${d.\u6027\u683C || "\u672A\u77E5"}
+            text3 += `\u6027\u683C: ${d.\u6027\u683C || "\u672A\u77E5"}
 `;
-            text2 += `\u72B6\u6001: ${d.\u72B6\u6001 || "\u6B63\u5E38"}
+            text3 += `\u72B6\u6001: ${d.\u72B6\u6001 || "\u6B63\u5E38"}
 `;
-            text2 += `\u5185\u5FC3: ${d.\u5185\u5FC3 || "\u672A\u77E5"}
+            text3 += `\u5185\u5FC3: ${d.\u5185\u5FC3 || "\u672A\u77E5"}
 `;
             if (d.\u5173\u7CFB) {
               const relations = Object.entries(d.\u5173\u7CFB).map(([k, v]) => `${k}:${v}`).join(", ");
-              text2 += `\u5173\u7CFB: ${relations}
+              text3 += `\u5173\u7CFB: ${relations}
 `;
             }
           }
           if (info.baseProfile) {
-            text2 += `
+            text3 += `
 \u672C\u8272\u6863\u6848:
 ${info.baseProfile}
 `;
           }
           if (info.dynamicProfile) {
-            text2 += `
+            text3 += `
 \u5F53\u524D\u72B6\u6001:
 ${info.dynamicProfile}
 `;
           }
-          return text2;
+          return text3;
         },
         // ==================== 提示词构建 ====================
         // 构建群聊提示词（增强版：包含正文上下文和私聊摘要）
@@ -8165,9 +8165,9 @@ var init_APP = __esm({
             </div>
         `;
       }
-      function escapeHtml2(text2) {
+      function escapeHtml2(text3) {
         const div = document.createElement("div");
-        div.textContent = text2;
+        div.textContent = text3;
         return div.innerHTML;
       }
       let currentIframeDoc = null;
@@ -8608,10 +8608,10 @@ var init_APP = __esm({
           const file = e.target.files[0];
           if (!file) return;
           try {
-            const text2 = await file.text();
+            const text3 = await file.text();
             const ChatDB = window.parent.ChatDB;
             const merge = confirm("\u662F\u5426\u5408\u5E76\u6570\u636E\uFF1F\n\u786E\u5B9A\uFF1A\u5408\u5E76\u5230\u73B0\u6709\u6570\u636E\n\u53D6\u6D88\uFF1A\u8986\u76D6\u73B0\u6709\u6570\u636E");
-            const result = await ChatDB.importData(text2, { merge });
+            const result = await ChatDB.importData(text3, { merge });
             alert(`\u5BFC\u5165\u6210\u529F\uFF01
 \u4F1A\u8BDD: ${result.conversations}
 \u6D88\u606F: ${result.messages}`);
@@ -10305,10 +10305,10 @@ var init__11 = __esm({
 ${escapeHtml2(content)}`;
         }).join("\n\n");
       }
-      function escapeHtml2(text2) {
-        if (!text2) return "";
+      function escapeHtml2(text3) {
+        if (!text3) return "";
         const div = document.createElement("div");
-        div.textContent = text2;
+        div.textContent = text3;
         return div.innerHTML;
       }
       function bindEvents() {
@@ -11053,12 +11053,12 @@ var init__13 = __esm({
                   matches.push(match);
                 }
                 re.lastIndex = 0;
-                var text2 = line.replace(re, "").trim();
-                if (matches.length && text2) {
+                var text3 = line.replace(re, "").trim();
+                if (matches.length && text3) {
                   matches.forEach(function(m) {
                     lyrics.push({
                       time: parseInt(m[1]) * 60 + parseInt(m[2]) + parseInt(m[3]) / 1e3,
-                      text: text2
+                      text: text3
                     });
                   });
                 }
@@ -12265,14 +12265,14 @@ function seededRandom(seed) {
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
 }
-function weatherSvg(weatherType, size, color) {
+function weatherSvg(weatherType, size, color2) {
   var info = WEATHER_TYPES[weatherType];
   if (!info || !info.svg) return info ? info.icon : "\u{1F324}\uFE0F";
-  var c = color || "%23ffffff";
+  var c = color2 || "%23ffffff";
   return '<img src="https://api.iconify.design/' + info.svg + ".svg?color=" + c + '" style="width:' + size + "px;height:" + size + 'px;vertical-align:middle;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.25));">';
 }
-function iconSvg(name, size, color) {
-  var c = color || "%23ffffff";
+function iconSvg(name, size, color2) {
+  var c = color2 || "%23ffffff";
   return '<img src="https://api.iconify.design/' + name + ".svg?color=" + c + '" style="width:' + size + "px;height:" + size + 'px;vertical-align:middle;">';
 }
 function dateToSeed(year, month, day) {
@@ -15970,11 +15970,11 @@ async function wsRecruitCharacter(item, targetRoomName) {
   wsFillInputBox(message);
   return true;
 }
-function wsFillInputBox(text2) {
+function wsFillInputBox(text3) {
   var textarea = window.parent.document.getElementById("send_textarea");
   if (textarea) {
     var existing = textarea.value.trim();
-    textarea.value = existing ? existing + "\n" + text2 : text2;
+    textarea.value = existing ? existing + "\n" + text3 : text3;
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
     textarea.focus();
     wsToastOk("\u5DF2\u586B\u5165\u8F93\u5165\u6846\uFF0C\u8BF7\u68C0\u67E5\u540E\u53D1\u9001");
@@ -17791,12 +17791,12 @@ function initializeWsPanel(targetDoc) {
     const action = btn.getAttribute("data-action");
     if (action === "import-text") {
       const textarea = importPanel.querySelector("#ws-import-textarea");
-      const text2 = textarea ? textarea.value.trim() : "";
-      if (!text2) {
+      const text3 = textarea ? textarea.value.trim() : "";
+      if (!text3) {
         wsToast("\u8BF7\u8F93\u5165\u5185\u5BB9");
         return;
       }
-      const result2 = await wsImportAll(text2);
+      const result2 = await wsImportAll(text3);
       if (result2) {
         const total = Object.values(result2).reduce(function(a, b) {
           return a + b;
@@ -17814,8 +17814,8 @@ function initializeWsPanel(targetDoc) {
       input.onchange = async function() {
         const file = input.files[0];
         if (!file) return;
-        const text2 = await file.text();
-        const result2 = await wsImportAll(text2);
+        const text3 = await file.text();
+        const result2 = await wsImportAll(text3);
         if (result2) {
           const total = Object.values(result2).reduce(function(a, b) {
             return a + b;
@@ -19159,6 +19159,7 @@ var init_management_ai_contracts = __esm({
     ManagementAiSchemas = Object.freeze({
       takeover: z.object({ directions: z.array(takeoverDirection).length(3) }),
       renovation: z.object({ plans: z.array(renovationPlan).length(3) }),
+      coCreation: z.object({ plans: z.array(renovationPlan).length(3) }),
       recruitment: z.object({ candidates: z.array(recruitmentCandidate).length(3) })
     });
     ManagementAiJsonSchemas = Object.freeze(
@@ -19224,7 +19225,11 @@ ${JSON.stringify(payload)}`
       });
       if (signal?.aborted) throw abortError();
       const parsed = contract.parse(generated);
-      return { source: "ai", ...clone2(parsed) };
+      return {
+        source: "ai",
+        ...clone2(parsed),
+        ...kind === "coCreation" ? { projectId: input.project?.id } : {}
+      };
     }
   });
 }
@@ -19235,6 +19240,7 @@ var init_management_ai_provider = __esm({
     taskInstructions = Object.freeze({
       takeover: "\u6839\u636E\u5EFA\u7B51\u7C7B\u578B\u3001\u73B0\u6709\u683C\u5C40\u548C\u4E16\u754C\u89C2\u63D0\u51FA\u4E09\u79CD\u5DEE\u5F02\u660E\u663E\u3001\u504F\u723D\u6587\u4F53\u9A8C\u7684\u63A5\u7BA1\u65B9\u5411\u3002\u4FDD\u7559\u53EF\u7ACB\u5373\u6E38\u73A9\u7684\u57FA\u7840\uFF0C\u4E0D\u589E\u52A0\u7E41\u7410\u60E9\u7F5A\u3002",
       renovation: "\u9488\u5BF9\u6307\u5B9A\u7A7A\u95F4\u63D0\u51FA\u4E09\u79CD\u53EF\u89C6\u5316\u5DEE\u5F02\u660E\u663E\u7684\u88C5\u4FEE\u65B9\u6848\u3002\u65B9\u6848\u5FC5\u987B\u80FD\u6539\u53D8\u914D\u8272\u3001\u6750\u8D28\u3001\u5BB6\u5177\u3001\u7167\u660E\u3001\u7A7A\u95F4\u63CF\u8FF0\u548C\u540E\u7EED\u4EBA\u7269\u4E92\u52A8\u3002",
+      coCreation: "\u6839\u636E\u5DF2\u7ECF\u786E\u8BA4\u7684\u53CC\u4EBA\u751F\u6D3B\u573A\u666F\u63D0\u51FA\u4E09\u79CD\u5171\u521B\u88C5\u4FEE\u65B9\u6848\u3002\u5FC5\u987B\u540C\u65F6\u4F53\u73B0\u4E24\u4EBA\u7684\u6765\u6E90\u4E16\u754C\u3001\u804C\u4E1A\u3001\u6027\u683C\u548C\u76EE\u6807\u623F\u95F4\uFF0C\u8BA9\u4EBA\u7269\u78B0\u649E\u4EA7\u751F\u53EF\u89C1\u4E14\u53EF\u7EE7\u7EED\u6E38\u73A9\u7684\u5EFA\u7B51\u7ED3\u679C\u3002",
       recruitment: "\u4E3A\u5F53\u524D\u5EFA\u7B51\u751F\u6210\u4E09\u540D\u6765\u81EA\u4E0D\u540C\u4E16\u754C\u3001\u80FD\u4E0E\u73B0\u6709\u7A7A\u95F4\u548C\u4EBA\u7269\u4EA7\u751F\u78B0\u649E\u7684\u5019\u9009\u4EBA\u3002\u4EBA\u7269\u5FC5\u987B\u9002\u5408\u88AB\u5B89\u7F6E\u5230\u5F53\u524D\u5EFA\u7B51\u3002"
     });
   }
@@ -19440,16 +19446,16 @@ function normalizeHex(value, fallback) {
   if (short) return `#${[...short[1]].map((character) => character.repeat(2)).join("")}`.toUpperCase();
   return /^#[0-9a-f]{6}$/i.test(source) ? source.toUpperCase() : fallback;
 }
-function channels(color) {
-  return [1, 3, 5].map((index) => Number.parseInt(color.slice(index, index + 2), 16));
+function channels(color2) {
+  return [1, 3, 5].map((index) => Number.parseInt(color2.slice(index, index + 2), 16));
 }
 function mix(left, right, ratio = 0.5) {
   const a = channels(left);
   const b = channels(right);
   return `#${a.map((value, index) => Math.round(value + (b[index] - value) * ratio).toString(16).padStart(2, "0")).join("")}`.toUpperCase();
 }
-function contrast(color) {
-  const [red, green, blue] = channels(color);
+function contrast(color2) {
+  const [red, green, blue] = channels(color2);
   return red * 0.299 + green * 0.587 + blue * 0.114 > 156 ? "#283044" : "#FFFDFD";
 }
 function hash(value) {
@@ -20069,8 +20075,8 @@ function hash4(value) {
   return (result >>> 0).toString(36);
 }
 function includesAny2(source, keywords) {
-  const text2 = String(source ?? "");
-  return keywords.some((keyword) => text2.includes(keyword));
+  const text3 = String(source ?? "");
+  return keywords.some((keyword) => text3.includes(keyword));
 }
 function clamp3(value) {
   return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
@@ -21193,8 +21199,154 @@ var init_life_collision_engine = __esm({
   }
 });
 
-// scripts/src/tenants/autonomy-engine.js
+// scripts/src/tenants/co-creation-engine.js
 function hash9(value) {
+  let result = 2166136261;
+  for (const character of String(value)) {
+    result ^= character.codePointAt(0);
+    result = Math.imul(result, 16777619);
+  }
+  return (result >>> 0).toString(36);
+}
+function text2(value, fallback) {
+  const result = String(value ?? "").trim();
+  return result || fallback;
+}
+function color(value, fallback) {
+  return /^#[0-9a-f]{6}$/i.test(String(value ?? "")) ? String(value).toUpperCase() : fallback;
+}
+function personSnapshot(id, person) {
+  return Object.freeze({
+    id,
+    name: text2(person.\u59D3\u540D, "\u672A\u547D\u540D\u4EBA\u7269"),
+    origin: text2(person.\u6765\u6E90\u4E16\u754C, "\u5F53\u524D\u4E16\u754C"),
+    profession: text2(person.\u804C\u4E1A, "\u751F\u6D3B\u89C2\u5BDF\u8005"),
+    personality: text2(person.\u6027\u683C, "\u4FDD\u6301\u597D\u5947"),
+    color: color(person.\u89C6\u89C9\u8EAB\u4EFD?.\u4E3B\u8272, "#FF9EAA")
+  });
+}
+function compileProject(state, sourceEventId, event, recordedKeys) {
+  if (event.\u7C7B\u578B !== "\u5173\u7CFB\u573A\u666F" || !event.\u573A\u666F\u952E || !event.\u7A7A\u95F4ID) return null;
+  const personIds = Object.keys(event.\u53C2\u4E0E\u8005 ?? {}).sort();
+  if (personIds.length !== 2) return null;
+  const building = state.\u5EFA\u7B51\u5217\u8868?.[event.\u5EFA\u7B51ID];
+  const space = building?.\u7A7A\u95F4\u5217\u8868?.[event.\u7A7A\u95F4ID];
+  if (!space || !["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.\u63A5\u7BA1\u72B6\u6001)) return null;
+  const people = personIds.map((personId) => state.\u4EBA\u7269\u5217\u8868?.[personId]);
+  if (people.some((person) => !person)) return null;
+  if (people.some((person) => person.\u6240\u5728\u5EFA\u7B51ID !== event.\u5EFA\u7B51ID || person.\u6240\u5728\u7A7A\u95F4ID !== event.\u7A7A\u95F4ID)) return null;
+  const id = `co_creation_${hash9(event.\u573A\u666F\u952E)}`;
+  const snapshots = Object.freeze(personIds.map((personId, index) => personSnapshot(personId, people[index])));
+  const differentWorlds = snapshots[0].origin !== snapshots[1].origin;
+  return Object.freeze({
+    id,
+    sourceEventId,
+    sourceSceneKey: event.\u573A\u666F\u952E,
+    sourceTitle: event.\u6807\u9898,
+    buildingId: event.\u5EFA\u7B51ID,
+    buildingName: building.\u540D\u79F0,
+    spaceId: event.\u7A7A\u95F4ID,
+    spaceName: space.\u540D\u79F0,
+    personIds: Object.freeze(personIds),
+    people: snapshots,
+    differentWorlds,
+    headline: `${snapshots[0].name} \xD7 ${snapshots[1].name}\u60F3\u628A\u76F8\u9047\u7559\u5728${space.\u540D\u79F0}`,
+    premise: differentWorlds ? `${snapshots[0].origin}\u4E0E${snapshots[1].origin}\u4E0D\u518D\u53EA\u662F\u804A\u5929\u8BBE\u5B9A\uFF0C\u800C\u4F1A\u5171\u540C\u6539\u53D8\u623F\u95F4\u7684\u6750\u8D28\u3001\u5BB6\u5177\u548C\u7528\u9014\u3002` : `\u4E24\u79CD\u804C\u4E1A\u4E0E\u6027\u683C\u4F1A\u5171\u540C\u6539\u53D8${space.\u540D\u79F0}\uFF0C\u8BA9\u4EBA\u7269\u78B0\u649E\u771F\u6B63\u7559\u4E0B\u53EF\u89C1\u7ED3\u679C\u3002`,
+    expectedRenovationSignature: createRenovationVisual(space.\u88C5\u4FEE, { fallbackAccent: building.\u4E3B\u9898?.\u4E3B\u8272 }).signature,
+    expectedLocations: Object.freeze(Object.fromEntries(personIds.map((personId) => [personId, Object.freeze({
+      buildingId: event.\u5EFA\u7B51ID,
+      spaceId: event.\u7A7A\u95F4ID
+    })]))),
+    recorded: recordedKeys.has(id)
+  });
+}
+function compileCoCreationProjects(state, buildingId = null) {
+  const recordedKeys = new Set(Object.values(state.\u4E8B\u4EF6\u5217\u8868 ?? {}).map((event) => event.\u573A\u666F\u952E).filter(Boolean));
+  const projects = Object.entries(state.\u4E8B\u4EF6\u5217\u8868 ?? {}).reverse().map(([eventId, event]) => compileProject(state, eventId, event, recordedKeys)).filter((project) => project && (!buildingId || project.buildingId === buildingId)).sort((left, right) => Number(left.recorded) - Number(right.recorded) || left.id.localeCompare(right.id));
+  return Object.freeze({
+    signature: `co_creation_center_${hash9(projects.map((project) => `${project.id}:${project.expectedRenovationSignature}:${project.recorded}`).join("|"))}`,
+    projects: Object.freeze(projects),
+    focus: projects.find((project) => !project.recorded) ?? null,
+    metrics: Object.freeze({
+      projects: projects.length,
+      ready: projects.filter((project) => !project.recorded).length,
+      crossWorld: projects.filter((project) => project.differentWorlds).length,
+      people: new Set(projects.flatMap((project) => project.personIds)).size
+    })
+  });
+}
+function basePlan(project, id, name, style, tagline, palette, materials, furniture, lighting, atmosphere, impacts) {
+  return Object.freeze({
+    id: `${project.id}_${id}`,
+    name,
+    style,
+    tagline,
+    palette: Object.freeze(palette),
+    materials: Object.freeze(materials),
+    furniture: Object.freeze(furniture),
+    lighting,
+    atmosphere,
+    resultDescription: `${project.spaceName}\u88AB${project.people[0].name}\u4E0E${project.people[1].name}\u5171\u540C\u6539\u9020\u6210\u300C${name}\u300D\uFF1A${tagline}\u3002\u8FD9\u91CC\u540C\u65F6\u56DE\u5E94${project.people[0].profession}\u4E0E${project.people[1].profession}\u7684\u751F\u6D3B\u65B9\u5F0F\u3002`,
+    impacts: Object.freeze(impacts)
+  });
+}
+function createLocalCoCreationPlans(project, building = {}) {
+  if (!project?.id || project.people?.length !== 2) throw new Error("\u5171\u521B\u88C5\u4FEE\u9879\u76EE\u7F3A\u5C11\u53CC\u4EBA\u4EA4\u6C47\u4FE1\u606F");
+  const [left, right] = project.people;
+  const buildingAccent = color(building.theme?.\u4E3B\u8272 ?? building.\u4E3B\u9898?.\u4E3B\u8272, "#7C6CE7");
+  return Object.freeze([
+    basePlan(
+      project,
+      "shared-life",
+      "\u53CC\u4E16\u754C\u751F\u6D3B\u8231",
+      "\u8DE8\u4E16\u754C\u751F\u6D3B\u878D\u5408",
+      "\u628A\u4E24\u4E2A\u4EBA\u5404\u81EA\u719F\u6089\u7684\u65E5\u5E38\u62FC\u6210\u4E00\u4E2A\u53EF\u4EE5\u5171\u540C\u5C45\u4F4F\u7684\u65B0\u7A7A\u95F4",
+      { \u4E3B\u8272: left.color, \u5171\u521B\u8272: right.color, \u5EFA\u7B51\u8109\u51B2: buildingAccent },
+      { \u57FA\u7840\u754C\u9762: `${left.origin}\u7684\u751F\u6D3B\u7EB9\u7406`, \u4EA4\u6C47\u5C42: `${right.origin}\u7684\u89E6\u611F\u6750\u6599`, \u5730\u9762: "\u6E29\u6DA6\u8FDE\u7EED\u5730\u576A" },
+      { left_station: `${left.profession}\u751F\u6D3B\u4F4D`, right_station: `${right.profession}\u751F\u6D3B\u4F4D`, center: "\u53EF\u91CD\u7EC4\u5171\u7528\u5C9B\u53F0", memory: "\u53CC\u4E16\u754C\u4EA4\u6362\u9648\u5217\u5899" },
+      "\u4F1A\u968F\u4E24\u4EBA\u6D3B\u52A8\u5207\u6362\u5C42\u6B21\u7684\u5171\u751F\u5149\u573A",
+      "\u4EB2\u5BC6\u3001\u81EA\u7531\u3001\u5904\u5904\u4FDD\u7559\u4E24\u79CD\u4E16\u754C\u7684\u75D5\u8FF9",
+      ["\u4EBA\u7269\u4E16\u754C\u89C2\u53D8\u6210\u53EF\u89C1\u9648\u8BBE", "\u5F62\u6210\u53CC\u4EBA\u957F\u671F\u751F\u6D3B\u636E\u70B9", "\u7EE7\u7EED\u5438\u6536\u540E\u7EED\u5267\u60C5\u7EC6\u8282"]
+    ),
+    basePlan(
+      project,
+      "profession-lab",
+      "\u5F02\u4E1A\u5171\u521B\u5DE5\u574A",
+      "\u8DE8\u804C\u4E1A\u53EF\u53D8\u5DE5\u574A",
+      "\u8BA9\u804C\u4E1A\u80FD\u529B\u76F4\u63A5\u51B3\u5B9A\u7A7A\u95F4\u600E\u6837\u8FD0\u4F5C\uFF0C\u800C\u4E0D\u662F\u53EA\u505A\u80CC\u666F\u8BBE\u5B9A",
+      { \u4E3B\u8272: "#F8FAFC", \u804C\u4E1A\u8272: left.color, \u7075\u611F\u8272: right.color },
+      { \u5DE5\u4F5C\u9762: "\u8010\u7528\u53EF\u4E66\u5199\u590D\u5408\u6750\u8D28", \u9694\u65AD: "\u534A\u900F\u660E\u79FB\u52A8\u754C\u9762", \u5438\u97F3\u5C42: "\u67D4\u6027\u58F0\u573A\u7EC7\u7269" },
+      { prototype: `${left.profession}\u539F\u578B\u53F0`, research: `${right.profession}\u7814\u7A76\u7AD9`, exchange: "\u8DE8\u804C\u4E1A\u6210\u679C\u4EA4\u6362\u684C", storage: "\u53EF\u751F\u957F\u6A21\u5757\u4ED3" },
+      "\u9AD8\u663E\u8272\u5DE5\u4F5C\u5149\u4E0E\u67D4\u548C\u4EA4\u6D41\u5149\u53CC\u56DE\u8DEF",
+      "\u9AD8\u6548\u4F46\u4E0D\u4E25\u8083\uFF0C\u968F\u4EBA\u7269\u5408\u4F5C\u65B9\u5F0F\u4E0D\u65AD\u91CD\u7EC4",
+      ["\u804C\u4E1A\u8BBE\u5B9A\u83B7\u5F97\u5B9E\u9645\u7528\u9014", "\u89E3\u9501\u5171\u540C\u521B\u4F5C\u573A\u666F", "\u88C5\u4FEE\u4E0E\u62DB\u52DF\u5F62\u6210\u6B63\u53CD\u9988"]
+    ),
+    basePlan(
+      project,
+      "memory-theatre",
+      "\u751F\u6D3B\u56DE\u58F0\u5267\u573A",
+      "\u53EF\u751F\u957F\u8BB0\u5FC6\u7A7A\u95F4",
+      "\u628A\u5DF2\u7ECF\u53D1\u751F\u7684\u4EA4\u6C47\u53D8\u6210\u623F\u95F4\u4F1A\u6301\u7EED\u8BB0\u4F4F\u7684\u751F\u6D3B\u821E\u53F0",
+      { \u66AE\u8272: "#232136", \u56DE\u58F0\u8272: right.color, \u8BB0\u5FC6\u9AD8\u5149: left.color },
+      { \u5899\u9762: "\u53EF\u8BB0\u5F55\u5149\u5F71\u7684\u8BB0\u5FC6\u6D82\u5C42", \u5C55\u793A\u9762: "\u60AC\u6D6E\u4E8B\u4EF6\u5207\u7247", \u8F6F\u88C5: "\u591A\u4E16\u754C\u7EB9\u6837\u7EC7\u7269" },
+      { stage: "\u53EF\u5207\u6362\u65E5\u5E38\u573A\u666F\u7684\u4E2D\u592E\u5E73\u53F0", archive: "\u751F\u6D3B\u4E8B\u4EF6\u6863\u6848\u5899", seat: "\u53CC\u4EBA\u89C2\u5BDF\u5EA7", portal: "\u4E0B\u4E00\u6B21\u5171\u521B\u9884\u7559\u4F4D" },
+      "\u6839\u636E\u5EFA\u7B51\u8BB0\u5FC6\u7F13\u6162\u53D8\u5316\u7684\u60C5\u666F\u5149",
+      "\u6709\u6545\u4E8B\u611F\u3001\u53EF\u56DE\u770B\u3001\u6BCF\u6B21\u5171\u540C\u751F\u6D3B\u90FD\u4F1A\u7559\u4E0B\u65B0\u5C42\u6B21",
+      ["\u4E8B\u4EF6\u8BB0\u5FC6\u83B7\u5F97\u7A7A\u95F4\u8F7D\u4F53", "\u5F3A\u5316\u4EBA\u7269\u5173\u7CFB\u5B58\u5728\u611F", "\u4E3A\u6B63\u6587\u4E0E\u5FAE\u4FE1\u63D0\u4F9B\u6301\u7EED\u8BDD\u9898"]
+    )
+  ]);
+}
+function createCoCreationService() {
+  return Object.freeze({ compile: compileCoCreationProjects, createLocalPlans: createLocalCoCreationPlans });
+}
+var init_co_creation_engine = __esm({
+  "scripts/src/tenants/co-creation-engine.js"() {
+    init_visual_engine();
+  }
+});
+
+// scripts/src/tenants/autonomy-engine.js
+function hash10(value) {
   let result = 5381;
   for (const character of String(value)) result = Math.imul(result, 33) ^ character.charCodeAt(0);
   return (result >>> 0).toString(36);
@@ -21247,7 +21399,7 @@ function compileTenantAutonomy(state, buildingId) {
     if (!chosen) continue;
     const source = building.\u7A7A\u95F4\u5217\u8868?.[person.\u6240\u5728\u7A7A\u95F4ID];
     const activity = activityFor(person, chosen.space);
-    const id = `autonomy_${hash9([buildingId, personId, person.\u6240\u5728\u7A7A\u95F4ID, chosen.space.id, operations.signature].join("|"))}`;
+    const id = `autonomy_${hash10([buildingId, personId, person.\u6240\u5728\u7A7A\u95F4ID, chosen.space.id, operations.signature].join("|"))}`;
     proposals.push(Object.freeze({
       id,
       personId,
@@ -21263,7 +21415,7 @@ function compileTenantAutonomy(state, buildingId) {
       expectedFrom: Object.freeze({ buildingId, spaceId: person.\u6240\u5728\u7A7A\u95F4ID })
     }));
   }
-  const signature = `autonomy_${hash9(JSON.stringify(proposals.map((item) => [item.id, item.destination.id])))}`;
+  const signature = `autonomy_${hash10(JSON.stringify(proposals.map((item) => [item.id, item.destination.id])))}`;
   return Object.freeze({ buildingId, buildingName: building.\u540D\u79F0, signature, proposals: Object.freeze(proposals) });
 }
 function createTenantAutonomyService() {
@@ -21511,6 +21663,7 @@ function recruitmentCandidates(building) {
 var managementMockRecipes;
 var init_management_recipes = __esm({
   "scripts/src/mock/management-recipes.js"() {
+    init_co_creation_engine();
     managementMockRecipes = Object.freeze({
       takeover: async ({ building }) => ({
         source: "local-mock",
@@ -21522,6 +21675,11 @@ var init_management_recipes = __esm({
         buildingId: building.id,
         spaceId: space.id,
         plans: renovationPlans(building, space)
+      }),
+      coCreation: async ({ project, building }) => ({
+        source: "local-mock",
+        projectId: project.id,
+        plans: createLocalCoCreationPlans(project, building)
       }),
       recruitment: async ({ building }) => ({
         source: "local-mock",
@@ -21809,6 +21967,20 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
     const floor = building.\u697C\u5C42\u5217\u8868?.[space.\u697C\u5C42ID];
     if (floor) floor.\u611F\u77E5\u5EA6 = 100;
   }
+  function applyPlanToSpace(space, plan) {
+    if (!plan?.name || !plan.style || !plan.resultDescription) throw new Error("\u88C5\u4FEE\u65B9\u6848\u5185\u5BB9\u4E0D\u5B8C\u6574");
+    space.\u88C5\u4FEE = {
+      \u98CE\u683C: plan.style,
+      \u914D\u8272: cloneLandlordState(plan.palette ?? {}),
+      \u6750\u8D28: cloneLandlordState(plan.materials ?? {}),
+      \u5BB6\u5177: cloneLandlordState(plan.furniture ?? {}),
+      \u7167\u660E: plan.lighting,
+      \u6C1B\u56F4: plan.atmosphere,
+      \u5B8C\u6210\u5EA6: 100
+    };
+    space.\u72B6\u6001 = "\u6B63\u5E38";
+    space.\u63CF\u8FF0 = plan.resultDescription;
+  }
   return Object.freeze({
     getState,
     async ensureInitialized() {
@@ -21894,18 +22066,8 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
         const space = building?.\u7A7A\u95F4\u5217\u8868?.[spaceId];
         if (!space) throw new Error(`\u88C5\u4FEE\u76EE\u6807\u4E0D\u5B58\u5728\uFF1A${buildingId}/${spaceId}`);
         if (!["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.\u63A5\u7BA1\u72B6\u6001)) throw new Error("\u5C1A\u672A\u63A5\u7BA1\u7684\u5EFA\u7B51\u4E0D\u80FD\u88C5\u4FEE");
-        space.\u88C5\u4FEE = {
-          \u98CE\u683C: plan.style,
-          \u914D\u8272: cloneLandlordState(plan.palette ?? {}),
-          \u6750\u8D28: cloneLandlordState(plan.materials ?? {}),
-          \u5BB6\u5177: cloneLandlordState(plan.furniture ?? {}),
-          \u7167\u660E: plan.lighting,
-          \u6C1B\u56F4: plan.atmosphere,
-          \u5B8C\u6210\u5EA6: 100
-        };
+        applyPlanToSpace(space, plan);
         revealManagedSpace(building, space);
-        space.\u72B6\u6001 = "\u6B63\u5E38";
-        space.\u63CF\u8FF0 = plan.resultDescription ?? space.\u63CF\u8FF0;
         building.\u7ECF\u8425\u6458\u8981.\u4ECA\u65E5\u4EAE\u70B9 = `${space.\u540D\u79F0}\u5B8C\u6210\u4E86\u300C${plan.name}\u300D\u6539\u9020`;
         appendDomainEvent(state, {
           \u6807\u9898: `${space.\u540D\u79F0}\u7115\u7136\u4E00\u65B0`,
@@ -21917,6 +22079,46 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
           \u53D1\u751F\u65F6\u95F4: "\u521A\u521A",
           \u53C2\u4E0E\u8005: {}
         });
+      });
+    },
+    async applyCoCreationRenovation({ project, plan }) {
+      return commit("\u5177\u73B0\u53CC\u4EBA\u5171\u521B\u88C5\u4FEE", (state) => {
+        if (!project?.id || project.personIds?.length !== 2) throw new Error("\u5171\u521B\u88C5\u4FEE\u9879\u76EE\u5185\u5BB9\u65E0\u6548");
+        const building = state.\u5EFA\u7B51\u5217\u8868[project.buildingId];
+        const space = building?.\u7A7A\u95F4\u5217\u8868?.[project.spaceId];
+        if (!space || !["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.\u63A5\u7BA1\u72B6\u6001)) throw new Error("\u5171\u521B\u88C5\u4FEE\u7684\u76EE\u6807\u7A7A\u95F4\u4E0D\u53EF\u7528");
+        const sourceEvent = state.\u4E8B\u4EF6\u5217\u8868[project.sourceEventId];
+        if (!sourceEvent || sourceEvent.\u7C7B\u578B !== "\u5173\u7CFB\u573A\u666F" || sourceEvent.\u573A\u666F\u952E !== project.sourceSceneKey) {
+          throw new Error("\u5171\u521B\u88C5\u4FEE\u6240\u4F9D\u8D56\u7684\u53CC\u4EBA\u751F\u6D3B\u573A\u666F\u5DF2\u7ECF\u5931\u6548");
+        }
+        if (Object.values(state.\u4E8B\u4EF6\u5217\u8868).some((event) => event.\u573A\u666F\u952E === project.id)) throw new Error("\u8FD9\u6B21\u4EBA\u7269\u4EA4\u6C47\u5DF2\u7ECF\u5B8C\u6210\u8FC7\u5171\u521B\u88C5\u4FEE");
+        const currentSignature = createRenovationVisual(space.\u88C5\u4FEE, { fallbackAccent: building.\u4E3B\u9898?.\u4E3B\u8272 }).signature;
+        if (currentSignature !== project.expectedRenovationSignature) throw new Error("\u623F\u95F4\u88C5\u4FEE\u5DF2\u7ECF\u53D8\u5316\uFF0C\u8BF7\u91CD\u65B0\u751F\u6210\u5171\u521B\u65B9\u6848");
+        const participants = {};
+        for (const personId of project.personIds) {
+          const person = state.\u4EBA\u7269\u5217\u8868[personId];
+          const expected = project.expectedLocations?.[personId];
+          if (!person || person.\u6240\u5728\u5EFA\u7B51ID !== expected?.buildingId || person.\u6240\u5728\u7A7A\u95F4ID !== expected?.spaceId) {
+            throw new Error("\u5171\u521B\u4EBA\u7269\u7684\u4F4D\u7F6E\u5DF2\u7ECF\u53D8\u5316\uFF0C\u8BF7\u91CD\u65B0\u751F\u6210\u65B9\u6848");
+          }
+          person.\u72B6\u6001 = `\u6B63\u5728\u5171\u540C\u4F7F\u7528${space.\u540D\u79F0}\u7684\u65B0\u8BBE\u8BA1`;
+          participants[personId] = "\u5171\u521B\u8BBE\u8BA1\u8005";
+        }
+        applyPlanToSpace(space, plan);
+        revealManagedSpace(building, space);
+        building.\u7ECF\u8425\u6458\u8981.\u4ECA\u65E5\u4EAE\u70B9 = `${project.people.map((person) => person.name).join("\u4E0E")}\u5171\u540C\u5B8C\u6210\u300C${plan.name}\u300D`;
+        building.\u7ECF\u8425\u6458\u8981.\u6D3B\u8DC3\u5EA6 = Math.min(100, Number(building.\u7ECF\u8425\u6458\u8981.\u6D3B\u8DC3\u5EA6 ?? 0) + 6);
+        appendDomainEvent(state, {
+          \u6807\u9898: `${space.\u540D\u79F0}\u8BDE\u751F\u4E86\u300C${plan.name}\u300D`,
+          \u7C7B\u578B: "\u5171\u521B\u88C5\u4FEE",
+          \u5EFA\u7B51ID: project.buildingId,
+          \u7A7A\u95F4ID: project.spaceId,
+          \u72B6\u6001: "\u5DF2\u5B8C\u6210",
+          \u6458\u8981: plan.resultDescription,
+          \u53D1\u751F\u65F6\u95F4: "\u521A\u521A",
+          \u573A\u666F\u952E: project.id,
+          \u53C2\u4E0E\u8005: participants
+        }, { channels: ["\u6B63\u6587", "\u5FAE\u4FE1", "\u5EFA\u7B51"] });
       });
     },
     async recruit({ buildingId, spaceId, candidate }) {
@@ -22144,6 +22346,7 @@ var init_landlord_store = __esm({
     init_acquisition_projection_engine();
     init_validate_state();
     init_change_set();
+    init_visual_engine();
   }
 });
 
@@ -22196,8 +22399,8 @@ function extractActivity(sentence, personName, spaceName) {
   result = result.replace(/[“”"'，。！？；、]/gu, "").trim();
   return result ? result.slice(0, 40) : `\u6B63\u5728${spaceName}\u6D3B\u52A8`;
 }
-function extractNarrativeIntentsLocally(text2, state) {
-  const source = String(text2 ?? "").trim();
+function extractNarrativeIntentsLocally(text3, state) {
+  const source = String(text3 ?? "").trim();
   if (!source) throw new Error("\u8BF7\u5148\u7C98\u8D34\u4E00\u6BB5\u9700\u8981\u89E3\u6790\u7684\u5267\u60C5\u6587\u5B57");
   const index = buildIndex(state);
   const people = [...index.people].sort(byLongestName);
@@ -22221,7 +22424,7 @@ function extractNarrativeIntentsLocally(text2, state) {
 }
 function createNarrativeIntentService({ store, tavern, isAiEnabled = () => false }) {
   if (!store?.getState) throw new TypeError("\u5267\u60C5\u610F\u56FE\u63D0\u53D6\u9700\u8981\u623F\u4E1C\u72B6\u6001\u670D\u52A1");
-  async function extractWithAi(text2) {
+  async function extractWithAi(text3) {
     if (!isAiEnabled()) throw new Error("AI \u7ECF\u8425\u6A21\u5F0F\u5C1A\u672A\u7531\u73A9\u5BB6\u542F\u7528");
     if (!tavern?.has?.("generateRaw") || typeof tavern.generateStructured !== "function") throw new Error("\u9152\u9986\u52A9\u624B\u7ED3\u6784\u5316\u751F\u6210\u63A5\u53E3\u4E0D\u53EF\u7528");
     const { NarrativeIntentJsonSchema: NarrativeIntentJsonSchema2, NarrativeIntentSchema: NarrativeIntentSchema2 } = await Promise.resolve().then(() => (init_narrative_intent_contracts(), narrative_intent_contracts_exports));
@@ -22239,19 +22442,19 @@ function createNarrativeIntentService({ store, tavern, isAiEnabled = () => false
 ${JSON.stringify(index)}
 
 \u5F85\u89E3\u6790\u5267\u60C5\uFF1A
-${String(text2 ?? "")}` }
+${String(text3 ?? "")}` }
       ]
     });
     const parsed = NarrativeIntentSchema2.parse(generated);
-    return Object.freeze({ mode: "ai", ...clone6(parsed), sourceText: String(text2 ?? "") });
+    return Object.freeze({ mode: "ai", ...clone6(parsed), sourceText: String(text3 ?? "") });
   }
   return Object.freeze({
     capabilities() {
       return Object.freeze({ local: true, ai: Boolean(tavern?.has?.("generateRaw")) });
     },
-    async extract(text2, { mode = "local" } = {}) {
-      if (mode === "local") return extractNarrativeIntentsLocally(text2, store.getState());
-      if (mode === "ai") return extractWithAi(text2);
+    async extract(text3, { mode = "local" } = {}) {
+      if (mode === "local") return extractNarrativeIntentsLocally(text3, store.getState());
+      if (mode === "ai") return extractWithAi(text3);
       throw new Error(`\u4E0D\u652F\u6301\u7684\u5267\u60C5\u63D0\u53D6\u6A21\u5F0F\uFF1A${mode}`);
     }
   });
@@ -22541,12 +22744,12 @@ var init_perception_service = __esm({
 
 // scripts/src/services/tenant-identity-service.js
 function stableHash(value) {
-  let hash11 = 2166136261;
+  let hash12 = 2166136261;
   for (const char of String(value)) {
-    hash11 ^= char.codePointAt(0);
-    hash11 = Math.imul(hash11, 16777619);
+    hash12 ^= char.codePointAt(0);
+    hash12 = Math.imul(hash12, 16777619);
   }
-  return (hash11 >>> 0).toString(36);
+  return (hash12 >>> 0).toString(36);
 }
 function safeColor(value) {
   return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : "#FF9EAA";
@@ -22757,7 +22960,7 @@ var init_channel_bridge_service = __esm({
 function escapeXml(value) {
   return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
-function hash10(value) {
+function hash11(value) {
   let result = 2166136261;
   for (const character of String(value)) {
     result ^= character.charCodeAt(0);
@@ -22808,7 +23011,7 @@ function compileContextCapsule(state, buildingId, { maxChars = 2400 } = {}) {
   appendWithin(lines, "\u4E00\u81F4\u6027\u8981\u6C42\uFF1A\u4EBA\u7269\u53EA\u80FD\u88AB\u89C6\u4E3A\u4F4D\u4E8E\u4E0A\u8FF0\u771F\u5B9E\u7A7A\u95F4\uFF1B\u672A\u77E5\u7A7A\u95F4\u4E0E\u672A\u786E\u8BA4\u63D0\u6848\u4E0D\u5F97\u5199\u6210\u65E2\u6210\u4E8B\u5B9E\u3002", budget, closing.length);
   lines.push(closing);
   const content = lines.join("\n");
-  const signature = `capsule_${hash10(content)}`;
+  const signature = `capsule_${hash11(content)}`;
   return Object.freeze({
     id: signature,
     signature,
@@ -23176,6 +23379,7 @@ function activate2(context) {
   const portfolioAssignments = createPortfolioAssignmentService();
   const lifeFlows = createLifeFlowService();
   const lifeCollisions = createLifeCollisionService();
+  const coCreations = createCoCreationService();
   const autonomy = createTenantAutonomyService();
   const relationships = createRelationshipService();
   const contextCapsules = createContextCapsuleService({ store });
@@ -23201,6 +23405,7 @@ function activate2(context) {
   context.services.register("tenant.portfolioAssignments", portfolioAssignments);
   context.services.register("tenant.lifeFlows", lifeFlows);
   context.services.register("tenant.lifeCollisions", lifeCollisions);
+  context.services.register("tenant.coCreations", coCreations);
   context.services.register("tenant.autonomy", autonomy);
   context.services.register("tenant.relationships", relationships);
   context.services.register("landlord.contextCapsules", contextCapsules);
@@ -23224,6 +23429,7 @@ var init_landlord_core = __esm({
     init_portfolio_assignment_engine();
     init_life_flow_engine();
     init_life_collision_engine();
+    init_co_creation_engine();
     init_autonomy_engine();
     init_relationship_engine();
     init_building_event_bus();
@@ -23237,6 +23443,46 @@ var init_landlord_core = __esm({
     init_channel_bridge_service();
     init_context_capsule_service();
     init_task_center();
+  }
+});
+
+// scripts/src/ui/console/template-helpers.js
+function icon(name) {
+  return `<span class="lmo-icon">${icons[name] ?? icons.room}</span>`;
+}
+function escapeHtml(value) {
+  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+function safeColor2(value, fallback = "#FF9EAA") {
+  return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : fallback;
+}
+function tags(values = []) {
+  return `<div class="lmo-tags">${values.map((value) => `<span>${escapeHtml(value)}</span>`).join("")}</div>`;
+}
+function emptyState(title, text3) {
+  return `<div class="lmo-empty">${icon("sparkle")}<strong>${escapeHtml(title)}</strong><p>${escapeHtml(text3)}</p></div>`;
+}
+var icons;
+var init_template_helpers = __esm({
+  "scripts/src/ui/console/template-helpers.js"() {
+    icons = Object.freeze({
+      home: '<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+      buildings: '<svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M8 7h4M8 11h4M8 15h4M2 21h20M16 9h2a2 2 0 0 1 2 2v10"/></svg>',
+      room: '<svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v16M4 21h17M15 12h.01M8 7h7"/></svg>',
+      renovate: '<svg viewBox="0 0 24 24"><path d="m14 6 4 4M4 20l4.5-1 10-10a2.8 2.8 0 0 0-4-4l-10 10zM13 6l4 4M5 15l4 4"/></svg>',
+      recruit: '<svg viewBox="0 0 24 24"><path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M16 11h6"/></svg>',
+      event: '<svg viewBox="0 0 24 24"><path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M18 12h3M6 21h12M8 17a6 6 0 1 1 8 0l-1 1H9z"/></svg>',
+      tasks: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9h6M9 13h6M9 17h3M8 2v3M16 2v3"/></svg>',
+      history: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6M12 7v5l3 2"/></svg>',
+      route: '<svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3v-6a3 3 0 0 1 3-3"/></svg>',
+      pulse: '<svg viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6"/><circle cx="12" cy="12" r="9"/></svg>',
+      close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
+      arrow: '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
+      sparkle: '<svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
+      back: '<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
+      check: '<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>',
+      person: '<svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/></svg>'
+    });
   }
 });
 
@@ -23272,43 +23518,48 @@ var init_projection_engine = __esm({
   }
 });
 
-// scripts/src/ui/console/template-helpers.js
-function icon(name) {
-  return `<span class="lmo-icon">${icons[name] ?? icons.room}</span>`;
+// scripts/src/ui/console/renovation-view-helpers.js
+function renovationVisualStyle(visual) {
+  return `--room-base:${safeColor2(visual.css.base)};--room-accent:${safeColor2(visual.css.accent)};--room-secondary:${safeColor2(visual.css.secondary)};--room-glow:${safeColor2(visual.css.glow)};--room-text:${safeColor2(visual.css.text, "#283044")}`;
 }
-function escapeHtml(value) {
-  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+function renderRenovationVisual(visual, { compact = false } = {}) {
+  const furniture = visual.furniture.length ? visual.furniture.map((item) => `<i title="${escapeHtml(item.label)}">${escapeHtml(item.marker)}</i>`).join("") : '<i class="empty">\u7A7A</i>';
+  return `<div class="lmo-renovation-visual material-${escapeHtml(visual.material)} lighting-${escapeHtml(visual.lightingMode)} ${compact ? "compact" : ""}" style="${renovationVisualStyle(visual)}"><span class="lmo-visual-light"></span><div class="lmo-visual-room"><em>${escapeHtml(visual.style)}</em><div>${furniture}</div></div><footer>${visual.colors.slice(0, 4).map((color2) => `<i style="--swatch:${safeColor2(color2.value)}" title="${escapeHtml(color2.name)}"></i>`).join("")}<span>${escapeHtml(visual.atmosphere)}</span></footer></div>`;
 }
-function safeColor2(value, fallback = "#FF9EAA") {
-  return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : fallback;
+function renderRenovationProjection(twin, space, plan, building, { source = "RENOVATION HOLOGRAM" } = {}) {
+  const projection = compileRenovationProjection(twin, space.id, plan, building.theme?.\u4E3B\u8272);
+  if (!projection) return "";
+  const nodes = projection.nodes.map((node) => `<div class="lmo-hologram-node material-${escapeHtml(node.visual.material)} ${node.projected ? "projected" : ""}" data-space-id="${escapeHtml(node.id)}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%;${renovationVisualStyle(node.visual)}"><strong>${escapeHtml(node.name)}</strong><small>${node.projected ? "\u88C5\u4FEE\u6295\u5F71" : escapeHtml(node.visual.style)}</small></div>`).join("");
+  const edges = projection.edges.map((edge) => `<line x1="${edge.fromPoint.x}" y1="${edge.fromPoint.y}" x2="${edge.toPoint.x}" y2="${edge.toPoint.y}"/>`).join("");
+  return `<article class="lmo-renovation-hologram" data-renovation-projection="${escapeHtml(projection.signature)}"><header><div><span>${escapeHtml(source)}</span><h3>${escapeHtml(projection.floorName)}\xB7\u88C5\u4FEE\u5168\u606F\u6295\u5F71</h3><p>\u65B9\u6848\u5DF2\u7ECF\u6295\u5C04\u8FDB\u771F\u5B9E\u6570\u5B57\u5B6A\u751F\uFF1B\u6B64\u523B\u4ECD\u672A\u5199\u5165 MVU\u3002</p></div><em>${projection.nodes.length} \u4E2A\u7A7A\u95F4 \xB7 \u76EE\u6807 ${escapeHtml(projection.targetName)}</em></header><div class="lmo-hologram-layout"><div class="lmo-hologram-stage"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${edges}</svg>${nodes}</div><aside><span>BEFORE / AFTER</span><div><section><small>\u5F53\u524D\u72B6\u6001</small>${renderRenovationVisual(projection.before, { compact: true })}</section><section><small>\u786E\u8BA4\u4E4B\u540E</small>${renderRenovationVisual(projection.after, { compact: true })}</section></div>${tags(projection.impacts)}<p>\u53EA\u6709\u70B9\u51FB\u786E\u8BA4\u540E\uFF0C\u7A7A\u95F4\u63CF\u8FF0\u3001\u6750\u8D28\u3001\u914D\u8272\u4E0E\u4EBA\u7269\u4E8B\u4EF6\u624D\u4F1A\u4E00\u8D77\u6539\u53D8\u3002</p></aside></div></article>`;
 }
-function tags(values = []) {
-  return `<div class="lmo-tags">${values.map((value) => `<span>${escapeHtml(value)}</span>`).join("")}</div>`;
+var init_renovation_view_helpers = __esm({
+  "scripts/src/ui/console/renovation-view-helpers.js"() {
+    init_projection_engine();
+    init_template_helpers();
+  }
+});
+
+// scripts/src/ui/console/co-creation-template.js
+function renderPeople(project) {
+  return `<div class="lmo-co-creation-people">${project.people.map((person) => `<i style="--person-accent:${safeColor2(person.color)}">${escapeHtml(person.name.slice(0, 1))}</i>`).join("")}<span><strong>${escapeHtml(project.people.map((person) => person.name).join(" \xD7 "))}</strong><small>${escapeHtml(project.people.map((person) => person.profession).join(" \xD7 "))}</small></span></div>`;
 }
-function emptyState(title, text2) {
-  return `<div class="lmo-empty">${icon("sparkle")}<strong>${escapeHtml(title)}</strong><p>${escapeHtml(text2)}</p></div>`;
+function renderCoCreationCenter(center, state, building, task, ui, twin) {
+  if (!center?.projects?.length) return "";
+  const activeProject = center.projects.find((project) => project.id === ui.selectedCoCreationProjectId && !project.recorded);
+  const preview = task?.kind === "coCreation" && task.status === "ready" && task.preview?.projectId === activeProject?.id ? task.preview : null;
+  const selectedPlan = preview?.plans.find((plan) => plan.id === ui.selectedCoCreationPlanId);
+  const modeLabel = state.\u8FD0\u884C\u6A21\u5F0F === "\u771F\u5B9E" ? "AI \u6DF1\u5316" : "\u672C\u5730\u5408\u6210";
+  return `<section class="lmo-co-creation-lab" data-co-creation-lab="${escapeHtml(center.signature)}"><div class="lmo-section-heading compact"><div><span>ENCOUNTER \u2192 ARCHITECTURE</span><h2>\u8DE8\u4E16\u754C\u5171\u521B\u88C5\u4FEE \xB7 \u4EBA\u7269\u76F8\u9047\u4F1A\u53CD\u8FC7\u6765\u6539\u53D8\u5EFA\u7B51</h2></div><p>\u6765\u6E90\u662F\u5DF2\u7ECF\u786E\u8BA4\u7684\u53CC\u4EBA\u751F\u6D3B\u573A\u666F\uFF1B\u751F\u6210\u8D70\u7EDF\u4E00\u4EFB\u52A1\u4E2D\u5FC3\uFF0C\u786E\u8BA4\u524D\u4E0D\u4FEE\u6539 MVU\u3002</p></div><div class="lmo-co-creation-summary"><p><b>${center.metrics.ready}</b><small>\u5F85\u5171\u521B</small></p><p><b>${center.metrics.crossWorld}</b><small>\u8DE8\u4E16\u754C\u9879\u76EE</small></p><p><b>${center.metrics.people}</b><small>\u53C2\u4E0E\u4EBA\u7269</small></p><span>\u53CC\u6A21\u5F0F\u751F\u6210 \xB7 \u4F4D\u7F6E\u590D\u6838 \xB7 \u88C5\u4FEE\u7B7E\u540D\u9501 \xB7 \u53EF\u7ECF\u8425\u56DE\u6EAF</span></div><div class="lmo-co-creation-projects">${center.projects.map((project) => `<article class="${project.recorded ? "recorded" : project.id === activeProject?.id ? "active" : ""}" data-co-creation-project="${escapeHtml(project.id)}"><header><span>${project.recorded ? "\u5DF2\u5B8C\u6210\u5171\u521B" : project.differentWorlds ? "\u8DE8\u4E16\u754C\u751F\u6D3B\u4FE1\u53F7" : "\u53CC\u804C\u4E1A\u751F\u6D3B\u4FE1\u53F7"}</span><em>${escapeHtml(project.buildingName)} \xB7 ${escapeHtml(project.spaceName)}</em></header>${renderPeople(project)}<h3>${escapeHtml(project.headline)}</h3><p>${escapeHtml(project.premise)}</p><footer><small>\u6E90\u81EA\uFF1A${escapeHtml(project.sourceTitle)}</small><button class="lmo-secondary" data-action="run-co-creation" data-project-id="${escapeHtml(project.id)}" ${project.recorded || ui.busy ? "disabled" : ""}>${icon("sparkle")} ${project.id === activeProject?.id && ui.busy ? "\u6B63\u5728\u5408\u6210\u2026" : `${modeLabel}\u4E09\u6848`}</button></footer></article>`).join("")}</div>${preview ? `<div class="lmo-co-creation-plans">${preview.plans.map((plan) => {
+    const visual = createRenovationVisual(plan, { fallbackAccent: building.theme?.\u4E3B\u8272 });
+    return `<button class="lmo-co-creation-plan ${plan.id === ui.selectedCoCreationPlanId ? "selected" : ""}" data-action="choose-co-creation-plan" data-project-id="${escapeHtml(activeProject.id)}" data-plan-id="${escapeHtml(plan.id)}" data-co-creation-plan="${escapeHtml(visual.signature)}">${renderRenovationVisual(visual, { compact: true })}<span>${escapeHtml(plan.style)}</span><h3>${escapeHtml(plan.name)}</h3><p>${escapeHtml(plan.tagline)}</p>${tags(plan.impacts)}</button>`;
+  }).join("")}</div>${selectedPlan ? renderRenovationProjection(twin, { id: activeProject.spaceId }, selectedPlan, building, { source: "CO-CREATION HOLOGRAM" }) : ""}<div class="lmo-confirm-bar lmo-co-creation-confirm"><div><strong>${selectedPlan ? `\u628A\u300C${escapeHtml(selectedPlan.name)}\u300D\u7559\u5728${escapeHtml(activeProject.spaceName)}` : "\u9009\u62E9\u4E00\u4EFD\u5171\u521B\u65B9\u6848"}</strong><span>\u786E\u8BA4\u65F6\u4F1A\u518D\u6B21\u68C0\u67E5\u4E24\u4EBA\u4F4D\u7F6E\u548C\u539F\u88C5\u4FEE\u7B7E\u540D\uFF0C\u5931\u6548\u65B9\u6848\u7EDD\u4E0D\u4F1A\u8986\u76D6\u65B0\u5267\u60C5\u3002</span></div><button class="lmo-primary" data-action="confirm-co-creation" ${selectedPlan && !ui.busy ? "" : "disabled"}>\u5177\u73B0\u5171\u540C\u8BBE\u8BA1 ${icon("arrow")}</button></div>` : ""}</section>`;
 }
-var icons;
-var init_template_helpers = __esm({
-  "scripts/src/ui/console/template-helpers.js"() {
-    icons = Object.freeze({
-      home: '<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
-      buildings: '<svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M8 7h4M8 11h4M8 15h4M2 21h20M16 9h2a2 2 0 0 1 2 2v10"/></svg>',
-      room: '<svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v16M4 21h17M15 12h.01M8 7h7"/></svg>',
-      renovate: '<svg viewBox="0 0 24 24"><path d="m14 6 4 4M4 20l4.5-1 10-10a2.8 2.8 0 0 0-4-4l-10 10zM13 6l4 4M5 15l4 4"/></svg>',
-      recruit: '<svg viewBox="0 0 24 24"><path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M16 11h6"/></svg>',
-      event: '<svg viewBox="0 0 24 24"><path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M18 12h3M6 21h12M8 17a6 6 0 1 1 8 0l-1 1H9z"/></svg>',
-      tasks: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9h6M9 13h6M9 17h3M8 2v3M16 2v3"/></svg>',
-      history: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6M12 7v5l3 2"/></svg>',
-      route: '<svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3v-6a3 3 0 0 1 3-3"/></svg>',
-      pulse: '<svg viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6"/><circle cx="12" cy="12" r="9"/></svg>',
-      close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
-      arrow: '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
-      sparkle: '<svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
-      back: '<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
-      check: '<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>',
-      person: '<svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/></svg>'
-    });
+var init_co_creation_template = __esm({
+  "scripts/src/ui/console/co-creation-template.js"() {
+    init_visual_engine();
+    init_template_helpers();
+    init_renovation_view_helpers();
   }
 });
 
@@ -23555,13 +23806,6 @@ var init_life_collision_template = __esm({
 });
 
 // scripts/src/ui/console/templates.js
-function renovationVisualStyle(visual) {
-  return `--room-base:${safeColor2(visual.css.base)};--room-accent:${safeColor2(visual.css.accent)};--room-secondary:${safeColor2(visual.css.secondary)};--room-glow:${safeColor2(visual.css.glow)};--room-text:${safeColor2(visual.css.text, "#283044")}`;
-}
-function renderRenovationVisual(visual, { compact = false } = {}) {
-  const furniture = visual.furniture.length ? visual.furniture.map((item) => `<i title="${escapeHtml(item.label)}">${escapeHtml(item.marker)}</i>`).join("") : '<i class="empty">\u7A7A</i>';
-  return `<div class="lmo-renovation-visual material-${escapeHtml(visual.material)} lighting-${escapeHtml(visual.lightingMode)} ${compact ? "compact" : ""}" style="${renovationVisualStyle(visual)}"><span class="lmo-visual-light"></span><div class="lmo-visual-room"><em>${escapeHtml(visual.style)}</em><div>${furniture}</div></div><footer>${visual.colors.slice(0, 4).map((color) => `<i style="--swatch:${safeColor2(color.value)}" title="${escapeHtml(color.name)}"></i>`).join("")}<span>${escapeHtml(visual.atmosphere)}</span></footer></div>`;
-}
 function navItem(section, current, label, iconName) {
   return `<button class="lmo-nav-item ${section === current ? "active" : ""}" data-action="navigate" data-section="${section}">${icon(iconName)}<span>${label}</span></button>`;
 }
@@ -23764,19 +24008,12 @@ function renderTakeover(state, building, task, selectedId, busy) {
 function ownedSpaceOptions(building, selectedSpaceId, action = "choose-workflow-space") {
   return building.floors.flatMap((floor) => floor.spaces).map((space) => `<button class="lmo-compact-space ${selectedSpaceId === space.id ? "selected" : ""}" data-action="${action}" data-space-id="${escapeHtml(space.id)}"><span>${escapeHtml(space.type)}</span><strong>${escapeHtml(space.name)}</strong><small>${escapeHtml(space.status)} \xB7 ${escapeHtml(space.size)}</small></button>`).join("");
 }
-function renderRenovationProjection(twin, space, plan, building) {
-  const projection = compileRenovationProjection(twin, space.id, plan, building.theme?.\u4E3B\u8272);
-  if (!projection) return "";
-  const nodes = projection.nodes.map((node) => `<div class="lmo-hologram-node material-${escapeHtml(node.visual.material)} ${node.projected ? "projected" : ""}" data-space-id="${escapeHtml(node.id)}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%;${renovationVisualStyle(node.visual)}"><strong>${escapeHtml(node.name)}</strong><small>${node.projected ? "\u88C5\u4FEE\u6295\u5F71" : escapeHtml(node.visual.style)}</small></div>`).join("");
-  const edges = projection.edges.map((edge) => `<line x1="${edge.fromPoint.x}" y1="${edge.fromPoint.y}" x2="${edge.toPoint.x}" y2="${edge.toPoint.y}"/>`).join("");
-  return `<article class="lmo-renovation-hologram" data-renovation-projection="${escapeHtml(projection.signature)}"><header><div><span>RENOVATION HOLOGRAM</span><h3>${escapeHtml(projection.floorName)}\xB7\u88C5\u4FEE\u5168\u606F\u6295\u5F71</h3><p>\u65B9\u6848\u5DF2\u7ECF\u6295\u5C04\u8FDB\u771F\u5B9E\u6570\u5B57\u5B6A\u751F\uFF1B\u6B64\u523B\u4ECD\u672A\u5199\u5165 MVU\u3002</p></div><em>${projection.nodes.length} \u4E2A\u7A7A\u95F4 \xB7 \u76EE\u6807 ${escapeHtml(projection.targetName)}</em></header><div class="lmo-hologram-layout"><div class="lmo-hologram-stage"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${edges}</svg>${nodes}</div><aside><span>BEFORE / AFTER</span><div><section><small>\u5F53\u524D\u72B6\u6001</small>${renderRenovationVisual(projection.before, { compact: true })}</section><section><small>\u786E\u8BA4\u4E4B\u540E</small>${renderRenovationVisual(projection.after, { compact: true })}</section></div>${tags(projection.impacts)}<p>\u53EA\u6709\u70B9\u51FB\u201C\u5E94\u7528\u88C5\u4FEE\u201D\u540E\uFF0C\u7A7A\u95F4\u63CF\u8FF0\u3001\u6750\u8D28\u3001\u914D\u8272\u4E0E\u4E8B\u4EF6\u624D\u4F1A\u4E00\u8D77\u6539\u53D8\u3002</p></aside></div></article>`;
-}
-function renderRenovation(state, building, task, selectedSpaceId, selectedId, busy, twin) {
+function renderRenovation(state, building, task, selectedSpaceId, selectedId, busy, twin, coCreationCenter, ui) {
   const mode = taskModeCopy(state);
-  const plans = task?.status === "ready" ? task.preview.plans : [];
+  const plans = task?.kind === "renovation" && task.status === "ready" ? task.preview.plans : [];
   const space = building.floors.flatMap((floor) => floor.spaces).find((item) => item.id === selectedSpaceId);
   const selectedPlan = plans.find((plan) => plan.id === selectedId);
-  const markup = `<section class="lmo-view lmo-workflow">${workflowSteps(plans.length ? 2 : selectedSpaceId ? 1 : 0)}
+  const markup = `<section class="lmo-view lmo-workflow">${renderCoCreationCenter(coCreationCenter, state, building, task, ui, twin)}${workflowSteps(plans.length ? 2 : selectedSpaceId ? 1 : 0)}
     <div class="lmo-two-column"><aside class="lmo-selector"><span class="lmo-kicker">\u9009\u62E9\u88C5\u4FEE\u76EE\u6807</span><h2>${escapeHtml(building.name)}</h2><div class="lmo-compact-list">${ownedSpaceOptions(building, selectedSpaceId)}</div></aside>
     <div class="lmo-workspace">${!space ? emptyState("\u5148\u9009\u62E9\u4E00\u4E2A\u7A7A\u95F4", "\u53EF\u4EE5\u4ECE\u4E00\u4E2A\u623F\u95F4\u5F00\u59CB\uFF0C\u4E0D\u9700\u8981\u4E00\u6B21\u88C5\u4FEE\u6574\u680B\u5EFA\u7B51\u3002") : !plans.length ? `<div class="lmo-preview-room"><span>${escapeHtml(space.type)} \xB7 ${escapeHtml(space.size)}</span><h2>${escapeHtml(space.name)}</h2><p>${escapeHtml(space.description)}</p><div class="lmo-current-style"><small>\u5F53\u524D\u88C5\u4FEE</small><strong>${escapeHtml(space.renovation?.\u98CE\u683C)}</strong><span>${escapeHtml(space.renovation?.\u6C1B\u56F4)}</span></div><button class="lmo-primary" data-action="run-renovation" ${busy ? "disabled" : ""}>${icon("sparkle")} ${busy ? "\u6B63\u5728\u6574\u7406\u2026" : `${mode.verb}\u65B9\u6848`}</button></div>` : `<div class="lmo-renovation-plans">${plans.map((plan) => {
     const visual = createRenovationVisual(plan, { fallbackAccent: building.theme?.\u4E3B\u8272 });
@@ -23944,7 +24181,7 @@ function renderHistory(historyCenter) {
     </article>
   </section>`;
 }
-function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin }) {
+function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, coCreationCenter, memory, pulse, twin }) {
   let content;
   if (ui.section === "portfolio") content = renderPortfolio(state, portfolio, ui);
   else if (ui.section === "building") content = renderBuilding(current, identityCenter);
@@ -23952,7 +24189,7 @@ function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCe
   else if (ui.section === "tenants") content = renderTenantLife(tenantLife, autonomyCenter, relationshipCenter, ui);
   else if (ui.section === "twin") content = renderTwin(twin, ui, pulse, tenantLife, memory);
   else if (ui.section === "takeover") content = renderTakeover(state, ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
-  else if (ui.section === "renovation") content = renderRenovation(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy, twin);
+  else if (ui.section === "renovation") content = renderRenovation(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy, twin, coCreationCenter, ui);
   else if (ui.section === "recruitment") content = renderRecruitment(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
   else if (ui.section === "tasks") content = renderTasks(taskCenter);
   else if (ui.section === "history") content = renderHistory(historyCenter);
@@ -23967,14 +24204,15 @@ var pulseMetricMeta, taskStatusLabels, taskKindLabels, operationKindLabels;
 var init_templates = __esm({
   "scripts/src/ui/console/templates.js"() {
     init_visual_engine();
-    init_projection_engine();
     init_template_helpers();
+    init_co_creation_template();
     init_recruitment_preview_template();
     init_takeover_preview_template();
     init_portfolio_radar_template();
     init_portfolio_assignment_template();
     init_life_flow_template();
     init_life_collision_template();
+    init_renovation_view_helpers();
     pulseMetricMeta = Object.freeze({
       comfort: ["\u8212\u9002\u4F53\u611F", "\u7A7A\u95F4\u662F\u5426\u8BA9\u4EBA\u613F\u610F\u505C\u7559"],
       function: ["\u529F\u80FD\u5151\u73B0", "\u8BBE\u65BD\u4E0E\u7528\u9014\u662F\u5426\u771F\u6B63\u53EF\u7528"],
@@ -23993,7 +24231,7 @@ var init_templates = __esm({
       failed: "\u5931\u8D25",
       cancelled: "\u5DF2\u53D6\u6D88"
     });
-    taskKindLabels = Object.freeze({ takeover: "\u5EFA\u7B51\u63A5\u7BA1", renovation: "\u7A7A\u95F4\u88C5\u4FEE", recruitment: "\u4EBA\u7269\u62DB\u52DF" });
+    taskKindLabels = Object.freeze({ takeover: "\u5EFA\u7B51\u63A5\u7BA1", renovation: "\u7A7A\u95F4\u88C5\u4FEE", coCreation: "\u4EBA\u7269\u5171\u521B\u88C5\u4FEE", recruitment: "\u4EBA\u7269\u62DB\u52DF" });
     operationKindLabels = Object.freeze({
       takeover: "\u5EFA\u7B51\u63A5\u7BA1",
       renovation: "\u7A7A\u95F4\u88C5\u4FEE",
@@ -24053,6 +24291,8 @@ function createConsoleUiState() {
     selectedRelationshipSparkId: null,
     selectedRelationshipSceneId: null,
     selectedLifeCollisionId: null,
+    selectedCoCreationProjectId: null,
+    selectedCoCreationPlanId: null,
     previewLinkIds: [],
     contextCapsuleVisible: false,
     selectedMovePersonId: null,
@@ -24067,6 +24307,48 @@ function createConsoleUiState() {
 }
 var init_console_state = __esm({
   "scripts/src/ui/console/console-state.js"() {
+  }
+});
+
+// scripts/src/ui/console/co-creation-actions.js
+function handleCoCreationAction({ action, button, ui, store, tasks, render, runTask, withBusy, recordOperation, setNotice }) {
+  if (action === "run-co-creation") {
+    const project = compileCoCreationProjects(store.getState()).projects.find((item) => item.id === button.dataset.projectId && !item.recorded);
+    if (!project) throw new Error("\u8FD9\u6B21\u4EBA\u7269\u5171\u521B\u5DF2\u7ECF\u5931\u6548\uFF0C\u8BF7\u91CD\u65B0\u9501\u5B9A\u751F\u6D3B\u4EA4\u6C47");
+    ui.selectedCoCreationProjectId = project.id;
+    ui.selectedCoCreationPlanId = null;
+    const state = store.getState();
+    const building = state.\u5EFA\u7B51\u5217\u8868[project.buildingId];
+    const space = building?.\u7A7A\u95F4\u5217\u8868?.[project.spaceId];
+    return withBusy(() => runTask("coCreation", { project, building, space }));
+  }
+  if (action === "choose-co-creation-plan") {
+    ui.selectedCoCreationProjectId = button.dataset.projectId;
+    ui.selectedCoCreationPlanId = button.dataset.planId;
+    return render();
+  }
+  if (action === "confirm-co-creation") {
+    const project = compileCoCreationProjects(store.getState()).projects.find((item) => item.id === ui.selectedCoCreationProjectId && !item.recorded);
+    const task = ui.taskId ? tasks.get(ui.taskId) : null;
+    const plan = task?.kind === "coCreation" && task.preview?.projectId === project?.id ? task.preview.plans.find((item) => item.id === ui.selectedCoCreationPlanId) : null;
+    if (!project || !plan) throw new Error("\u8BF7\u9009\u62E9\u4E00\u4EFD\u4ECD\u7136\u6709\u6548\u7684\u5171\u521B\u88C5\u4FEE\u65B9\u6848");
+    return withBusy(async () => {
+      await tasks.confirm(task.id, () => recordOperation(
+        "co-creation",
+        `\u5171\u521B\u88C5\u4FEE${project.spaceName}`,
+        () => store.applyCoCreationRenovation({ project, plan })
+      ));
+      ui.selectedCoCreationProjectId = null;
+      ui.selectedCoCreationPlanId = null;
+      ui.taskId = null;
+      setNotice("\u5171\u521B\u88C5\u4FEE\u5DF2\u5177\u73B0\uFF1A\u4EBA\u7269\u78B0\u649E\u3001\u623F\u95F4\u53D8\u5316\u548C\u4E09\u9891\u9053\u8349\u7A3F\u5DF2\u7ECF\u540C\u6B65\u3002", "success");
+    });
+  }
+  throw new Error(`\u672A\u77E5\u5171\u521B\u88C5\u4FEE\u64CD\u4F5C\uFF1A${action}`);
+}
+var init_co_creation_actions = __esm({
+  "scripts/src/ui/console/co-creation-actions.js"() {
+    init_co_creation_engine();
   }
 });
 
@@ -24144,9 +24426,9 @@ var init_spatial_view_model = __esm({
 });
 
 // scripts/src/ui/console/workflow-actions.js
-async function extractNarrativeProposals({ text: text2, mode, narrativeIntents, spatialSync }) {
+async function extractNarrativeProposals({ text: text3, mode, narrativeIntents, spatialSync }) {
   if (!narrativeIntents || !spatialSync) throw new Error("\u5267\u60C5\u7A7A\u95F4\u63D0\u53D6\u670D\u52A1\u5C1A\u672A\u52A0\u8F7D");
-  const source = String(text2 ?? "").trim();
+  const source = String(text3 ?? "").trim();
   if (!source) throw new Error("\u8BF7\u5148\u7C98\u8D34\u4E00\u6BB5\u9700\u8981\u89E3\u6790\u7684\u5267\u60C5\u6587\u5B57");
   const result = await narrativeIntents.extract(source, { mode });
   if (!result.intents.length) {
@@ -24166,7 +24448,7 @@ var init_workflow_actions = __esm({
 });
 
 // scripts/src/ui/console/controller.js
-function createLandlordConsole({ document: document2, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, autonomy = null, relationships = null, perception = null, identities = null, layouts = null, memories = null, operations = null, bridges = null, compiler, logger }) {
+function createLandlordConsole({ document: document2, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, autonomy = null, relationships = null, coCreations = null, perception = null, identities = null, layouts = null, memories = null, operations = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -24196,6 +24478,7 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
     const tenantLife = embodiment?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: "embodied_unavailable", residents: [], encounters: [] };
     const autonomyCenter = autonomy?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: "autonomy_unavailable", proposals: [] };
     const relationshipCenter = relationships?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, sparks: [], scenes: [], network: null };
+    const coCreationCenter = coCreations?.compile(state, current.id) ?? { signature: "co_creation_unavailable", projects: [], focus: null, metrics: { projects: 0, ready: 0, crossWorld: 0, people: 0 } };
     const historyCenter = history ? { ...history.summary(), entries: history.list({ limit: 20 }) } : { busy: false, count: 0, appliedCount: 0, canUndo: false, canRedo: false, undoLabel: "", redoLabel: "", blockedUndo: false, entries: [] };
     const spatialCenter = {
       people: Object.entries(state.\u4EBA\u7269\u5217\u8868 ?? {}).map(([id, person]) => {
@@ -24209,19 +24492,21 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
       narrativeMode: state.\u8FD0\u884C\u6A21\u5F0F === "\u771F\u5B9E" ? "ai" : "local",
       narrativeCapabilities: narrativeIntents?.capabilities() ?? { local: true, ai: false }
     };
-    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, coCreationCenter, memory, pulse, twin };
   }
   function resetWorkflow({ keepSpace = false } = {}) {
     ui.taskId = null;
     ui.selectedOptionId = null;
+    ui.selectedCoCreationProjectId = null;
+    ui.selectedCoCreationPlanId = null;
     if (!keepSpace) ui.selectedSpaceId = null;
     ui.notice = null;
   }
   function resetTwin() {
     Object.assign(ui, { focusedFloorId: null, twinSpaceId: null });
   }
-  function setNotice(text2, type = "info") {
-    ui.notice = { text: text2, type };
+  function setNotice(text3, type = "info") {
+    ui.notice = { text: text3, type };
   }
   function render() {
     if (!visible || disposed) return;
@@ -24327,6 +24612,7 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
     }
     if (action.includes("autonomy")) return handleAutonomyAction({ action, button, data, ui, store, render, withBusy, recordOperation, setNotice });
     if (action.includes("life-collision")) return handleLifeCollisionAction({ action, button, ui, store, render, withBusy, recordOperation, setNotice });
+    if (action.includes("co-creation")) return handleCoCreationAction({ action, button, ui, store, tasks, render, runTask, withBusy, recordOperation, setNotice });
     if (action.includes("relationship")) return handleRelationshipAction({ action, button, data, ui, store, render, withBusy, recordOperation, setNotice });
     if (action === "undo-operation" || action === "redo-operation") {
       if (!history) throw new Error("\u7ECF\u8425\u56DE\u6EAF\u670D\u52A1\u5C1A\u672A\u52A0\u8F7D");
@@ -24342,9 +24628,9 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
       return render();
     }
     if (action === "extract-narrative-intents") {
-      const text2 = root.querySelector("#lmo-narrative-fragment")?.value?.trim();
+      const text3 = root.querySelector("#lmo-narrative-fragment")?.value?.trim();
       return withBusy(async () => {
-        ui.lastNarrativeExtraction = await extractNarrativeProposals({ text: text2, mode: data.spatialCenter.narrativeMode, narrativeIntents, spatialSync });
+        ui.lastNarrativeExtraction = await extractNarrativeProposals({ text: text3, mode: data.spatialCenter.narrativeMode, narrativeIntents, spatialSync });
         setNotice(`\u5DF2\u63D0\u53D6 ${ui.lastNarrativeExtraction.count} \u6761\u79FB\u52A8\u610F\u56FE\uFF1B\u4ECD\u9700\u9010\u6761\u786E\u8BA4\u540E\u624D\u4F1A\u6539\u52A8\u4EBA\u7269\u4F4D\u7F6E\u3002`, "success");
       });
     }
@@ -24621,6 +24907,7 @@ var init_controller = __esm({
     init_templates();
     init_autonomy_actions();
     init_console_state();
+    init_co_creation_actions();
     init_life_collision_actions();
     init_relationship_actions();
     init_spatial_view_model();
@@ -24781,13 +25068,14 @@ var init_styles = __esm({
 .lmo-social-constellation{display:grid;gap:10px}.lmo-social-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(190px,.4fr);min-height:300px;overflow:hidden;border:1px solid color-mix(in srgb,var(--active-accent) 28%,var(--lmo-line));border-radius:18px;background:radial-gradient(circle at 25% 40%,color-mix(in srgb,var(--active-accent) 9%,transparent),transparent 35%),linear-gradient(145deg,color-mix(in srgb,var(--lmo-panel) 96%,#10101a),var(--lmo-panel));box-shadow:var(--lmo-shadow)}.lmo-social-stage{min-width:0;padding:10px;display:grid;place-items:center}.lmo-social-stage svg{width:100%;height:280px;overflow:visible}.lmo-social-cluster circle{fill:color-mix(in srgb,var(--active-accent) 3%,transparent);stroke:color-mix(in srgb,var(--active-accent) 15%,var(--lmo-line));stroke-dasharray:3 7}.lmo-social-cluster text{fill:var(--lmo-muted);font-size:7px;text-anchor:middle;letter-spacing:.08em}.lmo-social-edge{stroke-linecap:round}.lmo-social-edge.confirmed{stroke:var(--active-accent);stroke-width:3;filter:url(#lmo-social-glow);opacity:.7}.lmo-social-edge.potential{stroke:color-mix(in srgb,var(--active-accent) calc(var(--edge-score)*.7%),var(--lmo-line));stroke-width:2;stroke-dasharray:6 7;animation:lmo-social-flow 12s linear infinite}.lmo-social-node{filter:drop-shadow(0 5px 7px color-mix(in srgb,var(--person-accent) 25%,transparent))}.lmo-social-node-halo{fill:color-mix(in srgb,var(--person-accent) 12%,transparent);stroke:color-mix(in srgb,var(--person-accent) 35%,transparent);stroke-dasharray:2 4}.lmo-social-node-core{fill:var(--person-accent);stroke:var(--lmo-panel);stroke-width:4}.lmo-social-node-avatar{fill:white;font:700 12px Georgia,"Songti SC",serif;text-anchor:middle}.lmo-social-node-name{fill:var(--lmo-text);font-size:8px;font-weight:800;text-anchor:middle;paint-order:stroke;stroke:var(--lmo-panel);stroke-width:3px}.lmo-social-inspector{padding:22px 17px;display:flex;flex-direction:column;gap:11px;border-left:1px solid var(--lmo-line);background:color-mix(in srgb,var(--lmo-surface) 78%,transparent)}.lmo-social-inspector>span{color:var(--active-accent);font-size:7px;font-weight:900;letter-spacing:.15em}.lmo-social-inspector>strong{font:700 14px/1.35 Georgia,"Songti SC",serif}.lmo-social-inspector>small{color:var(--lmo-muted);font-size:7px;line-height:1.6}.lmo-social-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.lmo-social-metrics p{margin:0;padding:8px 4px;display:grid;place-items:center;border:1px solid var(--lmo-line);border-radius:9px;background:var(--lmo-panel)}.lmo-social-metrics b{font:700 13px Georgia,serif}.lmo-social-metrics small{color:var(--lmo-muted);font-size:5px;text-align:center}.lmo-social-edge-list{display:grid;gap:6px}.lmo-social-edge-list p{margin:0;padding:7px;display:grid;grid-template-columns:12px minmax(0,1fr);gap:6px;align-items:center;border-radius:8px;background:var(--lmo-panel)}.lmo-social-edge-list i{width:10px;height:2px;background:var(--active-accent)}.lmo-social-edge-list i.potential{background:repeating-linear-gradient(90deg,var(--active-accent) 0 3px,transparent 3px 5px)}.lmo-social-edge-list span{min-width:0;display:grid;gap:1px}.lmo-social-edge-list b,.lmo-social-edge-list small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-social-edge-list b{font-size:7px}.lmo-social-edge-list small{color:var(--lmo-muted);font-size:6px}
 .lmo-duo-scenes{display:grid;gap:10px}.lmo-duo-scene-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.lmo-duo-scene-card{min-width:0;padding:15px;display:flex;flex-direction:column;gap:8px;overflow:hidden;border:1px solid var(--lmo-line);border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel)),var(--lmo-panel) 52%);color:var(--lmo-text);text-align:left;cursor:pointer;transition:.18s}.lmo-duo-scene-card:hover,.lmo-duo-scene-card.selected{border-color:var(--active-accent);box-shadow:0 12px 28px color-mix(in srgb,var(--active-accent) 13%,transparent);transform:translateY(-2px)}.lmo-duo-scene-card.recorded{cursor:default;filter:saturate(.58);opacity:.68;transform:none}.lmo-duo-scene-card>header{display:flex;align-items:center;justify-content:space-between;gap:8px}.lmo-duo-scene-card>header span{color:var(--active-accent);font-size:7px;font-weight:900;letter-spacing:.08em}.lmo-duo-scene-card>header em{color:var(--lmo-muted);font-size:6px;font-style:normal}.lmo-duo-people{display:flex;align-items:center}.lmo-duo-people i{width:32px;height:32px;display:grid;place-items:center;border:3px solid var(--lmo-panel);border-radius:11px;background:var(--person-accent);color:white;font:700 10px Georgia,serif;font-style:normal}.lmo-duo-people i+i{margin-left:-8px}.lmo-duo-people strong{margin-left:9px;font-size:8px}.lmo-duo-scene-card h3{margin:0;font:700 14px Georgia,"Songti SC",serif}.lmo-duo-scene-card>p{margin:0;color:var(--lmo-muted);font-size:7px;line-height:1.65}.lmo-duo-scene-card>footer{margin-top:auto;padding-top:8px;display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--lmo-line)}.lmo-duo-scene-card>footer span{padding:3px 6px;border-radius:99px;background:color-mix(in srgb,var(--active-accent) 10%,transparent);color:var(--active-accent);font-size:6px}.lmo-duo-scene-card>footer em{color:var(--lmo-muted);font-size:6px;font-style:normal}.lmo-duo-scene-confirm{border-color:color-mix(in srgb,var(--active-accent) 45%,var(--lmo-line))}
 .lmo-autonomy-center{display:grid;gap:10px}.lmo-autonomy-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.lmo-autonomy-card{min-width:0;padding:14px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--lmo-line);border-radius:16px;background:linear-gradient(145deg,color-mix(in srgb,var(--person-accent) 6%,var(--lmo-panel)),var(--lmo-panel));color:var(--lmo-text);text-align:left;cursor:pointer;transition:.18s}.lmo-autonomy-card:hover,.lmo-autonomy-card.selected{border-color:var(--person-accent);box-shadow:0 11px 27px color-mix(in srgb,var(--person-accent) 13%,transparent);transform:translateY(-2px)}.lmo-autonomy-card>header{display:grid;grid-template-columns:38px minmax(0,1fr) 34px;gap:8px;align-items:center}.lmo-autonomy-card>header>i{width:36px;height:36px;display:grid;place-items:center;border-radius:12px;background:var(--person-accent);color:white;font:700 12px Georgia,serif;font-style:normal}.lmo-autonomy-card>header>p{min-width:0;margin:0;display:grid;gap:2px}.lmo-autonomy-card>header span{overflow:hidden;color:var(--lmo-muted);font-size:6px;text-overflow:ellipsis;white-space:nowrap}.lmo-autonomy-card>header strong{font-size:9px}.lmo-autonomy-card>header>b{width:32px;height:32px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--person-accent) 30%,var(--lmo-line));border-radius:50%;color:var(--person-accent);font:700 10px Georgia,serif}.lmo-autonomy-route{padding:7px 9px;display:grid;grid-template-columns:1fr 18px 1fr;gap:6px;align-items:center;border-radius:9px;background:var(--lmo-surface);font-size:7px}.lmo-autonomy-route span{color:var(--lmo-muted)}.lmo-autonomy-route .lmo-icon{width:15px;height:15px;color:var(--person-accent)}.lmo-autonomy-route strong{text-align:right}.lmo-autonomy-card>p{margin:0;color:var(--lmo-muted);font-size:7px;line-height:1.55}.lmo-autonomy-card>ul{margin:0;padding-left:17px;color:var(--lmo-muted);font-size:6px;line-height:1.6}.lmo-autonomy-card>footer{margin-top:auto;padding-top:8px;display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--lmo-line)}.lmo-autonomy-card>footer span{overflow:hidden;color:var(--person-accent);font-size:6px;text-overflow:ellipsis;white-space:nowrap}.lmo-autonomy-card>footer em{flex:0 0 auto;color:var(--lmo-muted);font-size:6px;font-style:normal}.lmo-autonomy-confirm{border-color:color-mix(in srgb,var(--active-accent) 40%,var(--lmo-line))}
+.lmo-co-creation-lab{display:grid;gap:11px;padding:17px;border:1px solid color-mix(in srgb,var(--active-accent) 34%,var(--lmo-line));border-radius:20px;background:radial-gradient(circle at 12% 5%,color-mix(in srgb,var(--active-accent) 12%,transparent),transparent 28%),linear-gradient(145deg,color-mix(in srgb,var(--lmo-panel) 95%,#14131f),var(--lmo-panel));box-shadow:0 18px 42px rgba(70,52,93,.09)}.lmo-co-creation-summary{display:grid;grid-template-columns:repeat(3,92px) minmax(0,1fr);gap:7px}.lmo-co-creation-summary p{margin:0;padding:9px;display:grid;place-items:center;border:1px solid var(--lmo-line);border-radius:11px;background:var(--lmo-surface)}.lmo-co-creation-summary b{font:700 16px Georgia,serif;color:var(--active-accent)}.lmo-co-creation-summary small{color:var(--lmo-muted);font-size:6px}.lmo-co-creation-summary>span{padding:10px 13px;display:flex;align-items:center;justify-content:flex-end;color:var(--lmo-muted);font-size:7px}.lmo-co-creation-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.lmo-co-creation-projects>article{min-width:0;padding:13px;display:grid;gap:8px;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel);transition:.18s}.lmo-co-creation-projects>article.active{border-color:var(--active-accent);box-shadow:0 10px 25px color-mix(in srgb,var(--active-accent) 12%,transparent)}.lmo-co-creation-projects>article.recorded{filter:saturate(.55);opacity:.62}.lmo-co-creation-projects header,.lmo-co-creation-projects footer{display:flex;align-items:center;justify-content:space-between;gap:8px}.lmo-co-creation-projects header span{color:var(--active-accent);font-size:6px;font-weight:900;letter-spacing:.1em}.lmo-co-creation-projects header em,.lmo-co-creation-projects footer small{overflow:hidden;color:var(--lmo-muted);font-size:6px;font-style:normal;text-overflow:ellipsis;white-space:nowrap}.lmo-co-creation-projects h3{margin:0;font:700 13px Georgia,"Songti SC",serif}.lmo-co-creation-projects>article>p{margin:0;color:var(--lmo-muted);font-size:7px;line-height:1.6}.lmo-co-creation-people{display:flex;align-items:center}.lmo-co-creation-people i{width:32px;height:32px;display:grid;place-items:center;border:3px solid var(--lmo-panel);border-radius:11px;background:var(--person-accent);color:white;font:700 10px Georgia,serif;font-style:normal}.lmo-co-creation-people i+i{margin-left:-8px}.lmo-co-creation-people span{min-width:0;margin-left:8px;display:grid;gap:2px}.lmo-co-creation-people strong,.lmo-co-creation-people small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-co-creation-people strong{font-size:8px}.lmo-co-creation-people small{color:var(--lmo-muted);font-size:6px}.lmo-co-creation-projects footer button{flex:0 0 auto;padding:7px 10px}.lmo-co-creation-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.lmo-co-creation-plan{min-width:0;padding:10px;display:flex;flex-direction:column;gap:7px;border:1px solid var(--lmo-line);border-radius:14px;background:var(--lmo-panel);color:var(--lmo-text);text-align:left;cursor:pointer;transition:.18s}.lmo-co-creation-plan:hover,.lmo-co-creation-plan.selected{border-color:var(--active-accent);box-shadow:0 11px 26px color-mix(in srgb,var(--active-accent) 13%,transparent);transform:translateY(-2px)}.lmo-co-creation-plan>span{color:var(--active-accent);font-size:6px;font-weight:800}.lmo-co-creation-plan h3{margin:0;font:700 12px Georgia,"Songti SC",serif}.lmo-co-creation-plan>p{margin:0;color:var(--lmo-muted);font-size:7px;line-height:1.5}.lmo-co-creation-plan .lmo-tags{margin-top:auto}.lmo-co-creation-confirm{border-color:color-mix(in srgb,var(--active-accent) 48%,var(--lmo-line));background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel))}
 @keyframes lmo-fade-in{from{opacity:0}to{opacity:1}}@keyframes lmo-rise{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}@keyframes lmo-content-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}@keyframes lmo-spin{to{transform:rotate(360deg)}}@keyframes lmo-light-sweep{to{transform:rotate(360deg)}}@keyframes lmo-social-flow{to{stroke-dashoffset:-52}}@keyframes lmo-network-flow{to{stroke-dashoffset:-52}}@keyframes lmo-hologram-pulse{50%{filter:saturate(1.22) brightness(1.04)}}
 @media(max-width:820px){.lmo-backdrop{padding:9px}.lmo-shell{width:100%;height:96vh;grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);border-radius:20px}.lmo-sidebar{padding:12px 14px;display:grid;grid-template-columns:auto 1fr;border-right:0;border-bottom:1px solid var(--lmo-line);gap:12px}.lmo-brand{padding:0}.lmo-sidebar nav{display:flex;overflow:auto;gap:4px}.lmo-nav-item{width:auto;min-height:38px;padding:0 10px;white-space:nowrap}.lmo-sidebar-summary,.lmo-mode{display:none}.lmo-main{grid-template-rows:62px minmax(0,1fr)}.lmo-header{padding:0 16px}.lmo-header h1{font-size:16px}.lmo-scroll{padding:16px 14px 34px}.lmo-building-grid,.lmo-dashboard-row{grid-template-columns:1fr}.lmo-building-card{grid-template-columns:110px 1fr}.lmo-section-heading>p{display:none}.lmo-two-column,.lmo-recruit-layout{grid-template-columns:1fr}.lmo-selector,.lmo-placement{position:static}.lmo-compact-list{grid-template-columns:repeat(2,1fr);max-height:220px}.lmo-option-grid,.lmo-renovation-plans{grid-template-columns:1fr}.lmo-space-grid{grid-template-columns:repeat(2,1fr)}.lmo-space-card,.lmo-space-card.size-\u5927\u578B,.lmo-space-card.size-\u8D85\u5927\u578B,.lmo-space-card.size-\u5C0F\u578B,.lmo-space-card.size-\u5FAE\u578B{grid-column:span 1}.lmo-hero{grid-template-columns:1fr;min-height:190px}.lmo-hero-orbit{display:none}.lmo-building-banner{align-items:start;flex-direction:column}.lmo-banner-actions{width:100%}.lmo-banner-actions button{flex:1}.lmo-metric-strip{grid-template-columns:repeat(2,1fr)}.lmo-metric-strip>div:nth-child(2){border-right:0}.lmo-metric-strip>div:nth-child(-n+2){border-bottom:1px solid var(--lmo-line)}.lmo-generation-callout{align-items:start;flex-wrap:wrap}.lmo-generation-callout button{width:100%}.lmo-confirm-bar{bottom:-16px}.lmo-workflow-steps{gap:5px}.lmo-workflow-steps>i{width:16px}.lmo-workflow-steps span{font-size:8px}}
 @media(max-width:820px){.lmo-mode-grid{grid-template-columns:1fr}.lmo-link-channels{grid-template-columns:repeat(2,1fr)}.lmo-link-draft-grid{grid-template-columns:1fr}.lmo-task-row{grid-template-columns:62px minmax(0,1fr) auto}.lmo-task-row>code{display:none}.lmo-history-console{grid-template-columns:115px minmax(0,1fr);padding:21px}.lmo-history-orbit{width:100px;height:100px}.lmo-spatial-planner{grid-template-columns:1fr}.lmo-spatial-arrow{display:none}.lmo-spatial-people,.lmo-spatial-spaces{max-height:190px}.lmo-narrative-intake{grid-template-columns:1fr}.lmo-twin-layout{grid-template-columns:110px minmax(0,1fr)}.lmo-twin-inspector{grid-column:1/-1;min-height:0}.lmo-twin-map{height:340px}.lmo-pulse-layout{grid-template-columns:1fr}.lmo-pulse-metrics{grid-template-columns:repeat(2,1fr)}.lmo-tenant-life-grid,.lmo-relationship-grid,.lmo-duo-scene-grid,.lmo-autonomy-grid{grid-template-columns:1fr}.lmo-social-layout,.lmo-network-layout,.lmo-hologram-layout{grid-template-columns:1fr}.lmo-social-inspector,.lmo-network-layout>aside,.lmo-hologram-layout>aside{border-top:1px solid var(--lmo-line);border-left:0}.lmo-social-stage svg{height:250px}.lmo-network-stage{min-height:310px}.lmo-network-layout>aside>div{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:520px){.lmo-brand div:last-child{display:none}.lmo-nav-item>span:last-child{display:none}.lmo-nav-item{padding:0 9px}.lmo-header-actions .lmo-status-dot{display:none}.lmo-building-card{grid-template-columns:90px 1fr}.lmo-building-visual{min-height:165px}.lmo-card-metrics span:nth-child(3){display:none}.lmo-facts{display:grid;grid-template-columns:1fr 1fr}.lmo-confirm-bar{align-items:stretch;flex-direction:column}.lmo-confirm-bar button{width:100%}.lmo-candidate{grid-template-columns:40px 1fr}.lmo-avatar{width:40px;height:40px}.lmo-event-timeline article{grid-template-columns:34px 1fr}.lmo-event-timeline article>em{display:none}}
 @media(max-width:520px){.lmo-banner-actions{flex-wrap:wrap}.lmo-banner-actions button{min-width:45%}.lmo-link-list>div{grid-template-columns:repeat(3,1fr)}.lmo-link-list>div>span{grid-column:1}.lmo-link-list p{grid-column:2/4}.lmo-link-list button{grid-row:2}.lmo-link-list button:nth-last-child(3){grid-column:1}.lmo-link-list button:nth-last-child(2){grid-column:2}.lmo-link-list button:last-child{grid-column:3}.lmo-link-preview>footer{align-items:stretch;flex-direction:column}.lmo-link-preview>footer button{width:100%}.lmo-task-row{grid-template-columns:56px minmax(0,1fr)}.lmo-task-actions{grid-column:2}.lmo-history-console{grid-template-columns:1fr}.lmo-history-orbit{display:none}.lmo-history-actions{align-items:stretch;flex-direction:column}.lmo-history-actions button{width:100%;max-width:none}.lmo-history-list>div{grid-template-columns:30px minmax(0,1fr) auto}.lmo-history-list time{display:none}.lmo-twin-toolbar{align-items:flex-start;flex-direction:column}.lmo-twin-legend{flex-wrap:wrap}.lmo-twin-layout{grid-template-columns:1fr}.lmo-twin-floor-nav{display:flex;overflow:auto}.lmo-twin-floor-nav button{min-width:120px}.lmo-twin-stage,.lmo-twin-inspector{grid-column:1}.lmo-twin-map{height:300px}.lmo-pulse-hero{grid-template-columns:1fr;padding:20px}.lmo-pulse-orb{display:none}.lmo-pulse-metrics,.lmo-scene-grid{grid-template-columns:1fr}.lmo-pulse-space-list>div{grid-template-columns:38px minmax(0,1fr)}.lmo-pulse-space-list>div>div{grid-column:2}.lmo-tenant-life-hero{grid-template-columns:auto 1fr}.lmo-tenant-life-hero>code{display:none}.lmo-encounter-strip article{grid-template-columns:24px minmax(0,1fr)}.lmo-encounter-strip article>span{grid-column:2}}
-@media(max-width:820px){.lmo-arrival-grid{grid-template-columns:1fr 1fr}.lmo-arrival-grid>.lmo-arrival-social{grid-column:1/-1;border-top:1px solid var(--lmo-line);border-right:0}.lmo-arrival-chamber{min-height:240px}.lmo-acquisition-grid{grid-template-columns:1fr 1fr}.lmo-acquisition-grid>aside{grid-column:1/-1;border-top:1px solid var(--lmo-line);border-right:0}.lmo-radar-grid,.lmo-collision-grid{grid-template-columns:1fr}.lmo-radar-summary,.lmo-collision-summary{grid-template-columns:repeat(5,1fr)}.lmo-radar-summary>aside,.lmo-collision-summary>span{grid-column:1/-1}.lmo-assignment-layout,.lmo-life-flow-layout{grid-template-columns:1fr}.lmo-assignment-layout>aside,.lmo-life-flow-layout>aside{border-top:1px solid var(--lmo-line);border-left:0}.lmo-assignment-layout>aside>div{grid-template-columns:repeat(3,1fr)}.lmo-flow-waves{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:520px){.lmo-arrival-grid{grid-template-columns:1fr}.lmo-arrival-grid>.lmo-arrival-social{grid-column:1}.lmo-arrival-grid>section,.lmo-arrival-grid>aside{border-right:0;border-bottom:1px solid var(--lmo-line)}.lmo-arrival-grid>*:last-child{border-bottom:0}.lmo-acquisition-grid{grid-template-columns:1fr}.lmo-acquisition-grid>aside{grid-column:1}.lmo-acquisition-grid>section,.lmo-acquisition-grid>aside{border-right:0;border-bottom:1px solid var(--lmo-line)}.lmo-acquisition-grid>*:last-child{border-bottom:0}.lmo-radar-summary,.lmo-assignment-summary,.lmo-flow-summary,.lmo-collision-summary{grid-template-columns:repeat(2,1fr)}.lmo-radar-summary>aside{grid-column:1/-1}.lmo-radar-body{grid-template-columns:125px minmax(0,1fr)}.lmo-radar-body svg{width:125px;height:125px}.lmo-radar-focus{grid-template-columns:1fr}.lmo-radar-focus p{text-align:left}.lmo-assignment-summary>span,.lmo-flow-summary>span,.lmo-collision-summary>span{grid-column:1/-1;justify-content:flex-start}.lmo-assignment-layout>aside>div{grid-template-columns:1fr}.lmo-flow-waves{grid-template-columns:repeat(2,1fr)}.lmo-flow-person>header{grid-template-columns:32px minmax(0,1fr)}.lmo-flow-person>header>div{grid-column:1/-1}.lmo-flow-person>footer{grid-template-columns:1fr}}
+@media(max-width:820px){.lmo-arrival-grid{grid-template-columns:1fr 1fr}.lmo-arrival-grid>.lmo-arrival-social{grid-column:1/-1;border-top:1px solid var(--lmo-line);border-right:0}.lmo-arrival-chamber{min-height:240px}.lmo-acquisition-grid{grid-template-columns:1fr 1fr}.lmo-acquisition-grid>aside{grid-column:1/-1;border-top:1px solid var(--lmo-line);border-right:0}.lmo-radar-grid,.lmo-collision-grid{grid-template-columns:1fr}.lmo-radar-summary,.lmo-collision-summary{grid-template-columns:repeat(5,1fr)}.lmo-radar-summary>aside,.lmo-collision-summary>span{grid-column:1/-1}.lmo-assignment-layout,.lmo-life-flow-layout{grid-template-columns:1fr}.lmo-assignment-layout>aside,.lmo-life-flow-layout>aside{border-top:1px solid var(--lmo-line);border-left:0}.lmo-assignment-layout>aside>div{grid-template-columns:repeat(3,1fr)}.lmo-flow-waves{grid-template-columns:repeat(4,1fr)}.lmo-co-creation-projects{grid-template-columns:1fr}.lmo-co-creation-plans{grid-template-columns:1fr}}
+@media(max-width:520px){.lmo-arrival-grid{grid-template-columns:1fr}.lmo-arrival-grid>.lmo-arrival-social{grid-column:1}.lmo-arrival-grid>section,.lmo-arrival-grid>aside{border-right:0;border-bottom:1px solid var(--lmo-line)}.lmo-arrival-grid>*:last-child{border-bottom:0}.lmo-acquisition-grid{grid-template-columns:1fr}.lmo-acquisition-grid>aside{grid-column:1}.lmo-acquisition-grid>section,.lmo-acquisition-grid>aside{border-right:0;border-bottom:1px solid var(--lmo-line)}.lmo-acquisition-grid>*:last-child{border-bottom:0}.lmo-radar-summary,.lmo-assignment-summary,.lmo-flow-summary,.lmo-collision-summary,.lmo-co-creation-summary{grid-template-columns:repeat(2,1fr)}.lmo-radar-summary>aside{grid-column:1/-1}.lmo-radar-body{grid-template-columns:125px minmax(0,1fr)}.lmo-radar-body svg{width:125px;height:125px}.lmo-radar-focus{grid-template-columns:1fr}.lmo-radar-focus p{text-align:left}.lmo-assignment-summary>span,.lmo-flow-summary>span,.lmo-collision-summary>span,.lmo-co-creation-summary>span{grid-column:1/-1;justify-content:flex-start}.lmo-assignment-layout>aside>div{grid-template-columns:1fr}.lmo-flow-waves{grid-template-columns:repeat(2,1fr)}.lmo-flow-person>header{grid-template-columns:32px minmax(0,1fr)}.lmo-flow-person>header>div{grid-column:1/-1}.lmo-flow-person>footer{grid-template-columns:1fr}.lmo-co-creation-lab{padding:12px}}
 @media(prefers-reduced-motion:reduce){.lmo-backdrop,.lmo-shell,.lmo-view,.lmo-social-edge,.lmo-network-stage>svg line,.lmo-hologram-node,.lmo-hero-orbit::before,.lmo-hero-orbit::after,.lmo-history-orbit::before,.lmo-history-orbit::after,.lmo-renovation-visual::after{animation:none!important}.lmo-backdrop *{scroll-behavior:auto!important;transition:none!important}}
 `;
   }
@@ -24808,6 +25096,7 @@ function activate3(context) {
   const embodiment = context.services.require("tenant.embodiment");
   const autonomy = context.services.require("tenant.autonomy");
   const relationships = context.services.require("tenant.relationships");
+  const coCreations = context.services.require("tenant.coCreations");
   const contextCapsules = context.services.require("landlord.contextCapsules");
   const perception = context.services.require("landlord.perception");
   const identities = context.services.require("landlord.identities");
@@ -24831,6 +25120,7 @@ function activate3(context) {
     embodiment,
     autonomy,
     relationships,
+    coCreations,
     contextCapsules,
     perception,
     identities,
@@ -24944,14 +25234,14 @@ function createTavernHelperService() {
     },
     async generateStructured({ schemaName, schema, mode = "raw", ...config }) {
       const generator = mode === "story" ? this.generateWithStoryContext : this.generateIsolated;
-      const text2 = await generator.call(this, {
+      const text3 = await generator.call(this, {
         ...config,
         json_schema: {
           name: schemaName,
           value: schema
         }
       });
-      return JSON.parse(text2);
+      return JSON.parse(text3);
     },
     async getCurrentCharacterWorldbook() {
       const getNames = requireApi("getCharWorldbookNames");
@@ -25555,7 +25845,7 @@ var modules = [
     afterLoad: null,
     cleanup: [],
     requires: ["landlord.schema"],
-    provides: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.history", "landlord.perception", "landlord.identities", "landlord.bridges", "landlord.spatialSync", "landlord.narrativeIntents", "landlord.contextCapsules", "tenant.embodiment", "tenant.portfolioAssignments", "tenant.lifeFlows", "tenant.lifeCollisions", "tenant.autonomy", "tenant.relationships", "building.compiler", "building.layout", "building.memories", "building.operations", "building.renovationVisual", "building.routes"],
+    provides: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.history", "landlord.perception", "landlord.identities", "landlord.bridges", "landlord.spatialSync", "landlord.narrativeIntents", "landlord.contextCapsules", "tenant.embodiment", "tenant.portfolioAssignments", "tenant.lifeFlows", "tenant.lifeCollisions", "tenant.coCreations", "tenant.autonomy", "tenant.relationships", "building.compiler", "building.layout", "building.memories", "building.operations", "building.renovationVisual", "building.routes"],
     legacyRequires: [],
     load: () => Promise.resolve().then(() => (init_landlord_core(), landlord_core_exports))
   },
@@ -25565,10 +25855,10 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    requires: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.history", "landlord.spatialSync", "landlord.narrativeIntents", "landlord.contextCapsules", "tenant.embodiment", "tenant.autonomy", "tenant.relationships", "landlord.perception", "landlord.identities", "landlord.bridges", "building.compiler", "building.layout", "building.memories", "building.operations", "ui.floatingMenu"],
+    requires: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.history", "landlord.spatialSync", "landlord.narrativeIntents", "landlord.contextCapsules", "tenant.embodiment", "tenant.autonomy", "tenant.relationships", "tenant.coCreations", "landlord.perception", "landlord.identities", "landlord.bridges", "building.compiler", "building.layout", "building.memories", "building.operations", "ui.floatingMenu"],
     provides: ["landlord.console"],
     legacyRequires: ["FloatingMenuManager"],
     load: () => Promise.resolve().then(() => (init_landlord_console(), landlord_console_exports))
   }
 ];
-await startLandlordRuntime({ version: "0.3.0-preview.22", modules });
+await startLandlordRuntime({ version: "0.3.0-preview.23", modules });

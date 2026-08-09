@@ -12,6 +12,8 @@ export function createConsoleUiState() {
     selectedRelationshipSparkId: null,
     selectedRelationshipSceneId: null,
     selectedLifeCollisionId: null,
+    selectedCoCreationProjectId: null,
+    selectedCoCreationPlanId: null,
     previewLinkIds: [],
     contextCapsuleVisible: false,
     selectedMovePersonId: null,

@@ -3,6 +3,7 @@ import { ManagementAiJsonSchemas, ManagementAiSchemas } from './management-ai-co
 const taskInstructions = Object.freeze({
   takeover: '根据建筑类型、现有格局和世界观提出三种差异明显、偏爽文体验的接管方向。保留可立即游玩的基础，不增加繁琐惩罚。',
   renovation: '针对指定空间提出三种可视化差异明显的装修方案。方案必须能改变配色、材质、家具、照明、空间描述和后续人物互动。',
+  coCreation: '根据已经确认的双人生活场景提出三种共创装修方案。必须同时体现两人的来源世界、职业、性格和目标房间，让人物碰撞产生可见且可继续游玩的建筑结果。',
   recruitment: '为当前建筑生成三名来自不同世界、能与现有空间和人物产生碰撞的候选人。人物必须适合被安置到当前建筑。',
 });
 
@@ -67,7 +68,11 @@ export function createManagementAiProvider({ tavern, isEnabled = () => false, lo
       });
       if (signal?.aborted) throw abortError();
       const parsed = contract.parse(generated);
-      return { source: 'ai', ...clone(parsed) };
+      return {
+        source: 'ai',
+        ...clone(parsed),
+        ...(kind === 'coCreation' ? { projectId: input.project?.id } : {}),
+      };
     },
   });
 }
