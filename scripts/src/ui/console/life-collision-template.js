@@ -1,0 +1,15 @@
+import { compileLifeCollisions } from '../../tenants/life-collision-engine.js';
+import { emptyState, escapeHtml, icon, safeColor } from './template-helpers.js';
+
+function renderCollision(collision, selected) {
+  return `<button class="lmo-collision-card ${selected ? 'selected' : ''} ${collision.recorded ? 'recorded' : ''}" data-action="choose-life-collision" data-collision-id="${escapeHtml(collision.id)}" data-collision-kind="${escapeHtml(collision.proximity.kind)}" style="--collision-score:${collision.score}" ${collision.recorded ? 'disabled' : ''}><header><span><b>${escapeHtml(collision.time)}</b><small>${escapeHtml(collision.phaseLabel)} · ${escapeHtml(collision.proximity.label)}</small></span><em><b>${collision.score}</b><small>交汇强度</small></em></header><div class="lmo-collision-people">${collision.people.map(person => `<i style="--person-accent:${safeColor(person.color)}">${escapeHtml(person.name.slice(0, 1))}</i>`).join('')}<span><strong>${escapeHtml(collision.people.map(person => person.name).join(' × '))}</strong><small>${escapeHtml(collision.people.map(person => person.origin).join(' × '))}</small></span></div><h3>${escapeHtml(collision.label)}</h3><p>${escapeHtml(collision.summary)}</p><div class="lmo-collision-route"><span>${escapeHtml(collision.routes.map(route => route.kind).join(' / '))}</span>${icon('arrow')}<strong>${escapeHtml(`${collision.buildingName}·${collision.destination.name}`)}</strong></div><ul>${collision.reasons.slice(0, 3).map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul><footer><span>${collision.recorded ? '这次交汇已发生' : '选中后可锁定为真实场景'}</span><em>${collision.recorded ? '已记录' : '查看锁定预览'}</em></footer></button>`;
+}
+
+export function renderLifeCollisions(state, ui) {
+  const center = compileLifeCollisions(state);
+  const selected = center.collisions.find(item => item.id === ui.selectedLifeCollisionId && !item.recorded);
+  const content = center.collisions.length
+    ? `<div class="lmo-collision-grid">${center.collisions.map(collision => renderCollision(collision, collision.id === ui.selectedLifeCollisionId)).join('')}</div>`
+    : emptyState('还没有可锁定的生活交汇', '至少需要两位人物在白日或晚间流线中进入同一栋建筑。');
+  return `<section class="lmo-life-collisions" data-collision-oracle="${escapeHtml(center.signature)}"><div class="lmo-section-heading compact"><div><span>LIFE COLLISION ORACLE</span><h2>跨世界生活交汇预言机</h2></div><p>从 24H 流线中检测同屋、相邻和同栋交汇；只有玩家锁定后才会真正移动人物。</p></div><div class="lmo-collision-summary"><p><b>${center.metrics.candidates}</b><small>交汇候选</small></p><p><b>${center.metrics.exact}</b><small>同屋相遇</small></p><p><b>${center.metrics.adjacent}</b><small>相邻擦肩</small></p><p><b>${center.metrics.crossWorld}</b><small>跨世界</small></p><p><b>${center.metrics.buildings}</b><small>涉及建筑</small></p><span>预测只读 · 锁定后进入原子写入与经营回溯</span></div>${content}${selected ? `<div class="lmo-confirm-bar lmo-collision-confirm"><div><strong>锁定「${escapeHtml(selected.title)}」</strong><span>确认后两人会一起前往${escapeHtml(selected.destination.name)}；任何人位置已变化时，旧预测会自动拒绝。</span></div><button class="lmo-primary" data-action="confirm-life-collision" ${ui.busy ? 'disabled' : ''}>锁定交汇 ${icon('sparkle')}</button></div>` : ''}</section>`;
+}

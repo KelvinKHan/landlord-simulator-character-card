@@ -20353,7 +20353,7 @@ var init_portfolio_assignment_engine = __esm({
 });
 
 // scripts/src/model/default-state.js
-function room({ name, type, floorId, size, purpose, description, status = "\u6B63\u5E38", adjacent = {}, facilities = {} }) {
+function room({ name, type, floorId, size, purpose, description, status = "\u6B63\u5E38", adjacent: adjacent2 = {}, facilities = {} }) {
   return {
     \u540D\u79F0: name,
     \u7C7B\u578B: type,
@@ -20363,7 +20363,7 @@ function room({ name, type, floorId, size, purpose, description, status = "\u6B6
     \u7528\u9014: purpose,
     \u63CF\u8FF0: description,
     \u611F\u77E5\u5EA6: 100,
-    \u76F8\u90BB\u7A7A\u95F4: adjacent,
+    \u76F8\u90BB\u7A7A\u95F4: adjacent2,
     \u5360\u7528\u8005: {},
     \u8BBE\u65BD: facilities,
     \u88C5\u4FEE: {
@@ -20761,90 +20761,8 @@ var init_life_flow_engine = __esm({
   }
 });
 
-// scripts/src/tenants/autonomy-engine.js
-function hash7(value) {
-  let result = 5381;
-  for (const character of String(value)) result = Math.imul(result, 33) ^ character.charCodeAt(0);
-  return (result >>> 0).toString(36);
-}
-function includesAny3(value, words) {
-  const source = String(value ?? "");
-  return words.some((word) => source.includes(word));
-}
-function destinationAffinity(person, space) {
-  let score = space.total * 0.55 + space.metrics.appeal * 0.2 + space.metrics.comfort * 0.15 + space.metrics.vitality * 0.1;
-  const reasons = [`${space.name}\u5F53\u524D\u5904\u4E8E\u300C${space.status}\u300D\u72B6\u6001`];
-  if (includesAny3(person.\u804C\u4E1A, ["\u6444\u5F71", "\u827A\u672F", "\u8BBE\u8BA1", "\u4F5C\u5BB6", "\u8BB0\u8005"])) {
-    score += space.metrics.appeal * 0.12;
-    reasons.push(`${person.\u804C\u4E1A}\u4F1A\u88AB\u8FD9\u91CC\u7684\u7A7A\u95F4\u8868\u73B0\u529B\u5438\u5F15`);
-  }
-  if (includesAny3(person.\u804C\u4E1A, ["\u533B\u751F", "\u62A4\u58EB", "\u6CBB\u7597", "\u7597\u6108", "\u5FC3\u7406"])) {
-    score += (space.metrics.comfort + space.metrics.function) * 0.07;
-    reasons.push(`${person.\u804C\u4E1A}\u4F1A\u672C\u80FD\u5730\u68C0\u67E5\u8212\u9002\u4E0E\u529F\u80FD\u7EC6\u8282`);
-  }
-  if (includesAny3(`${person.\u804C\u4E1A} ${person.\u6027\u683C}`, ["\u7075\u690D", "\u56ED\u827A", "\u690D\u7269", "\u81EA\u7136"]) && includesAny3(`${space.name} ${space.purpose}`, ["\u82B1\u56ED", "\u690D\u7269", "\u81EA\u7136", "\u7EFF"])) {
-    score += 18;
-    reasons.push("\u4EBA\u7269\u4E0E\u8FD9\u4E2A\u7A7A\u95F4\u7684\u81EA\u7136\u5C5E\u6027\u5F62\u6210\u804C\u4E1A\u5171\u9E23");
-  }
-  if (includesAny3(`${person.\u6027\u683C} ${person.\u5185\u5FC3}`, ["\u597D\u5947", "\u5F00\u6717", "\u70ED\u60C5"]) && space.publicSpace) {
-    score += 9;
-    reasons.push("\u597D\u5947\u5FC3\u8BA9\u4EBA\u7269\u613F\u610F\u4E3B\u52A8\u8D70\u8FDB\u516C\u5171\u751F\u6D3B");
-  }
-  if (includesAny3(person.\u6027\u683C, ["\u5B89\u9759", "\u8C28\u614E", "\u5185\u5411"]) && !space.publicSpace) {
-    score += 8;
-    reasons.push("\u76F8\u5BF9\u5B89\u9759\u7684\u7A7A\u95F4\u66F4\u9002\u5408\u4EBA\u7269\u6B64\u523B\u7684\u8282\u594F");
-  }
-  return { score: Math.round(score), reasons };
-}
-function activityFor(person, destination) {
-  if (includesAny3(person.\u804C\u4E1A, ["\u6444\u5F71"])) return `\u91C7\u96C6${destination.name}\u7684\u5149\u5F71\u4E0E\u751F\u6D3B\u6837\u672C`;
-  if (includesAny3(person.\u804C\u4E1A, ["\u7075\u690D", "\u56ED\u827A", "\u690D\u7269"])) return `\u89C2\u5BDF${destination.name}\u91CC\u9002\u5408\u751F\u957F\u7684\u89D2\u843D`;
-  if (includesAny3(person.\u804C\u4E1A, ["\u533B\u751F", "\u62A4\u58EB", "\u6CBB\u7597", "\u7597\u6108"])) return `\u68C0\u67E5${destination.name}\u662F\u5426\u8BA9\u4EBA\u771F\u6B63\u653E\u677E`;
-  if (includesAny3(person.\u804C\u4E1A, ["\u4F5C\u5BB6", "\u8BB0\u8005"])) return `\u8BB0\u5F55${destination.name}\u6B63\u5728\u53D1\u751F\u7684\u751F\u6D3B\u7EC6\u8282`;
-  return `\u4F53\u9A8C${destination.name}\u4E0E\u81EA\u5DF1\u4E16\u754C\u5B8C\u5168\u4E0D\u540C\u7684\u65E5\u5E38`;
-}
-function compileTenantAutonomy(state, buildingId) {
-  const building = state?.\u5EFA\u7B51\u5217\u8868?.[buildingId];
-  if (!building) throw new Error(`\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${buildingId}`);
-  const operations = compileBuildingOperations(state, buildingId);
-  const proposals = [];
-  for (const [personId, person] of Object.entries(state.\u4EBA\u7269\u5217\u8868 ?? {}).sort(([left], [right]) => left.localeCompare(right))) {
-    if (person.\u6240\u5728\u5EFA\u7B51ID !== buildingId) continue;
-    const candidates = operations.spaces.filter((space) => space.id !== person.\u6240\u5728\u7A7A\u95F4ID).map((space) => ({ space, ...destinationAffinity(person, space) })).sort((left, right) => right.score - left.score || left.space.id.localeCompare(right.space.id));
-    const chosen = candidates[0];
-    if (!chosen) continue;
-    const source = building.\u7A7A\u95F4\u5217\u8868?.[person.\u6240\u5728\u7A7A\u95F4ID];
-    const activity = activityFor(person, chosen.space);
-    const id = `autonomy_${hash7([buildingId, personId, person.\u6240\u5728\u7A7A\u95F4ID, chosen.space.id, operations.signature].join("|"))}`;
-    proposals.push(Object.freeze({
-      id,
-      personId,
-      person: Object.freeze({ name: person.\u59D3\u540D, origin: person.\u6765\u6E90\u4E16\u754C, profession: person.\u804C\u4E1A, color: person.\u89C6\u89C9\u8EAB\u4EFD?.\u4E3B\u8272 ?? "#FF9EAA" }),
-      buildingId,
-      buildingName: building.\u540D\u79F0,
-      source: Object.freeze({ id: person.\u6240\u5728\u7A7A\u95F4ID, name: source?.\u540D\u79F0 ?? "\u672A\u77E5\u7A7A\u95F4" }),
-      destination: Object.freeze({ id: chosen.space.id, name: chosen.space.name, status: chosen.space.status, score: chosen.score }),
-      activity,
-      title: `${person.\u59D3\u540D}\u60F3\u53BB${chosen.space.name}`,
-      summary: `${person.\u59D3\u540D}\u60F3\u6682\u65F6\u79BB\u5F00${source?.\u540D\u79F0 ?? "\u5F53\u524D\u4F4D\u7F6E"}\uFF0C\u53BB${chosen.space.name}${activity}\u3002\u8FD9\u662F\u4E00\u6BB5\u751F\u6D3B\u884C\u52A8\uFF0C\u4E0D\u662F\u6C38\u4E45\u642C\u5BB6\u3002`,
-      reasons: Object.freeze(chosen.reasons.slice(0, 3)),
-      expectedFrom: Object.freeze({ buildingId, spaceId: person.\u6240\u5728\u7A7A\u95F4ID })
-    }));
-  }
-  const signature = `autonomy_${hash7(JSON.stringify(proposals.map((item) => [item.id, item.destination.id])))}`;
-  return Object.freeze({ buildingId, buildingName: building.\u540D\u79F0, signature, proposals: Object.freeze(proposals) });
-}
-function createTenantAutonomyService() {
-  return Object.freeze({ compile: compileTenantAutonomy });
-}
-var init_autonomy_engine = __esm({
-  "scripts/src/tenants/autonomy-engine.js"() {
-    init_operations_engine();
-  }
-});
-
 // scripts/src/tenants/relationship-engine.js
-function hash8(value) {
+function hash7(value) {
   let result = 5381;
   for (const character of String(value)) result = Math.imul(result, 33) ^ character.charCodeAt(0);
   return (result >>> 0).toString(36);
@@ -20856,7 +20774,7 @@ function hasAny(value, words) {
   const source = String(value ?? "");
   return words.some((word) => source.includes(word));
 }
-function scorePair(left, right, space) {
+function evaluateRelationshipPair(left, right, space) {
   let score = 42 + Number(space?.metrics?.vitality ?? 40) * 0.2 + Number(space?.metrics?.comfort ?? 50) * 0.12;
   const reasons = [];
   if (left.\u6765\u6E90\u4E16\u754C !== right.\u6765\u6E90\u4E16\u754C) {
@@ -20904,9 +20822,9 @@ function compileSparks(state, buildingId, building, operations) {
         const rightId = ids[rightIndex];
         const left = state.\u4EBA\u7269\u5217\u8868[leftId];
         const right = state.\u4EBA\u7269\u5217\u8868[rightId];
-        const result = scorePair(left, right, spaceMap.get(spaceId));
+        const result = evaluateRelationshipPair(left, right, spaceMap.get(spaceId));
         const label = relationshipLabel(result.score, left.\u6765\u6E90\u4E16\u754C !== right.\u6765\u6E90\u4E16\u754C);
-        const id = `spark_${hash8([buildingId, spaceId, leftId, rightId, operations.signature].join("|"))}`;
+        const id = `spark_${hash7([buildingId, spaceId, leftId, rightId, operations.signature].join("|"))}`;
         sparks.push(Object.freeze({
           id,
           buildingId,
@@ -20970,7 +20888,7 @@ function compileNetwork(state, buildingId, building, sparks) {
       confirmedPairs.add(pairKey);
       const right = residentMap.get(rightId);
       edges.push(Object.freeze({
-        id: `relation_${hash8(`${pairKey}|${label}`)}`,
+        id: `relation_${hash7(`${pairKey}|${label}`)}`,
         source: leftId,
         target: rightId,
         type: "confirmed",
@@ -21010,7 +20928,7 @@ function compileNetwork(state, buildingId, building, sparks) {
     degree: degrees.get(id) ?? 0,
     ...nodePositions.get(id) ?? { x: 360, y: 160 }
   }));
-  const signature = `social_${hash8(JSON.stringify({
+  const signature = `social_${hash7(JSON.stringify({
     nodes: nodes.map((node) => [node.id, node.spaceId]),
     edges: edges.map((edge) => [edge.source, edge.target, edge.type, edge.label])
   }))}`;
@@ -21077,7 +20995,7 @@ function compileRelationshipScenes(state, buildingId, building, operations, netw
         [edge.source]: Object.freeze({ buildingId, spaceId: left.\u6240\u5728\u7A7A\u95F4ID }),
         [edge.target]: Object.freeze({ buildingId, spaceId: right.\u6240\u5728\u7A7A\u95F4ID })
       });
-      const id = `duo_${hash8([edge.id, variant.kind, destination.id, operations.signature, left.\u6240\u5728\u7A7A\u95F4ID, right.\u6240\u5728\u7A7A\u95F4ID].join("|"))}`;
+      const id = `duo_${hash7([edge.id, variant.kind, destination.id, operations.signature, left.\u6240\u5728\u7A7A\u95F4ID, right.\u6240\u5728\u7A7A\u95F4ID].join("|"))}`;
       scenes.push(Object.freeze({
         id,
         kind: variant.kind,
@@ -21123,6 +21041,236 @@ function createRelationshipService() {
 }
 var init_relationship_engine = __esm({
   "scripts/src/tenants/relationship-engine.js"() {
+    init_operations_engine();
+  }
+});
+
+// scripts/src/tenants/life-collision-engine.js
+function hash8(value) {
+  let result = 2166136261;
+  for (const character of String(value)) {
+    result ^= character.charCodeAt(0);
+    result = Math.imul(result, 16777619);
+  }
+  return (result >>> 0).toString(36);
+}
+function clamp5(value) {
+  return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+}
+function adjacent(building, leftSpaceId, rightSpaceId) {
+  const left = building?.\u7A7A\u95F4\u5217\u8868?.[leftSpaceId];
+  const right = building?.\u7A7A\u95F4\u5217\u8868?.[rightSpaceId];
+  return Boolean(left?.\u76F8\u90BB\u7A7A\u95F4?.[rightSpaceId] || right?.\u76F8\u90BB\u7A7A\u95F4?.[leftSpaceId]);
+}
+function proximity(state, leftStop, rightStop) {
+  if (leftStop.buildingId !== rightStop.buildingId) return null;
+  if (leftStop.spaceId === rightStop.spaceId) return Object.freeze({ kind: "same-space", label: "\u540C\u5C4B\u76F8\u9047", bonus: 12, reason: `\u4E24\u6761\u751F\u6D3B\u6D41\u7EBF\u540C\u65F6\u843D\u5728${leftStop.spaceName}` });
+  const building = state.\u5EFA\u7B51\u5217\u8868[leftStop.buildingId];
+  if (adjacent(building, leftStop.spaceId, rightStop.spaceId)) return Object.freeze({ kind: "adjacent", label: "\u76F8\u90BB\u64E6\u80A9", bonus: 4, reason: `${leftStop.spaceName}\u4E0E${rightStop.spaceName}\u6709\u5DF2\u77E5\u901A\u8DEF\uFF0C\u4E24\u4EBA\u53EF\u80FD\u5728\u8DEF\u7EBF\u4E0A\u4EA4\u6C47` });
+  return Object.freeze({ kind: "same-building", label: "\u540C\u680B\u5171\u632F", bonus: -7, reason: `\u4E24\u4EBA\u5728\u540C\u4E00\u65F6\u6BB5\u5171\u7528${building.\u540D\u79F0}\u7684\u4E0D\u540C\u533A\u57DF` });
+}
+function collisionLabel(score, differentWorlds) {
+  if (score >= 92) return differentWorlds ? "\u8DE8\u4E16\u754C\u547D\u8FD0\u4EA4\u6C47" : "\u547D\u8FD0\u4EA4\u6C47";
+  if (score >= 80) return differentWorlds ? "\u5F02\u754C\u9AD8\u80FD\u78B0\u649E" : "\u9AD8\u80FD\u751F\u6D3B\u78B0\u649E";
+  if (score >= 68) return "\u90BB\u8FD1\u76F8\u9047";
+  return "\u540C\u680B\u5171\u632F";
+}
+function selectDestination(leftStop, rightStop) {
+  return [leftStop, rightStop].sort((left, right) => right.phaseScore - left.phaseScore || right.fit - left.fit || left.spaceId.localeCompare(right.spaceId))[0];
+}
+function freezeLocations(state, personIds) {
+  return Object.freeze(Object.fromEntries(personIds.map((personId) => {
+    const person = state.\u4EBA\u7269\u5217\u8868[personId];
+    return [personId, Object.freeze({ buildingId: person.\u6240\u5728\u5EFA\u7B51ID, spaceId: person.\u6240\u5728\u7A7A\u95F4ID })];
+  })));
+}
+function compileCollision(state, flows, phase, leftFlow, rightFlow, operations, recordedKeys) {
+  const leftStop = leftFlow.stops.find((stop) => stop.phase === phase.id);
+  const rightStop = rightFlow.stops.find((stop) => stop.phase === phase.id);
+  if (!leftStop || !rightStop) return null;
+  const proximityResult = proximity(state, leftStop, rightStop);
+  if (!proximityResult) return null;
+  const destination = selectDestination(leftStop, rightStop);
+  const operation = operations.get(destination.buildingId)?.get(destination.spaceId);
+  if (!operation) return null;
+  const personIds = [leftFlow.personId, rightFlow.personId].sort();
+  const routes = personIds.map((personId) => planSpatialMove(state, { personId, buildingId: destination.buildingId, spaceId: destination.spaceId }));
+  if (routes.some((route) => !route.ok)) return null;
+  const left = state.\u4EBA\u7269\u5217\u8868[personIds[0]];
+  const right = state.\u4EBA\u7269\u5217\u8868[personIds[1]];
+  const relationship = evaluateRelationshipPair(left, right, operation);
+  const existing = Boolean(left.\u5173\u7CFB?.[personIds[1]] || right.\u5173\u7CFB?.[personIds[0]]);
+  const score = clamp5(relationship.score + proximityResult.bonus + (phase.id === "evening" ? 4 : 0) + (existing ? 4 : 0));
+  if (score < 58) return null;
+  const differentWorlds = left.\u6765\u6E90\u4E16\u754C !== right.\u6765\u6E90\u4E16\u754C;
+  const label = collisionLabel(score, differentWorlds);
+  const id = `flow_collision_${hash8([flows.signature, phase.id, ...personIds, destination.buildingId, destination.spaceId].join("|"))}`;
+  const people = Object.freeze(personIds.map((personId) => {
+    const person = state.\u4EBA\u7269\u5217\u8868[personId];
+    return Object.freeze({ id: personId, name: person.\u59D3\u540D, origin: person.\u6765\u6E90\u4E16\u754C, profession: person.\u804C\u4E1A, color: person.\u89C6\u89C9\u8EAB\u4EFD?.\u4E3B\u8272 ?? "#FF9EAA" });
+  }));
+  const expectedLocations = freezeLocations(state, personIds);
+  const title = `${phase.time}\uFF5C${people[0].name} \xD7 ${people[1].name}\u7684${label}`;
+  const summary = `${people[0].name}\u4E0E${people[1].name}\u7684\u751F\u6D3B\u6D41\u7EBF\u5728${destination.buildingName}\u7684${destination.spaceName}\u9644\u8FD1\u4EA4\u6C47\uFF1B${relationship.reasons[0]}\u3002`;
+  const activities = Object.freeze({
+    [personIds[0]]: `\u6B63\u5728\u548C${people[1].name}\u7ECF\u5386${label}`,
+    [personIds[1]]: `\u6B63\u5728\u548C${people[0].name}\u7ECF\u5386${label}`
+  });
+  const scene = Object.freeze({
+    id,
+    kind: "life-flow-collision",
+    label,
+    title,
+    summary,
+    relationshipLabel: label,
+    buildingId: destination.buildingId,
+    buildingName: destination.buildingName,
+    destination: Object.freeze({ id: destination.spaceId, name: destination.spaceName, score: operation.total }),
+    personIds: Object.freeze(personIds),
+    people,
+    expectedLocations,
+    activities,
+    recorded: recordedKeys.has(id)
+  });
+  return Object.freeze({
+    id,
+    phase: phase.id,
+    time: phase.time,
+    phaseLabel: phase.label,
+    proximity: proximityResult,
+    score,
+    label,
+    title,
+    summary,
+    buildingId: destination.buildingId,
+    buildingName: destination.buildingName,
+    destination: scene.destination,
+    personIds: scene.personIds,
+    people,
+    routes: Object.freeze(routes.map((route) => Object.freeze({ personId: route.personId, kind: route.kind, code: route.code, reason: route.reason }))),
+    reasons: Object.freeze([proximityResult.reason, ...relationship.reasons].slice(0, 4)),
+    recorded: scene.recorded,
+    scene
+  });
+}
+function compileLifeCollisions(state) {
+  const flows = compileLifeFlows(state);
+  const operations = new Map(flows.buildings.map((building) => [building.id, new Map(compileBuildingOperations(state, building.id).spaces.map((space) => [space.id, space]))]));
+  const recordedKeys = new Set(Object.values(state.\u4E8B\u4EF6\u5217\u8868 ?? {}).map((event) => event.\u573A\u666F\u952E).filter(Boolean));
+  const collisions = [];
+  for (const phase of flows.phases.filter((item) => ["day", "evening"].includes(item.id))) {
+    for (let leftIndex = 0; leftIndex < flows.residents.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < flows.residents.length; rightIndex += 1) {
+        const collision = compileCollision(state, flows, phase, flows.residents[leftIndex], flows.residents[rightIndex], operations, recordedKeys);
+        if (collision) collisions.push(collision);
+      }
+    }
+  }
+  collisions.sort((left, right) => Number(left.recorded) - Number(right.recorded) || right.score - left.score || left.id.localeCompare(right.id));
+  const buildingIds = new Set(collisions.map((item) => item.buildingId));
+  return Object.freeze({
+    signature: `collision_oracle_${hash8(collisions.map((item) => `${item.id}:${item.score}:${item.recorded}`).join("|"))}`,
+    collisions: Object.freeze(collisions),
+    focus: collisions.find((item) => !item.recorded) ?? null,
+    metrics: Object.freeze({
+      candidates: collisions.length,
+      exact: collisions.filter((item) => item.proximity.kind === "same-space").length,
+      adjacent: collisions.filter((item) => item.proximity.kind === "adjacent").length,
+      crossWorld: collisions.filter((item) => item.people[0].origin !== item.people[1].origin).length,
+      buildings: buildingIds.size
+    })
+  });
+}
+function createLifeCollisionService() {
+  return Object.freeze({ compile: compileLifeCollisions });
+}
+var init_life_collision_engine = __esm({
+  "scripts/src/tenants/life-collision-engine.js"() {
+    init_operations_engine();
+    init_route_engine();
+    init_life_flow_engine();
+    init_relationship_engine();
+  }
+});
+
+// scripts/src/tenants/autonomy-engine.js
+function hash9(value) {
+  let result = 5381;
+  for (const character of String(value)) result = Math.imul(result, 33) ^ character.charCodeAt(0);
+  return (result >>> 0).toString(36);
+}
+function includesAny3(value, words) {
+  const source = String(value ?? "");
+  return words.some((word) => source.includes(word));
+}
+function destinationAffinity(person, space) {
+  let score = space.total * 0.55 + space.metrics.appeal * 0.2 + space.metrics.comfort * 0.15 + space.metrics.vitality * 0.1;
+  const reasons = [`${space.name}\u5F53\u524D\u5904\u4E8E\u300C${space.status}\u300D\u72B6\u6001`];
+  if (includesAny3(person.\u804C\u4E1A, ["\u6444\u5F71", "\u827A\u672F", "\u8BBE\u8BA1", "\u4F5C\u5BB6", "\u8BB0\u8005"])) {
+    score += space.metrics.appeal * 0.12;
+    reasons.push(`${person.\u804C\u4E1A}\u4F1A\u88AB\u8FD9\u91CC\u7684\u7A7A\u95F4\u8868\u73B0\u529B\u5438\u5F15`);
+  }
+  if (includesAny3(person.\u804C\u4E1A, ["\u533B\u751F", "\u62A4\u58EB", "\u6CBB\u7597", "\u7597\u6108", "\u5FC3\u7406"])) {
+    score += (space.metrics.comfort + space.metrics.function) * 0.07;
+    reasons.push(`${person.\u804C\u4E1A}\u4F1A\u672C\u80FD\u5730\u68C0\u67E5\u8212\u9002\u4E0E\u529F\u80FD\u7EC6\u8282`);
+  }
+  if (includesAny3(`${person.\u804C\u4E1A} ${person.\u6027\u683C}`, ["\u7075\u690D", "\u56ED\u827A", "\u690D\u7269", "\u81EA\u7136"]) && includesAny3(`${space.name} ${space.purpose}`, ["\u82B1\u56ED", "\u690D\u7269", "\u81EA\u7136", "\u7EFF"])) {
+    score += 18;
+    reasons.push("\u4EBA\u7269\u4E0E\u8FD9\u4E2A\u7A7A\u95F4\u7684\u81EA\u7136\u5C5E\u6027\u5F62\u6210\u804C\u4E1A\u5171\u9E23");
+  }
+  if (includesAny3(`${person.\u6027\u683C} ${person.\u5185\u5FC3}`, ["\u597D\u5947", "\u5F00\u6717", "\u70ED\u60C5"]) && space.publicSpace) {
+    score += 9;
+    reasons.push("\u597D\u5947\u5FC3\u8BA9\u4EBA\u7269\u613F\u610F\u4E3B\u52A8\u8D70\u8FDB\u516C\u5171\u751F\u6D3B");
+  }
+  if (includesAny3(person.\u6027\u683C, ["\u5B89\u9759", "\u8C28\u614E", "\u5185\u5411"]) && !space.publicSpace) {
+    score += 8;
+    reasons.push("\u76F8\u5BF9\u5B89\u9759\u7684\u7A7A\u95F4\u66F4\u9002\u5408\u4EBA\u7269\u6B64\u523B\u7684\u8282\u594F");
+  }
+  return { score: Math.round(score), reasons };
+}
+function activityFor(person, destination) {
+  if (includesAny3(person.\u804C\u4E1A, ["\u6444\u5F71"])) return `\u91C7\u96C6${destination.name}\u7684\u5149\u5F71\u4E0E\u751F\u6D3B\u6837\u672C`;
+  if (includesAny3(person.\u804C\u4E1A, ["\u7075\u690D", "\u56ED\u827A", "\u690D\u7269"])) return `\u89C2\u5BDF${destination.name}\u91CC\u9002\u5408\u751F\u957F\u7684\u89D2\u843D`;
+  if (includesAny3(person.\u804C\u4E1A, ["\u533B\u751F", "\u62A4\u58EB", "\u6CBB\u7597", "\u7597\u6108"])) return `\u68C0\u67E5${destination.name}\u662F\u5426\u8BA9\u4EBA\u771F\u6B63\u653E\u677E`;
+  if (includesAny3(person.\u804C\u4E1A, ["\u4F5C\u5BB6", "\u8BB0\u8005"])) return `\u8BB0\u5F55${destination.name}\u6B63\u5728\u53D1\u751F\u7684\u751F\u6D3B\u7EC6\u8282`;
+  return `\u4F53\u9A8C${destination.name}\u4E0E\u81EA\u5DF1\u4E16\u754C\u5B8C\u5168\u4E0D\u540C\u7684\u65E5\u5E38`;
+}
+function compileTenantAutonomy(state, buildingId) {
+  const building = state?.\u5EFA\u7B51\u5217\u8868?.[buildingId];
+  if (!building) throw new Error(`\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${buildingId}`);
+  const operations = compileBuildingOperations(state, buildingId);
+  const proposals = [];
+  for (const [personId, person] of Object.entries(state.\u4EBA\u7269\u5217\u8868 ?? {}).sort(([left], [right]) => left.localeCompare(right))) {
+    if (person.\u6240\u5728\u5EFA\u7B51ID !== buildingId) continue;
+    const candidates = operations.spaces.filter((space) => space.id !== person.\u6240\u5728\u7A7A\u95F4ID).map((space) => ({ space, ...destinationAffinity(person, space) })).sort((left, right) => right.score - left.score || left.space.id.localeCompare(right.space.id));
+    const chosen = candidates[0];
+    if (!chosen) continue;
+    const source = building.\u7A7A\u95F4\u5217\u8868?.[person.\u6240\u5728\u7A7A\u95F4ID];
+    const activity = activityFor(person, chosen.space);
+    const id = `autonomy_${hash9([buildingId, personId, person.\u6240\u5728\u7A7A\u95F4ID, chosen.space.id, operations.signature].join("|"))}`;
+    proposals.push(Object.freeze({
+      id,
+      personId,
+      person: Object.freeze({ name: person.\u59D3\u540D, origin: person.\u6765\u6E90\u4E16\u754C, profession: person.\u804C\u4E1A, color: person.\u89C6\u89C9\u8EAB\u4EFD?.\u4E3B\u8272 ?? "#FF9EAA" }),
+      buildingId,
+      buildingName: building.\u540D\u79F0,
+      source: Object.freeze({ id: person.\u6240\u5728\u7A7A\u95F4ID, name: source?.\u540D\u79F0 ?? "\u672A\u77E5\u7A7A\u95F4" }),
+      destination: Object.freeze({ id: chosen.space.id, name: chosen.space.name, status: chosen.space.status, score: chosen.score }),
+      activity,
+      title: `${person.\u59D3\u540D}\u60F3\u53BB${chosen.space.name}`,
+      summary: `${person.\u59D3\u540D}\u60F3\u6682\u65F6\u79BB\u5F00${source?.\u540D\u79F0 ?? "\u5F53\u524D\u4F4D\u7F6E"}\uFF0C\u53BB${chosen.space.name}${activity}\u3002\u8FD9\u662F\u4E00\u6BB5\u751F\u6D3B\u884C\u52A8\uFF0C\u4E0D\u662F\u6C38\u4E45\u642C\u5BB6\u3002`,
+      reasons: Object.freeze(chosen.reasons.slice(0, 3)),
+      expectedFrom: Object.freeze({ buildingId, spaceId: person.\u6240\u5728\u7A7A\u95F4ID })
+    }));
+  }
+  const signature = `autonomy_${hash9(JSON.stringify(proposals.map((item) => [item.id, item.destination.id])))}`;
+  return Object.freeze({ buildingId, buildingName: building.\u540D\u79F0, signature, proposals: Object.freeze(proposals) });
+}
+function createTenantAutonomyService() {
+  return Object.freeze({ compile: compileTenantAutonomy });
+}
+var init_autonomy_engine = __esm({
+  "scripts/src/tenants/autonomy-engine.js"() {
     init_operations_engine();
   }
 });
@@ -22354,7 +22502,7 @@ var init_spatial_sync_service = __esm({
 });
 
 // scripts/src/services/perception-service.js
-function clamp5(value) {
+function clamp6(value) {
   return Math.max(0, Math.min(100, Number(value) || 0));
 }
 function createPerceptionService({ store, step = 18 }) {
@@ -22363,11 +22511,11 @@ function createPerceptionService({ store, step = 18 }) {
     const state = store.getState();
     const building = state.\u5EFA\u7B51\u5217\u8868[buildingId];
     if (!building) throw new Error(`\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${buildingId}`);
-    if (clamp5(building.\u611F\u77E5\u5EA6) < 100) return { kind: "building", id: buildingId, name: building.\u540D\u79F0, awareness: clamp5(building.\u611F\u77E5\u5EA6) };
-    const floors = Object.entries(building.\u697C\u5C42\u5217\u8868 ?? {}).filter(([, floor]) => clamp5(floor.\u611F\u77E5\u5EA6) < 100).sort((left, right) => clamp5(left[1].\u611F\u77E5\u5EA6) - clamp5(right[1].\u611F\u77E5\u5EA6) || Number(left[1].\u987A\u5E8F) - Number(right[1].\u987A\u5E8F));
-    if (floors.length) return { kind: "floor", id: floors[0][0], name: floors[0][1].\u540D\u79F0, awareness: clamp5(floors[0][1].\u611F\u77E5\u5EA6) };
-    const spaces = Object.entries(building.\u7A7A\u95F4\u5217\u8868 ?? {}).filter(([, space]) => clamp5(space.\u611F\u77E5\u5EA6) < 100).sort((left, right) => clamp5(left[1].\u611F\u77E5\u5EA6) - clamp5(right[1].\u611F\u77E5\u5EA6));
-    if (spaces.length) return { kind: "space", id: spaces[0][0], name: spaces[0][1].\u540D\u79F0, awareness: clamp5(spaces[0][1].\u611F\u77E5\u5EA6) };
+    if (clamp6(building.\u611F\u77E5\u5EA6) < 100) return { kind: "building", id: buildingId, name: building.\u540D\u79F0, awareness: clamp6(building.\u611F\u77E5\u5EA6) };
+    const floors = Object.entries(building.\u697C\u5C42\u5217\u8868 ?? {}).filter(([, floor]) => clamp6(floor.\u611F\u77E5\u5EA6) < 100).sort((left, right) => clamp6(left[1].\u611F\u77E5\u5EA6) - clamp6(right[1].\u611F\u77E5\u5EA6) || Number(left[1].\u987A\u5E8F) - Number(right[1].\u987A\u5E8F));
+    if (floors.length) return { kind: "floor", id: floors[0][0], name: floors[0][1].\u540D\u79F0, awareness: clamp6(floors[0][1].\u611F\u77E5\u5EA6) };
+    const spaces = Object.entries(building.\u7A7A\u95F4\u5217\u8868 ?? {}).filter(([, space]) => clamp6(space.\u611F\u77E5\u5EA6) < 100).sort((left, right) => clamp6(left[1].\u611F\u77E5\u5EA6) - clamp6(right[1].\u611F\u77E5\u5EA6));
+    if (spaces.length) return { kind: "space", id: spaces[0][0], name: spaces[0][1].\u540D\u79F0, awareness: clamp6(spaces[0][1].\u611F\u77E5\u5EA6) };
     return null;
   }
   return Object.freeze({
@@ -22382,7 +22530,7 @@ function createPerceptionService({ store, step = 18 }) {
         amount: step
       });
       const after = target.kind === "building" ? store.getState().\u5EFA\u7B51\u5217\u8868[buildingId].\u611F\u77E5\u5EA6 : target.kind === "floor" ? store.getState().\u5EFA\u7B51\u5217\u8868[buildingId].\u697C\u5C42\u5217\u8868[target.id].\u611F\u77E5\u5EA6 : store.getState().\u5EFA\u7B51\u5217\u8868[buildingId].\u7A7A\u95F4\u5217\u8868[target.id].\u611F\u77E5\u5EA6;
-      return Object.freeze({ complete: false, target: Object.freeze({ ...target, awareness: clamp5(after) }) });
+      return Object.freeze({ complete: false, target: Object.freeze({ ...target, awareness: clamp6(after) }) });
     }
   });
 }
@@ -22393,12 +22541,12 @@ var init_perception_service = __esm({
 
 // scripts/src/services/tenant-identity-service.js
 function stableHash(value) {
-  let hash10 = 2166136261;
+  let hash11 = 2166136261;
   for (const char of String(value)) {
-    hash10 ^= char.codePointAt(0);
-    hash10 = Math.imul(hash10, 16777619);
+    hash11 ^= char.codePointAt(0);
+    hash11 = Math.imul(hash11, 16777619);
   }
-  return (hash10 >>> 0).toString(36);
+  return (hash11 >>> 0).toString(36);
 }
 function safeColor(value) {
   return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : "#FF9EAA";
@@ -22609,7 +22757,7 @@ var init_channel_bridge_service = __esm({
 function escapeXml(value) {
   return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
-function hash9(value) {
+function hash10(value) {
   let result = 2166136261;
   for (const character of String(value)) {
     result ^= character.charCodeAt(0);
@@ -22660,7 +22808,7 @@ function compileContextCapsule(state, buildingId, { maxChars = 2400 } = {}) {
   appendWithin(lines, "\u4E00\u81F4\u6027\u8981\u6C42\uFF1A\u4EBA\u7269\u53EA\u80FD\u88AB\u89C6\u4E3A\u4F4D\u4E8E\u4E0A\u8FF0\u771F\u5B9E\u7A7A\u95F4\uFF1B\u672A\u77E5\u7A7A\u95F4\u4E0E\u672A\u786E\u8BA4\u63D0\u6848\u4E0D\u5F97\u5199\u6210\u65E2\u6210\u4E8B\u5B9E\u3002", budget, closing.length);
   lines.push(closing);
   const content = lines.join("\n");
-  const signature = `capsule_${hash9(content)}`;
+  const signature = `capsule_${hash10(content)}`;
   return Object.freeze({
     id: signature,
     signature,
@@ -23027,6 +23175,7 @@ function activate2(context) {
   const embodiment = createTenantEmbodimentService();
   const portfolioAssignments = createPortfolioAssignmentService();
   const lifeFlows = createLifeFlowService();
+  const lifeCollisions = createLifeCollisionService();
   const autonomy = createTenantAutonomyService();
   const relationships = createRelationshipService();
   const contextCapsules = createContextCapsuleService({ store });
@@ -23051,6 +23200,7 @@ function activate2(context) {
   context.services.register("tenant.embodiment", embodiment);
   context.services.register("tenant.portfolioAssignments", portfolioAssignments);
   context.services.register("tenant.lifeFlows", lifeFlows);
+  context.services.register("tenant.lifeCollisions", lifeCollisions);
   context.services.register("tenant.autonomy", autonomy);
   context.services.register("tenant.relationships", relationships);
   context.services.register("landlord.contextCapsules", contextCapsules);
@@ -23073,6 +23223,7 @@ var init_landlord_core = __esm({
     init_embodiment_engine();
     init_portfolio_assignment_engine();
     init_life_flow_engine();
+    init_life_collision_engine();
     init_autonomy_engine();
     init_relationship_engine();
     init_building_event_bus();
@@ -23386,6 +23537,23 @@ var init_life_flow_template = __esm({
   }
 });
 
+// scripts/src/ui/console/life-collision-template.js
+function renderCollision(collision, selected) {
+  return `<button class="lmo-collision-card ${selected ? "selected" : ""} ${collision.recorded ? "recorded" : ""}" data-action="choose-life-collision" data-collision-id="${escapeHtml(collision.id)}" data-collision-kind="${escapeHtml(collision.proximity.kind)}" style="--collision-score:${collision.score}" ${collision.recorded ? "disabled" : ""}><header><span><b>${escapeHtml(collision.time)}</b><small>${escapeHtml(collision.phaseLabel)} \xB7 ${escapeHtml(collision.proximity.label)}</small></span><em><b>${collision.score}</b><small>\u4EA4\u6C47\u5F3A\u5EA6</small></em></header><div class="lmo-collision-people">${collision.people.map((person) => `<i style="--person-accent:${safeColor2(person.color)}">${escapeHtml(person.name.slice(0, 1))}</i>`).join("")}<span><strong>${escapeHtml(collision.people.map((person) => person.name).join(" \xD7 "))}</strong><small>${escapeHtml(collision.people.map((person) => person.origin).join(" \xD7 "))}</small></span></div><h3>${escapeHtml(collision.label)}</h3><p>${escapeHtml(collision.summary)}</p><div class="lmo-collision-route"><span>${escapeHtml(collision.routes.map((route) => route.kind).join(" / "))}</span>${icon("arrow")}<strong>${escapeHtml(`${collision.buildingName}\xB7${collision.destination.name}`)}</strong></div><ul>${collision.reasons.slice(0, 3).map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul><footer><span>${collision.recorded ? "\u8FD9\u6B21\u4EA4\u6C47\u5DF2\u53D1\u751F" : "\u9009\u4E2D\u540E\u53EF\u9501\u5B9A\u4E3A\u771F\u5B9E\u573A\u666F"}</span><em>${collision.recorded ? "\u5DF2\u8BB0\u5F55" : "\u67E5\u770B\u9501\u5B9A\u9884\u89C8"}</em></footer></button>`;
+}
+function renderLifeCollisions(state, ui) {
+  const center = compileLifeCollisions(state);
+  const selected = center.collisions.find((item) => item.id === ui.selectedLifeCollisionId && !item.recorded);
+  const content = center.collisions.length ? `<div class="lmo-collision-grid">${center.collisions.map((collision) => renderCollision(collision, collision.id === ui.selectedLifeCollisionId)).join("")}</div>` : emptyState("\u8FD8\u6CA1\u6709\u53EF\u9501\u5B9A\u7684\u751F\u6D3B\u4EA4\u6C47", "\u81F3\u5C11\u9700\u8981\u4E24\u4F4D\u4EBA\u7269\u5728\u767D\u65E5\u6216\u665A\u95F4\u6D41\u7EBF\u4E2D\u8FDB\u5165\u540C\u4E00\u680B\u5EFA\u7B51\u3002");
+  return `<section class="lmo-life-collisions" data-collision-oracle="${escapeHtml(center.signature)}"><div class="lmo-section-heading compact"><div><span>LIFE COLLISION ORACLE</span><h2>\u8DE8\u4E16\u754C\u751F\u6D3B\u4EA4\u6C47\u9884\u8A00\u673A</h2></div><p>\u4ECE 24H \u6D41\u7EBF\u4E2D\u68C0\u6D4B\u540C\u5C4B\u3001\u76F8\u90BB\u548C\u540C\u680B\u4EA4\u6C47\uFF1B\u53EA\u6709\u73A9\u5BB6\u9501\u5B9A\u540E\u624D\u4F1A\u771F\u6B63\u79FB\u52A8\u4EBA\u7269\u3002</p></div><div class="lmo-collision-summary"><p><b>${center.metrics.candidates}</b><small>\u4EA4\u6C47\u5019\u9009</small></p><p><b>${center.metrics.exact}</b><small>\u540C\u5C4B\u76F8\u9047</small></p><p><b>${center.metrics.adjacent}</b><small>\u76F8\u90BB\u64E6\u80A9</small></p><p><b>${center.metrics.crossWorld}</b><small>\u8DE8\u4E16\u754C</small></p><p><b>${center.metrics.buildings}</b><small>\u6D89\u53CA\u5EFA\u7B51</small></p><span>\u9884\u6D4B\u53EA\u8BFB \xB7 \u9501\u5B9A\u540E\u8FDB\u5165\u539F\u5B50\u5199\u5165\u4E0E\u7ECF\u8425\u56DE\u6EAF</span></div>${content}${selected ? `<div class="lmo-confirm-bar lmo-collision-confirm"><div><strong>\u9501\u5B9A\u300C${escapeHtml(selected.title)}\u300D</strong><span>\u786E\u8BA4\u540E\u4E24\u4EBA\u4F1A\u4E00\u8D77\u524D\u5F80${escapeHtml(selected.destination.name)}\uFF1B\u4EFB\u4F55\u4EBA\u4F4D\u7F6E\u5DF2\u53D8\u5316\u65F6\uFF0C\u65E7\u9884\u6D4B\u4F1A\u81EA\u52A8\u62D2\u7EDD\u3002</span></div><button class="lmo-primary" data-action="confirm-life-collision" ${ui.busy ? "disabled" : ""}>\u9501\u5B9A\u4EA4\u6C47 ${icon("sparkle")}</button></div>` : ""}</section>`;
+}
+var init_life_collision_template = __esm({
+  "scripts/src/ui/console/life-collision-template.js"() {
+    init_life_collision_engine();
+    init_template_helpers();
+  }
+});
+
 // scripts/src/ui/console/templates.js
 function renovationVisualStyle(visual) {
   return `--room-base:${safeColor2(visual.css.base)};--room-accent:${safeColor2(visual.css.accent)};--room-secondary:${safeColor2(visual.css.secondary)};--room-glow:${safeColor2(visual.css.glow)};--room-text:${safeColor2(visual.css.text, "#283044")}`;
@@ -23466,7 +23634,7 @@ function renderPortfolioNetwork(portfolio, current) {
     <aside><span>NETWORK STATUS</span><strong>${escapeHtml(current.name)}</strong><small>\u5F53\u524D\u7ECF\u8425\u7126\u70B9</small><div><p><b>${metrics.owned}</b><small>\u5DF2\u63A5\u7BA1</small></p><p><b>${metrics.activeRoutes}</b><small>\u8FD0\u8425\u94FE\u8DEF</small></p><p><b>${metrics.opportunities}</b><small>\u63A5\u7BA1\u673A\u4F1A</small></p><p><b>${metrics.totalPeople}</b><small>\u7248\u56FE\u4EBA\u7269</small></p></div><em>${escapeHtml(current.summary.\u4ECA\u65E5\u4EAE\u70B9)}</em></aside></div>
   </article>`;
 }
-function renderPortfolio(state, portfolio) {
+function renderPortfolio(state, portfolio, ui) {
   const current = portfolio.buildings.find((item) => item.id === state.\u5F53\u524D\u5EFA\u7B51ID) ?? portfolio.headquarters;
   const recentEvents = Object.entries(state.\u4E8B\u4EF6\u5217\u8868 ?? {}).slice(-3).reverse();
   return `<section class="lmo-view lmo-portfolio">
@@ -23479,6 +23647,7 @@ function renderPortfolio(state, portfolio) {
     ${renderPortfolioRadar(state)}
     ${renderPortfolioAssignmentMatrix(state)}
     ${renderLifeFlow(state)}
+    ${renderLifeCollisions(state, ui)}
     <div class="lmo-section-heading"><div><span>OWNED</span><h2>\u5DF2\u7ECF\u5C5E\u4E8E\u4F60\u7684\u5730\u65B9</h2></div><p>\u6BCF\u4E00\u680B\u5EFA\u7B51\u90FD\u4F7F\u7528\u540C\u4E00\u4EFD\u771F\u5B9E\u72B6\u6001\uFF0C\u4F46\u62E5\u6709\u81EA\u5DF1\u7684\u7A7A\u95F4\u8BED\u8A00\u3002</p></div>
     <div class="lmo-building-grid">${portfolio.owned.map((building) => buildingCard(building, "open-building")).join("")}</div>
     <div class="lmo-section-heading"><div><span>OPPORTUNITIES</span><h2>\u4E0B\u4E00\u6B21\u63A5\u7BA1\u673A\u4F1A</h2></div><p>\u4E0D\u662F\u7A7A\u58F3\uFF1A\u5B83\u4EEC\u5DF2\u7ECF\u6709\u683C\u5C40\u3001\u8BBE\u65BD\u548C\u7B49\u5F85\u88AB\u6539\u53D8\u7684\u90E8\u5206\u3002</p></div>
@@ -23777,7 +23946,7 @@ function renderHistory(historyCenter) {
 }
 function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin }) {
   let content;
-  if (ui.section === "portfolio") content = renderPortfolio(state, portfolio);
+  if (ui.section === "portfolio") content = renderPortfolio(state, portfolio, ui);
   else if (ui.section === "building") content = renderBuilding(current, identityCenter);
   else if (ui.section === "pulse") content = renderPulse(pulse, ui);
   else if (ui.section === "tenants") content = renderTenantLife(tenantLife, autonomyCenter, relationshipCenter, ui);
@@ -23805,6 +23974,7 @@ var init_templates = __esm({
     init_portfolio_radar_template();
     init_portfolio_assignment_template();
     init_life_flow_template();
+    init_life_collision_template();
     pulseMetricMeta = Object.freeze({
       comfort: ["\u8212\u9002\u4F53\u611F", "\u7A7A\u95F4\u662F\u5426\u8BA9\u4EBA\u613F\u610F\u505C\u7559"],
       function: ["\u529F\u80FD\u5151\u73B0", "\u8BBE\u65BD\u4E0E\u7528\u9014\u662F\u5426\u771F\u6B63\u53EF\u7528"],
@@ -23865,6 +24035,61 @@ function handleAutonomyAction({ action, button, data, ui, store, render, withBus
 }
 var init_autonomy_actions = __esm({
   "scripts/src/ui/console/autonomy-actions.js"() {
+  }
+});
+
+// scripts/src/ui/console/console-state.js
+function createConsoleUiState() {
+  return {
+    section: "portfolio",
+    targetBuildingId: null,
+    selectedSpaceId: null,
+    focusedFloorId: null,
+    twinSpaceId: null,
+    twinLayer: "layout",
+    selectedPulseSceneId: null,
+    selectedReactionId: null,
+    selectedAutonomyProposalId: null,
+    selectedRelationshipSparkId: null,
+    selectedRelationshipSceneId: null,
+    selectedLifeCollisionId: null,
+    previewLinkIds: [],
+    contextCapsuleVisible: false,
+    selectedMovePersonId: null,
+    selectedMoveBuildingId: null,
+    selectedMoveSpaceId: null,
+    lastNarrativeExtraction: null,
+    selectedOptionId: null,
+    taskId: null,
+    busy: false,
+    notice: null
+  };
+}
+var init_console_state = __esm({
+  "scripts/src/ui/console/console-state.js"() {
+  }
+});
+
+// scripts/src/ui/console/life-collision-actions.js
+function handleLifeCollisionAction({ action, button, ui, store, render, withBusy, recordOperation, setNotice }) {
+  if (action === "choose-life-collision") {
+    ui.selectedLifeCollisionId = button.dataset.collisionId;
+    return render();
+  }
+  if (action === "confirm-life-collision") {
+    const collision = compileLifeCollisions(store.getState()).collisions.find((item) => item.id === ui.selectedLifeCollisionId);
+    if (!collision || collision.recorded) throw new Error("\u8BF7\u9009\u62E9\u4E00\u6B21\u4ECD\u7136\u6709\u6548\u7684\u751F\u6D3B\u6D41\u7EBF\u4EA4\u6C47");
+    return withBusy(async () => {
+      await recordOperation("relationship-scene", `\u9501\u5B9A${collision.title}`, () => store.activateRelationshipScene(collision.scene));
+      ui.selectedLifeCollisionId = null;
+      setNotice("\u8FD9\u6B21\u751F\u6D3B\u4EA4\u6C47\u5DF2\u9501\u5B9A\uFF1A\u53CC\u65B9\u4F4D\u7F6E\u3001\u5EFA\u7B51\u4E8B\u4EF6\u548C\u4E09\u9891\u9053\u8349\u7A3F\u5DF2\u540C\u6B65\u3002", "success");
+    });
+  }
+  throw new Error(`\u672A\u77E5\u751F\u6D3B\u4EA4\u6C47\u64CD\u4F5C\uFF1A${action}`);
+}
+var init_life_collision_actions = __esm({
+  "scripts/src/ui/console/life-collision-actions.js"() {
+    init_life_collision_engine();
   }
 });
 
@@ -23945,29 +24170,7 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
   let root = null;
   let visible = false;
   let disposed = false;
-  const ui = {
-    section: "portfolio",
-    targetBuildingId: null,
-    selectedSpaceId: null,
-    focusedFloorId: null,
-    twinSpaceId: null,
-    twinLayer: "layout",
-    selectedPulseSceneId: null,
-    selectedReactionId: null,
-    selectedAutonomyProposalId: null,
-    selectedRelationshipSparkId: null,
-    selectedRelationshipSceneId: null,
-    previewLinkIds: [],
-    contextCapsuleVisible: false,
-    selectedMovePersonId: null,
-    selectedMoveBuildingId: null,
-    selectedMoveSpaceId: null,
-    lastNarrativeExtraction: null,
-    selectedOptionId: null,
-    taskId: null,
-    busy: false,
-    notice: null
-  };
+  const ui = createConsoleUiState();
   function getData() {
     const state = store.getState();
     const portfolio = compiler.compilePortfolio(state);
@@ -24123,6 +24326,7 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
       });
     }
     if (action.includes("autonomy")) return handleAutonomyAction({ action, button, data, ui, store, render, withBusy, recordOperation, setNotice });
+    if (action.includes("life-collision")) return handleLifeCollisionAction({ action, button, ui, store, render, withBusy, recordOperation, setNotice });
     if (action.includes("relationship")) return handleRelationshipAction({ action, button, data, ui, store, render, withBusy, recordOperation, setNotice });
     if (action === "undo-operation" || action === "redo-operation") {
       if (!history) throw new Error("\u7ECF\u8425\u56DE\u6EAF\u670D\u52A1\u5C1A\u672A\u52A0\u8F7D");
@@ -24416,6 +24620,8 @@ var init_controller = __esm({
   "scripts/src/ui/console/controller.js"() {
     init_templates();
     init_autonomy_actions();
+    init_console_state();
+    init_life_collision_actions();
     init_relationship_actions();
     init_spatial_view_model();
     init_workflow_actions();
@@ -24526,6 +24732,7 @@ var init_styles = __esm({
 .lmo-portfolio-radar{display:grid;gap:12px}.lmo-radar-summary{display:grid;grid-template-columns:repeat(5,minmax(68px,1fr)) minmax(150px,1.6fr);overflow:hidden;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel)}.lmo-radar-summary>p{margin:0;padding:12px 8px;display:grid;place-items:center;border-right:1px solid var(--lmo-line)}.lmo-radar-summary b{font:700 16px Georgia,serif}.lmo-radar-summary small{color:var(--lmo-muted);font-size:6px}.lmo-radar-summary>aside{padding:10px 13px;display:grid;align-content:center;gap:2px;background:color-mix(in srgb,var(--active-accent) 6%,var(--lmo-surface))}.lmo-radar-summary>aside span{color:var(--active-accent);font-size:5px;font-weight:900}.lmo-radar-summary>aside strong{font-size:8px}.lmo-radar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.lmo-radar-card{min-width:0;padding:0;overflow:hidden;border:1px solid var(--lmo-line);border-radius:16px;background:radial-gradient(circle at 18% 35%,color-mix(in srgb,var(--radar-accent) 8%,transparent),transparent 38%),var(--lmo-panel);color:var(--lmo-text);text-align:left;cursor:pointer;transition:.18s}.lmo-radar-card:hover,.lmo-radar-card.current{border-color:color-mix(in srgb,var(--radar-accent) 55%,var(--lmo-line));box-shadow:0 12px 30px color-mix(in srgb,var(--radar-accent) 12%,transparent);transform:translateY(-2px)}.lmo-radar-card>header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--lmo-line)}.lmo-radar-card>header>div{min-width:0;display:grid;gap:2px}.lmo-radar-card header span{color:var(--radar-accent);font-size:6px;font-weight:900}.lmo-radar-card header strong{overflow:hidden;font-size:10px;text-overflow:ellipsis;white-space:nowrap}.lmo-radar-card header em{width:46px;height:46px;display:grid;place-content:center;border-radius:50%;background:radial-gradient(circle,var(--lmo-panel) 51%,transparent 53%),conic-gradient(var(--radar-accent) calc(var(--pulse,70)*1%),var(--lmo-line) 0);text-align:center;font-style:normal}.lmo-radar-card header em b{font:700 10px Georgia,serif}.lmo-radar-card header em small{color:var(--lmo-muted);font-size:4px}.lmo-radar-body{padding:10px 13px;display:grid;grid-template-columns:150px minmax(0,1fr);gap:9px;align-items:center}.lmo-radar-body svg{width:150px;height:150px;overflow:visible}.lmo-radar-body svg path{fill:none;stroke:color-mix(in srgb,var(--radar-accent) 20%,var(--lmo-line));stroke-width:.8}.lmo-radar-body svg line{stroke:color-mix(in srgb,var(--radar-accent) 12%,var(--lmo-line));stroke-width:.5}.lmo-radar-body svg polygon{fill:color-mix(in srgb,var(--radar-accent) 24%,transparent);stroke:var(--radar-accent);stroke-width:1.6;filter:drop-shadow(0 0 4px color-mix(in srgb,var(--radar-accent) 30%,transparent))}.lmo-radar-body svg text{fill:var(--lmo-muted);font-size:4.5px;text-anchor:middle}.lmo-radar-body>div{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}.lmo-radar-body>div p{margin:0;padding:9px 4px;display:grid;place-items:center;border:1px solid var(--lmo-line);border-radius:9px;background:var(--lmo-surface)}.lmo-radar-body>div b{color:var(--radar-accent);font:700 12px Georgia,serif}.lmo-radar-body>div small{color:var(--lmo-muted);font-size:5px}.lmo-radar-card>footer{padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--lmo-line);background:color-mix(in srgb,var(--radar-accent) 4%,var(--lmo-surface))}.lmo-radar-card>footer span{overflow:hidden;color:var(--lmo-muted);font-size:6px;text-overflow:ellipsis;white-space:nowrap}.lmo-radar-card>footer strong{flex:0 0 auto;color:var(--radar-accent);font-size:6px}.lmo-radar-focus{padding:11px 14px;display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:9px;align-items:center;border-left:3px solid var(--active-accent);border-radius:0 11px 11px 0;background:color-mix(in srgb,var(--active-accent) 5%,var(--lmo-panel))}.lmo-radar-focus span{color:var(--active-accent);font-size:6px;font-weight:900}.lmo-radar-focus strong{font-size:8px}.lmo-radar-focus p{margin:0;color:var(--lmo-muted);font-size:7px;text-align:right}
 .lmo-portfolio-assignment{display:grid;gap:11px}.lmo-assignment-summary{display:grid;grid-template-columns:repeat(4,minmax(72px,110px)) minmax(0,1fr);overflow:hidden;border:1px solid var(--lmo-line);border-radius:14px;background:var(--lmo-panel)}.lmo-assignment-summary p{margin:0;padding:10px 8px;display:grid;place-items:center;border-right:1px solid var(--lmo-line)}.lmo-assignment-summary b{font:700 15px Georgia,serif}.lmo-assignment-summary small{color:var(--lmo-muted);font-size:5.5px}.lmo-assignment-summary>span{padding:10px 14px;display:flex;align-items:center;justify-content:flex-end;color:var(--lmo-muted);font-size:6px}.lmo-assignment-layout{display:grid;grid-template-columns:minmax(0,1fr) 225px;overflow:hidden;border:1px solid color-mix(in srgb,var(--active-accent) 23%,var(--lmo-line));border-radius:17px;background:radial-gradient(circle at 10% 10%,color-mix(in srgb,var(--active-accent) 7%,transparent),transparent 34%),var(--lmo-panel)}.lmo-assignment-scroll{min-width:0;overflow:auto}.lmo-assignment-table{min-width:620px}.lmo-assignment-row{display:grid;grid-template-columns:minmax(160px,.75fr) repeat(var(--assignment-columns),minmax(145px,1fr));border-bottom:1px solid var(--lmo-line)}.lmo-assignment-row:last-child{border-bottom:0}.lmo-assignment-row>div{min-width:0;border-right:1px solid var(--lmo-line)}.lmo-assignment-row>div:last-child{border-right:0}.lmo-assignment-row.heading{position:sticky;top:0;z-index:1;background:color-mix(in srgb,var(--lmo-surface) 92%,transparent)}.lmo-assignment-row.heading>div{min-height:54px;padding:9px 11px;display:grid;align-content:center;gap:2px}.lmo-assignment-row.heading>div:not(:first-child){grid-template-columns:7px minmax(0,1fr);align-items:center}.lmo-assignment-row.heading i{grid-row:1/3;width:5px;height:28px;border-radius:99px;background:var(--building-accent)}.lmo-assignment-row.heading span{color:var(--active-accent);font-size:6px;font-weight:900;letter-spacing:.12em}.lmo-assignment-row.heading strong{overflow:hidden;font-size:8px;text-overflow:ellipsis;white-space:nowrap}.lmo-assignment-row.heading small{color:var(--lmo-muted);font-size:5.5px}.lmo-assignment-person{min-height:112px;padding:12px;display:grid;grid-template-columns:35px minmax(0,1fr);gap:9px;align-items:start}.lmo-assignment-person>i{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--person-accent);color:white;font:700 11px Georgia,serif;font-style:normal}.lmo-assignment-person>span{min-width:0;display:grid;gap:3px}.lmo-assignment-person strong,.lmo-assignment-person small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-assignment-person strong{font-size:9px}.lmo-assignment-person small{color:var(--lmo-muted);font-size:5.5px}.lmo-assignment-person em{margin-top:4px;color:var(--person-accent);font-size:6px;font-style:normal;line-height:1.45}.lmo-assignment-cell{min-height:112px;padding:11px;display:flex;flex-direction:column;gap:5px;background:color-mix(in srgb,var(--cell-accent) 2%,transparent)}.lmo-assignment-cell.current{background:color-mix(in srgb,var(--cell-accent) 6%,transparent)}.lmo-assignment-cell.best{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cell-accent) 55%,transparent);background:color-mix(in srgb,var(--cell-accent) 10%,transparent)}.lmo-assignment-cell header{display:flex;align-items:center;justify-content:space-between;gap:5px}.lmo-assignment-cell header b{color:var(--cell-accent);font:700 17px Georgia,serif}.lmo-assignment-cell header span{padding:3px 5px;border-radius:99px;background:color-mix(in srgb,var(--cell-accent) 9%,transparent);color:var(--cell-accent);font-size:5px;font-weight:800}.lmo-assignment-cell>strong{overflow:hidden;font-size:8px;text-overflow:ellipsis;white-space:nowrap}.lmo-assignment-cell>small{min-height:18px;color:var(--lmo-muted);font-size:5.5px;line-height:1.45}.lmo-assignment-cell>i{height:3px;margin-top:auto;overflow:hidden;border-radius:99px;background:var(--lmo-line)}.lmo-assignment-cell>i em{height:100%;display:block;border-radius:inherit;background:var(--cell-accent)}.lmo-assignment-cell.unavailable{align-items:center;justify-content:center;color:var(--lmo-muted)}.lmo-assignment-layout>aside{padding:17px 14px;display:flex;flex-direction:column;gap:7px;border-left:1px solid var(--lmo-line);background:color-mix(in srgb,var(--lmo-surface) 82%,transparent)}.lmo-assignment-layout>aside>span{color:var(--active-accent);font-size:6px;font-weight:900;letter-spacing:.14em}.lmo-assignment-layout>aside>strong{font:700 13px Georgia,"Songti SC",serif}.lmo-assignment-layout>aside>small{color:var(--lmo-muted);font-size:6px;line-height:1.5}.lmo-assignment-layout>aside>div{margin:5px 0;display:grid;gap:6px}.lmo-assignment-layout>aside article{padding:8px;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-panel)}.lmo-assignment-layout>aside article header{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:7px;align-items:center}.lmo-assignment-layout>aside article header>i{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:var(--person-accent);color:white;font:700 9px Georgia,serif;font-style:normal}.lmo-assignment-layout>aside article span{min-width:0;display:grid;gap:2px}.lmo-assignment-layout>aside article strong,.lmo-assignment-layout>aside article small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-assignment-layout>aside article strong{font-size:7px}.lmo-assignment-layout>aside article small{color:var(--lmo-muted);font-size:5px}.lmo-assignment-layout>aside article b{color:var(--person-accent);font:700 10px Georgia,serif}.lmo-assignment-layout>aside article p{margin:6px 0 0;color:var(--lmo-muted);font-size:5.5px}.lmo-assignment-layout>aside>button{margin-top:auto;width:100%;justify-content:center}.lmo-assignment-stable{margin:0;padding:10px;border-left:2px solid var(--active-accent);background:color-mix(in srgb,var(--active-accent) 5%,transparent);color:var(--lmo-muted);font-size:6px;line-height:1.6}
 .lmo-life-flow{display:grid;gap:11px}.lmo-flow-summary{display:grid;grid-template-columns:repeat(4,minmax(72px,110px)) minmax(0,1fr);overflow:hidden;border:1px solid var(--lmo-line);border-radius:14px;background:var(--lmo-panel)}.lmo-flow-summary p{margin:0;padding:10px 8px;display:grid;place-items:center;border-right:1px solid var(--lmo-line)}.lmo-flow-summary b{font:700 15px Georgia,serif}.lmo-flow-summary small{color:var(--lmo-muted);font-size:5.5px}.lmo-flow-summary>span{padding:10px 14px;display:flex;align-items:center;justify-content:flex-end;color:var(--lmo-muted);font-size:6px}.lmo-life-flow-layout{display:grid;grid-template-columns:minmax(0,1fr) 240px;overflow:hidden;border:1px solid color-mix(in srgb,var(--active-accent) 25%,var(--lmo-line));border-radius:18px;background:radial-gradient(circle at 12% 18%,color-mix(in srgb,var(--active-accent) 7%,transparent),transparent 34%),var(--lmo-panel)}.lmo-life-flow-list{min-width:0;padding:12px;display:grid;gap:9px}.lmo-flow-person{min-width:0;overflow:hidden;border:1px solid var(--lmo-line);border-radius:14px;background:color-mix(in srgb,var(--person-accent) 3%,var(--lmo-surface))}.lmo-flow-person>header{padding:10px 12px;display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;border-bottom:1px solid var(--lmo-line)}.lmo-flow-person>header>i{width:33px;height:33px;display:grid;place-items:center;border-radius:11px;background:var(--person-accent);color:white;font:700 10px Georgia,serif;font-style:normal}.lmo-flow-person>header>span{min-width:0;display:grid;gap:2px}.lmo-flow-person>header strong,.lmo-flow-person>header small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-flow-person>header strong{font-size:9px}.lmo-flow-person>header small{color:var(--lmo-muted);font-size:5.5px}.lmo-flow-person>header>div{display:flex;gap:4px}.lmo-flow-person>header p{margin:0;padding:4px 6px;display:grid;place-items:center;border-radius:7px;background:var(--lmo-panel)}.lmo-flow-person>header p b{font:700 9px Georgia,serif}.lmo-flow-person>header p small{color:var(--lmo-muted);font-size:4.5px}.lmo-flow-path{min-width:0;padding:13px 11px;display:grid;grid-template-columns:minmax(100px,1fr) minmax(34px,.42fr) minmax(100px,1fr) minmax(34px,.42fr) minmax(100px,1fr) minmax(34px,.42fr) minmax(100px,1fr);align-items:center;overflow-x:auto}.lmo-flow-stop{min-width:0;display:grid;grid-template-columns:34px minmax(0,1fr);gap:3px 7px;align-items:center}.lmo-flow-stop>time{grid-column:1/-1;color:var(--stop-accent);font:700 6px Georgia,serif}.lmo-flow-stop>i{width:32px;height:32px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--stop-accent) 44%,var(--lmo-line));border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--stop-accent) 13%,var(--lmo-panel)),var(--lmo-panel));box-shadow:0 0 12px color-mix(in srgb,var(--stop-accent) 14%,transparent);font-style:normal}.lmo-flow-stop>i b{color:var(--stop-accent);font:700 9px Georgia,serif}.lmo-flow-stop>span{min-width:0;display:grid;gap:1px}.lmo-flow-stop strong,.lmo-flow-stop small,.lmo-flow-stop em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-flow-stop strong{font-size:7px}.lmo-flow-stop small{color:var(--lmo-muted);font-size:4.8px}.lmo-flow-stop em{color:var(--stop-accent);font-size:4.8px;font-style:normal}.lmo-flow-transition{display:grid;grid-template-rows:4px auto;gap:3px;place-items:center}.lmo-flow-transition>i{width:100%;height:1px;position:relative;background:var(--lmo-line)}.lmo-flow-transition>i::after{content:'';position:absolute;right:0;top:-2px;border-left:4px solid var(--lmo-muted);border-top:2px solid transparent;border-bottom:2px solid transparent}.lmo-flow-transition.cross>i{height:2px;background:repeating-linear-gradient(90deg,var(--active-accent) 0 5px,transparent 5px 8px)}.lmo-flow-transition.cross>i::after{border-left-color:var(--active-accent)}.lmo-flow-transition small{color:var(--lmo-muted);font-size:4.5px;white-space:nowrap}.lmo-flow-transition.cross small{color:var(--active-accent);font-weight:800}.lmo-flow-person>footer{padding:8px 11px;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;border-top:1px solid var(--lmo-line);background:color-mix(in srgb,var(--person-accent) 3%,var(--lmo-panel))}.lmo-flow-person>footer span{display:grid;grid-template-columns:auto 1fr;gap:5px;color:var(--lmo-muted);font-size:5.5px}.lmo-flow-person>footer b{color:var(--person-accent);font-size:5.5px}.lmo-life-flow-layout>aside{padding:16px 14px;display:flex;flex-direction:column;gap:7px;border-left:1px solid var(--lmo-line);background:color-mix(in srgb,var(--lmo-surface) 82%,transparent)}.lmo-life-flow-layout>aside>span{color:var(--active-accent);font-size:6px;font-weight:900;letter-spacing:.13em}.lmo-life-flow-layout>aside>strong{font:700 13px Georgia,"Songti SC",serif}.lmo-life-flow-layout>aside>small{color:var(--lmo-muted);font-size:6px;line-height:1.5}.lmo-flow-waves{margin:5px 0;display:grid;gap:7px}.lmo-flow-waves>section{padding:8px;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-panel)}.lmo-flow-waves section>header{display:flex;align-items:center;gap:6px;margin-bottom:6px}.lmo-flow-waves time{color:var(--active-accent);font:700 6px Georgia,serif}.lmo-flow-waves header strong{font-size:6px}.lmo-flow-waves p{margin:3px 0;display:grid;grid-template-columns:minmax(0,1fr) 12px;gap:3px 5px;align-items:center}.lmo-flow-waves p>span{min-width:0;overflow:hidden;color:var(--lmo-muted);font-size:5px;text-overflow:ellipsis;white-space:nowrap}.lmo-flow-waves p>span i{width:5px;height:5px;margin-right:4px;display:inline-block;border-radius:50%;background:var(--wave-accent)}.lmo-flow-waves p>b{color:var(--wave-accent);font:700 6px Georgia,serif}.lmo-flow-waves p>em{grid-column:1/-1;height:2px;overflow:hidden;border-radius:99px;background:var(--lmo-line)}.lmo-flow-waves p>em i{height:100%;display:block;background:var(--wave-accent)}.lmo-flow-busiest{margin:0;padding:8px;display:grid;gap:2px;border-left:2px solid var(--active-accent);background:color-mix(in srgb,var(--active-accent) 5%,transparent)}.lmo-flow-busiest span{color:var(--active-accent);font-size:5px;font-weight:900}.lmo-flow-busiest strong{font-size:7px}.lmo-flow-busiest small{color:var(--lmo-muted);font-size:5px}.lmo-life-flow-layout>aside>button{margin-top:auto;width:100%;justify-content:center}
+.lmo-life-collisions{display:grid;gap:11px}.lmo-collision-summary{display:grid;grid-template-columns:repeat(5,minmax(64px,95px)) minmax(0,1fr);overflow:hidden;border:1px solid var(--lmo-line);border-radius:14px;background:var(--lmo-panel)}.lmo-collision-summary p{margin:0;padding:10px 7px;display:grid;place-items:center;border-right:1px solid var(--lmo-line)}.lmo-collision-summary b{font:700 15px Georgia,serif}.lmo-collision-summary small{color:var(--lmo-muted);font-size:5.5px}.lmo-collision-summary>span{padding:10px 14px;display:flex;align-items:center;justify-content:flex-end;color:var(--lmo-muted);font-size:6px}.lmo-collision-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.lmo-collision-card{min-width:0;padding:14px;display:flex;flex-direction:column;gap:8px;overflow:hidden;border:1px solid var(--lmo-line);border-radius:16px;background:radial-gradient(circle at 100% 0,color-mix(in srgb,var(--active-accent) 9%,transparent),transparent 36%),var(--lmo-panel);color:var(--lmo-text);text-align:left;cursor:pointer;transition:.18s}.lmo-collision-card:hover,.lmo-collision-card.selected{border-color:var(--active-accent);box-shadow:0 12px 30px color-mix(in srgb,var(--active-accent) 14%,transparent);transform:translateY(-2px)}.lmo-collision-card.recorded{cursor:default;filter:saturate(.55);opacity:.68;transform:none}.lmo-collision-card>header{display:flex;align-items:center;justify-content:space-between;gap:8px}.lmo-collision-card>header>span{display:grid;gap:2px}.lmo-collision-card>header>span b{color:var(--active-accent);font:700 11px Georgia,serif}.lmo-collision-card>header>span small{color:var(--lmo-muted);font-size:6px}.lmo-collision-card>header>em{width:47px;height:47px;display:grid;place-content:center;border-radius:50%;background:radial-gradient(circle,var(--lmo-panel) 52%,transparent 54%),conic-gradient(var(--active-accent) calc(var(--collision-score)*1%),var(--lmo-line) 0);text-align:center;font-style:normal}.lmo-collision-card>header>em b{font:700 11px Georgia,serif}.lmo-collision-card>header>em small{color:var(--lmo-muted);font-size:4.5px}.lmo-collision-people{display:flex;align-items:center}.lmo-collision-people>i{width:34px;height:34px;display:grid;place-items:center;border:3px solid var(--lmo-panel);border-radius:11px;background:var(--person-accent);color:white;font:700 10px Georgia,serif;font-style:normal}.lmo-collision-people>i+i{margin-left:-8px}.lmo-collision-people>span{min-width:0;margin-left:9px;display:grid;gap:2px}.lmo-collision-people strong,.lmo-collision-people small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-collision-people strong{font-size:8px}.lmo-collision-people small{color:var(--lmo-muted);font-size:5.5px}.lmo-collision-card h3{margin:0;font:700 14px Georgia,"Songti SC",serif}.lmo-collision-card>p{margin:0;color:var(--lmo-muted);font-size:7px;line-height:1.6}.lmo-collision-route{padding:8px 9px;display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr);gap:6px;align-items:center;border-radius:9px;background:var(--lmo-surface)}.lmo-collision-route span,.lmo-collision-route strong{overflow:hidden;font-size:6px;text-overflow:ellipsis;white-space:nowrap}.lmo-collision-route span{color:var(--lmo-muted)}.lmo-collision-route strong{text-align:right}.lmo-collision-route .lmo-icon{width:14px;height:14px;color:var(--active-accent)}.lmo-collision-card>ul{margin:0;padding-left:17px;color:var(--lmo-muted);font-size:6px;line-height:1.65}.lmo-collision-card>footer{margin-top:auto;padding-top:8px;display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--lmo-line)}.lmo-collision-card>footer span{overflow:hidden;color:var(--lmo-muted);font-size:6px;text-overflow:ellipsis;white-space:nowrap}.lmo-collision-card>footer em{flex:0 0 auto;color:var(--active-accent);font-size:6px;font-style:normal;font-weight:800}.lmo-collision-confirm{border-color:color-mix(in srgb,var(--active-accent) 45%,var(--lmo-line))}
 .lmo-dashboard-row { display:grid; grid-template-columns:1.2fr .8fr; gap:14px; }.lmo-panel{padding:18px;border:1px solid var(--lmo-line);border-radius:17px;background:var(--lmo-panel)}
 .lmo-panel-title > div{display:flex;align-items:center;gap:10px}.lmo-panel-title .lmo-icon{width:27px;height:27px;padding:6px;border-radius:9px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-panel-title span{display:grid;gap:2px}.lmo-panel-title strong{font-size:12px}.lmo-panel-title small{font-size:8px;color:var(--lmo-muted)}
 .lmo-mini-timeline{display:grid;margin-top:15px}.lmo-mini-timeline>div{display:grid;grid-template-columns:10px 1fr auto;gap:9px;padding:8px 0;border-top:1px solid var(--lmo-line)}.lmo-mini-timeline i{width:7px;height:7px;margin-top:4px;border-radius:50%;background:var(--active-accent)}.lmo-mini-timeline span{display:grid;gap:3px}.lmo-mini-timeline strong{font-size:10px}.lmo-mini-timeline small,.lmo-mini-timeline time{color:var(--lmo-muted);font-size:8px}.lmo-world-card>p{margin:14px 0;color:var(--lmo-muted);font-size:10px;line-height:1.65}
@@ -24579,8 +24786,8 @@ var init_styles = __esm({
 @media(max-width:820px){.lmo-mode-grid{grid-template-columns:1fr}.lmo-link-channels{grid-template-columns:repeat(2,1fr)}.lmo-link-draft-grid{grid-template-columns:1fr}.lmo-task-row{grid-template-columns:62px minmax(0,1fr) auto}.lmo-task-row>code{display:none}.lmo-history-console{grid-template-columns:115px minmax(0,1fr);padding:21px}.lmo-history-orbit{width:100px;height:100px}.lmo-spatial-planner{grid-template-columns:1fr}.lmo-spatial-arrow{display:none}.lmo-spatial-people,.lmo-spatial-spaces{max-height:190px}.lmo-narrative-intake{grid-template-columns:1fr}.lmo-twin-layout{grid-template-columns:110px minmax(0,1fr)}.lmo-twin-inspector{grid-column:1/-1;min-height:0}.lmo-twin-map{height:340px}.lmo-pulse-layout{grid-template-columns:1fr}.lmo-pulse-metrics{grid-template-columns:repeat(2,1fr)}.lmo-tenant-life-grid,.lmo-relationship-grid,.lmo-duo-scene-grid,.lmo-autonomy-grid{grid-template-columns:1fr}.lmo-social-layout,.lmo-network-layout,.lmo-hologram-layout{grid-template-columns:1fr}.lmo-social-inspector,.lmo-network-layout>aside,.lmo-hologram-layout>aside{border-top:1px solid var(--lmo-line);border-left:0}.lmo-social-stage svg{height:250px}.lmo-network-stage{min-height:310px}.lmo-network-layout>aside>div{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:520px){.lmo-brand div:last-child{display:none}.lmo-nav-item>span:last-child{display:none}.lmo-nav-item{padding:0 9px}.lmo-header-actions .lmo-status-dot{display:none}.lmo-building-card{grid-template-columns:90px 1fr}.lmo-building-visual{min-height:165px}.lmo-card-metrics span:nth-child(3){display:none}.lmo-facts{display:grid;grid-template-columns:1fr 1fr}.lmo-confirm-bar{align-items:stretch;flex-direction:column}.lmo-confirm-bar button{width:100%}.lmo-candidate{grid-template-columns:40px 1fr}.lmo-avatar{width:40px;height:40px}.lmo-event-timeline article{grid-template-columns:34px 1fr}.lmo-event-timeline article>em{display:none}}
 @media(max-width:520px){.lmo-banner-actions{flex-wrap:wrap}.lmo-banner-actions button{min-width:45%}.lmo-link-list>div{grid-template-columns:repeat(3,1fr)}.lmo-link-list>div>span{grid-column:1}.lmo-link-list p{grid-column:2/4}.lmo-link-list button{grid-row:2}.lmo-link-list button:nth-last-child(3){grid-column:1}.lmo-link-list button:nth-last-child(2){grid-column:2}.lmo-link-list button:last-child{grid-column:3}.lmo-link-preview>footer{align-items:stretch;flex-direction:column}.lmo-link-preview>footer button{width:100%}.lmo-task-row{grid-template-columns:56px minmax(0,1fr)}.lmo-task-actions{grid-column:2}.lmo-history-console{grid-template-columns:1fr}.lmo-history-orbit{display:none}.lmo-history-actions{align-items:stretch;flex-direction:column}.lmo-history-actions button{width:100%;max-width:none}.lmo-history-list>div{grid-template-columns:30px minmax(0,1fr) auto}.lmo-history-list time{display:none}.lmo-twin-toolbar{align-items:flex-start;flex-direction:column}.lmo-twin-legend{flex-wrap:wrap}.lmo-twin-layout{grid-template-columns:1fr}.lmo-twin-floor-nav{display:flex;overflow:auto}.lmo-twin-floor-nav button{min-width:120px}.lmo-twin-stage,.lmo-twin-inspector{grid-column:1}.lmo-twin-map{height:300px}.lmo-pulse-hero{grid-template-columns:1fr;padding:20px}.lmo-pulse-orb{display:none}.lmo-pulse-metrics,.lmo-scene-grid{grid-template-columns:1fr}.lmo-pulse-space-list>div{grid-template-columns:38px minmax(0,1fr)}.lmo-pulse-space-list>div>div{grid-column:2}.lmo-tenant-life-hero{grid-template-columns:auto 1fr}.lmo-tenant-life-hero>code{display:none}.lmo-encounter-strip article{grid-template-columns:24px minmax(0,1fr)}.lmo-encounter-strip article>span{grid-column:2}}
-@media(max-width:820px){.lmo-arrival-grid{grid-template-columns:1fr 1fr}.lmo-arrival-grid>.lmo-arrival-social{grid-column:1/-1;border-top:1px solid var(--lmo-line);border-right:0}.lmo-arrival-chamber{min-height:240px}.lmo-acquisition-grid{grid-template-columns:1fr 1fr}.lmo-acquisition-grid>aside{grid-column:1/-1;border-top:1px solid var(--lmo-line);border-right:0}.lmo-radar-grid{grid-template-columns:1fr}.lmo-radar-summary{grid-template-columns:repeat(5,1fr)}.lmo-radar-summary>aside{grid-column:1/-1}.lmo-assignment-layout,.lmo-life-flow-layout{grid-template-columns:1fr}.lmo-assignment-layout>aside,.lmo-life-flow-layout>aside{border-top:1px solid var(--lmo-line);border-left:0}.lmo-assignment-layout>aside>div{grid-template-columns:repeat(3,1fr)}.lmo-flow-waves{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:520px){.lmo-arrival-grid{grid-template-columns:1fr}.lmo-arrival-grid>.lmo-arrival-social{grid-column:1}.lmo-arrival-grid>section,.lmo-arrival-grid>aside{border-right:0;border-bottom:1px solid var(--lmo-line)}.lmo-arrival-grid>*:last-child{border-bottom:0}.lmo-acquisition-grid{grid-template-columns:1fr}.lmo-acquisition-grid>aside{grid-column:1}.lmo-acquisition-grid>section,.lmo-acquisition-grid>aside{border-right:0;border-bottom:1px solid var(--lmo-line)}.lmo-acquisition-grid>*:last-child{border-bottom:0}.lmo-radar-summary,.lmo-assignment-summary,.lmo-flow-summary{grid-template-columns:repeat(2,1fr)}.lmo-radar-summary>aside{grid-column:1/-1}.lmo-radar-body{grid-template-columns:125px minmax(0,1fr)}.lmo-radar-body svg{width:125px;height:125px}.lmo-radar-focus{grid-template-columns:1fr}.lmo-radar-focus p{text-align:left}.lmo-assignment-summary>span,.lmo-flow-summary>span{grid-column:1/-1;justify-content:flex-start}.lmo-assignment-layout>aside>div{grid-template-columns:1fr}.lmo-flow-waves{grid-template-columns:repeat(2,1fr)}.lmo-flow-person>header{grid-template-columns:32px minmax(0,1fr)}.lmo-flow-person>header>div{grid-column:1/-1}.lmo-flow-person>footer{grid-template-columns:1fr}}
+@media(max-width:820px){.lmo-arrival-grid{grid-template-columns:1fr 1fr}.lmo-arrival-grid>.lmo-arrival-social{grid-column:1/-1;border-top:1px solid var(--lmo-line);border-right:0}.lmo-arrival-chamber{min-height:240px}.lmo-acquisition-grid{grid-template-columns:1fr 1fr}.lmo-acquisition-grid>aside{grid-column:1/-1;border-top:1px solid var(--lmo-line);border-right:0}.lmo-radar-grid,.lmo-collision-grid{grid-template-columns:1fr}.lmo-radar-summary,.lmo-collision-summary{grid-template-columns:repeat(5,1fr)}.lmo-radar-summary>aside,.lmo-collision-summary>span{grid-column:1/-1}.lmo-assignment-layout,.lmo-life-flow-layout{grid-template-columns:1fr}.lmo-assignment-layout>aside,.lmo-life-flow-layout>aside{border-top:1px solid var(--lmo-line);border-left:0}.lmo-assignment-layout>aside>div{grid-template-columns:repeat(3,1fr)}.lmo-flow-waves{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:520px){.lmo-arrival-grid{grid-template-columns:1fr}.lmo-arrival-grid>.lmo-arrival-social{grid-column:1}.lmo-arrival-grid>section,.lmo-arrival-grid>aside{border-right:0;border-bottom:1px solid var(--lmo-line)}.lmo-arrival-grid>*:last-child{border-bottom:0}.lmo-acquisition-grid{grid-template-columns:1fr}.lmo-acquisition-grid>aside{grid-column:1}.lmo-acquisition-grid>section,.lmo-acquisition-grid>aside{border-right:0;border-bottom:1px solid var(--lmo-line)}.lmo-acquisition-grid>*:last-child{border-bottom:0}.lmo-radar-summary,.lmo-assignment-summary,.lmo-flow-summary,.lmo-collision-summary{grid-template-columns:repeat(2,1fr)}.lmo-radar-summary>aside{grid-column:1/-1}.lmo-radar-body{grid-template-columns:125px minmax(0,1fr)}.lmo-radar-body svg{width:125px;height:125px}.lmo-radar-focus{grid-template-columns:1fr}.lmo-radar-focus p{text-align:left}.lmo-assignment-summary>span,.lmo-flow-summary>span,.lmo-collision-summary>span{grid-column:1/-1;justify-content:flex-start}.lmo-assignment-layout>aside>div{grid-template-columns:1fr}.lmo-flow-waves{grid-template-columns:repeat(2,1fr)}.lmo-flow-person>header{grid-template-columns:32px minmax(0,1fr)}.lmo-flow-person>header>div{grid-column:1/-1}.lmo-flow-person>footer{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.lmo-backdrop,.lmo-shell,.lmo-view,.lmo-social-edge,.lmo-network-stage>svg line,.lmo-hologram-node,.lmo-hero-orbit::before,.lmo-hero-orbit::after,.lmo-history-orbit::before,.lmo-history-orbit::after,.lmo-renovation-visual::after{animation:none!important}.lmo-backdrop *{scroll-behavior:auto!important;transition:none!important}}
 `;
   }
@@ -25348,7 +25555,7 @@ var modules = [
     afterLoad: null,
     cleanup: [],
     requires: ["landlord.schema"],
-    provides: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.history", "landlord.perception", "landlord.identities", "landlord.bridges", "landlord.spatialSync", "landlord.narrativeIntents", "landlord.contextCapsules", "tenant.embodiment", "tenant.portfolioAssignments", "tenant.lifeFlows", "tenant.autonomy", "tenant.relationships", "building.compiler", "building.layout", "building.memories", "building.operations", "building.renovationVisual", "building.routes"],
+    provides: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.history", "landlord.perception", "landlord.identities", "landlord.bridges", "landlord.spatialSync", "landlord.narrativeIntents", "landlord.contextCapsules", "tenant.embodiment", "tenant.portfolioAssignments", "tenant.lifeFlows", "tenant.lifeCollisions", "tenant.autonomy", "tenant.relationships", "building.compiler", "building.layout", "building.memories", "building.operations", "building.renovationVisual", "building.routes"],
     legacyRequires: [],
     load: () => Promise.resolve().then(() => (init_landlord_core(), landlord_core_exports))
   },
@@ -25364,4 +25571,4 @@ var modules = [
     load: () => Promise.resolve().then(() => (init_landlord_console(), landlord_console_exports))
   }
 ];
-await startLandlordRuntime({ version: "0.3.0-preview.21", modules });
+await startLandlordRuntime({ version: "0.3.0-preview.22", modules });

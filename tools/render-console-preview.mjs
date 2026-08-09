@@ -13,6 +13,7 @@ import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js
 import { compileContextCapsule } from '../scripts/src/services/context-capsule-service.js';
 import { compileTenantAutonomy } from '../scripts/src/tenants/autonomy-engine.js';
 import { compileTenantEmbodiment } from '../scripts/src/tenants/embodiment-engine.js';
+import { compileLifeCollisions } from '../scripts/src/tenants/life-collision-engine.js';
 import { compileRelationshipSparks } from '../scripts/src/tenants/relationship-engine.js';
 import { renderConsole } from '../scripts/src/ui/console/templates.js';
 
@@ -39,6 +40,7 @@ radarState.人物列表.preview_person_linxia.所在空间ID = 'hospital_ward';
 radarState.建筑列表[hospital.id].空间列表.hospital_ward.占用者 = { preview_person_linxia: '员工' };
 const radarPortfolio = compilePortfolio(radarState);
 const radarCurrent = radarPortfolio.buildings.find(building => building.id === hospital.id);
+const collisionCenter = compileLifeCollisions(radarState);
 const renovationPreview = await managementMockRecipes.renovation({ building: current, space: ownerRoom });
 const recruitmentPreview = await managementMockRecipes.recruitment({ building: current });
 const taskCenter = {
@@ -122,6 +124,7 @@ const pages = {
   'portfolio-radar': { ui: { section: 'portfolio' }, task: null, state: radarState, portfolio: radarPortfolio, current: radarCurrent, scrollTop: 690 },
   'portfolio-assignment': { ui: { section: 'portfolio' }, task: null, state: radarState, portfolio: radarPortfolio, current: radarCurrent, scrollTop: 1190 },
   'portfolio-life-flow': { ui: { section: 'portfolio' }, task: null, state: radarState, portfolio: radarPortfolio, current: radarCurrent, scrollTop: 1690 },
+  'portfolio-collision': { ui: { section: 'portfolio', selectedLifeCollisionId: collisionCenter.focus?.id }, task: null, state: radarState, portfolio: radarPortfolio, current: radarCurrent, scrollTop: 2250 },
   'portfolio-dark': { ui: { section: 'portfolio' }, task: null, theme: 'dark' },
   building: { ui: { section: 'building' }, task: null },
   pulse: { ui: { section: 'pulse', selectedPulseSceneId: pulse.scenes[0]?.id }, task: null },

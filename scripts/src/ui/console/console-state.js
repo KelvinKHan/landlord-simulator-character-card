@@ -1,0 +1,26 @@
+export function createConsoleUiState() {
+  return {
+    section: 'portfolio',
+    targetBuildingId: null,
+    selectedSpaceId: null,
+    focusedFloorId: null,
+    twinSpaceId: null,
+    twinLayer: 'layout',
+    selectedPulseSceneId: null,
+    selectedReactionId: null,
+    selectedAutonomyProposalId: null,
+    selectedRelationshipSparkId: null,
+    selectedRelationshipSceneId: null,
+    selectedLifeCollisionId: null,
+    previewLinkIds: [],
+    contextCapsuleVisible: false,
+    selectedMovePersonId: null,
+    selectedMoveBuildingId: null,
+    selectedMoveSpaceId: null,
+    lastNarrativeExtraction: null,
+    selectedOptionId: null,
+    taskId: null,
+    busy: false,
+    notice: null,
+  };
+}

@@ -15,7 +15,7 @@ function hasAny(value, words) {
   return words.some(word => source.includes(word));
 }
 
-function scorePair(left, right, space) {
+export function evaluateRelationshipPair(left, right, space) {
   let score = 42 + Number(space?.metrics?.vitality ?? 40) * 0.2 + Number(space?.metrics?.comfort ?? 50) * 0.12;
   const reasons = [];
   if (left.来源世界 !== right.来源世界) {
@@ -65,7 +65,7 @@ function compileSparks(state, buildingId, building, operations) {
         const rightId = ids[rightIndex];
         const left = state.人物列表[leftId];
         const right = state.人物列表[rightId];
-        const result = scorePair(left, right, spaceMap.get(spaceId));
+        const result = evaluateRelationshipPair(left, right, spaceMap.get(spaceId));
         const label = relationshipLabel(result.score, left.来源世界 !== right.来源世界);
         const id = `spark_${hash([buildingId, spaceId, leftId, rightId, operations.signature].join('|'))}`;
         sparks.push(Object.freeze({

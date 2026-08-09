@@ -1,5 +1,7 @@
 import { renderConsole } from './templates.js';
 import { handleAutonomyAction } from './autonomy-actions.js';
+import { createConsoleUiState } from './console-state.js';
+import { handleLifeCollisionAction } from './life-collision-actions.js';
 import { handleRelationshipAction } from './relationship-actions.js';
 import { compileOwnedSpatialTargets } from './spatial-view-model.js';
 import { detectDocumentTheme, extractNarrativeProposals, isOwnedBuilding as owned } from './workflow-actions.js';
@@ -8,29 +10,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
   let root = null;
   let visible = false;
   let disposed = false;
-  const ui = {
-    section: 'portfolio',
-    targetBuildingId: null,
-    selectedSpaceId: null,
-    focusedFloorId: null,
-    twinSpaceId: null,
-    twinLayer: 'layout',
-    selectedPulseSceneId: null,
-    selectedReactionId: null,
-    selectedAutonomyProposalId: null,
-    selectedRelationshipSparkId: null,
-    selectedRelationshipSceneId: null,
-    previewLinkIds: [],
-    contextCapsuleVisible: false,
-    selectedMovePersonId: null,
-    selectedMoveBuildingId: null,
-    selectedMoveSpaceId: null,
-    lastNarrativeExtraction: null,
-    selectedOptionId: null,
-    taskId: null,
-    busy: false,
-    notice: null,
-  };
+  const ui = createConsoleUiState();
 
   function getData() {
     const state = store.getState();
@@ -198,6 +178,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       });
     }
     if (action.includes('autonomy')) return handleAutonomyAction({ action, button, data, ui, store, render, withBusy, recordOperation, setNotice });
+    if (action.includes('life-collision')) return handleLifeCollisionAction({ action, button, ui, store, render, withBusy, recordOperation, setNotice });
     if (action.includes('relationship')) return handleRelationshipAction({ action, button, data, ui, store, render, withBusy, recordOperation, setNotice });
     if (action === 'undo-operation' || action === 'redo-operation') {
       if (!history) throw new Error('经营回溯服务尚未加载');

@@ -6,6 +6,7 @@ import { renderAcquisitionProjection } from './takeover-preview-template.js';
 import { renderPortfolioRadar } from './portfolio-radar-template.js';
 import { renderPortfolioAssignmentMatrix } from './portfolio-assignment-template.js';
 import { renderLifeFlow } from './life-flow-template.js';
+import { renderLifeCollisions } from './life-collision-template.js';
 
 function renovationVisualStyle(visual) {
   return `--room-base:${safeColor(visual.css.base)};--room-accent:${safeColor(visual.css.accent)};--room-secondary:${safeColor(visual.css.secondary)};--room-glow:${safeColor(visual.css.glow)};--room-text:${safeColor(visual.css.text, '#283044')}`;
@@ -99,7 +100,7 @@ function renderPortfolioNetwork(portfolio, current) {
   </article>`;
 }
 
-function renderPortfolio(state, portfolio) {
+function renderPortfolio(state, portfolio, ui) {
   const current = portfolio.buildings.find(item => item.id === state.当前建筑ID) ?? portfolio.headquarters;
   const recentEvents = Object.entries(state.事件列表 ?? {}).slice(-3).reverse();
   return `<section class="lmo-view lmo-portfolio">
@@ -112,6 +113,7 @@ function renderPortfolio(state, portfolio) {
     ${renderPortfolioRadar(state)}
     ${renderPortfolioAssignmentMatrix(state)}
     ${renderLifeFlow(state)}
+    ${renderLifeCollisions(state, ui)}
     <div class="lmo-section-heading"><div><span>OWNED</span><h2>已经属于你的地方</h2></div><p>每一栋建筑都使用同一份真实状态，但拥有自己的空间语言。</p></div>
     <div class="lmo-building-grid">${portfolio.owned.map(building => buildingCard(building, 'open-building')).join('')}</div>
     <div class="lmo-section-heading"><div><span>OPPORTUNITIES</span><h2>下一次接管机会</h2></div><p>不是空壳：它们已经有格局、设施和等待被改变的部分。</p></div>
@@ -473,7 +475,7 @@ function renderHistory(historyCenter) {
 
 export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin }) {
   let content;
-  if (ui.section === 'portfolio') content = renderPortfolio(state, portfolio);
+  if (ui.section === 'portfolio') content = renderPortfolio(state, portfolio, ui);
   else if (ui.section === 'building') content = renderBuilding(current, identityCenter);
   else if (ui.section === 'pulse') content = renderPulse(pulse, ui);
   else if (ui.section === 'tenants') content = renderTenantLife(tenantLife, autonomyCenter, relationshipCenter, ui);
