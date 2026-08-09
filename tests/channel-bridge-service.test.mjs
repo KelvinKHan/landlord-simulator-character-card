@@ -48,12 +48,17 @@ test('旧微信和新闻适配器只在显式调用时写入现有模块', async
   const messages = [];
   const emitted = [];
   const injections = [];
+  const initializedChats = [];
   const phone = { newsSystem: { newsData: { headlines: [] }, saveNewsToVariable() {} }, emit: (...args) => emitted.push(args) };
   const globals = {
     ChatDB: {
+      db: null,
+      currentChatId: null,
+      init: async function(chatId) { initializedChats.push(chatId); this.db = {}; this.currentChatId = chatId; },
       getOrCreateGroupChat: async name => ({ id: 'group_1', name }),
       addMessage: async (conversationId, sender, content) => { messages.push({ conversationId, sender, content }); return messages.at(-1); },
     },
+    SillyTavern: { getContext: () => ({ getCurrentChatId: () => 'chat_real_host' }) },
     PhoneSystem: phone,
     injectPrompts: (prompts, options) => injections.push({ prompts, options }),
   };
@@ -63,6 +68,7 @@ test('旧微信和新闻适配器只在显式调用时写入现有模块', async
   await ports.news({ headline: { tag: '人物加入', title: '新成员', summary: '林夏加入', source: '房东经营中枢', time: '刚刚' } });
   await ports.story({ deliveryId: 'link_story', content: '<landlord_link>新成员加入</landlord_link>' });
   assert.deepEqual(messages, [{ conversationId: 'group_1', sender: '林夏', content: '我已经到了。' }]);
+  assert.deepEqual(initializedChats, ['chat_real_host']);
   assert.equal(phone.newsSystem.newsData.headlines[0].title, '新成员');
   assert.equal(emitted[0][0], 'news-updated');
   assert.equal(injections[0].prompts[0].id, 'landlord_link_link_story');

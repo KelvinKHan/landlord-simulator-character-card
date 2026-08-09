@@ -22813,13 +22813,38 @@ function escapePromptXml(value) {
 }
 function createLegacyChannelPorts({ getLegacy, logger = console }) {
   if (typeof getLegacy !== "function") throw new TypeError("\u65E7\u6A21\u5757\u9002\u914D\u5668\u9700\u8981\u5EF6\u8FDF\u5168\u5C40\u8BFB\u53D6\u51FD\u6570");
+  function getCurrentChatId(chatDb) {
+    try {
+      const context = getLegacy("SillyTavern")?.getContext?.();
+      const contextChatId = context?.getCurrentChatId?.() ?? context?.chatId ?? context?.chat_id;
+      if (contextChatId) return String(contextChatId);
+    } catch (error) {
+      logger.warn?.("[LandlordBridge] \u65E0\u6CD5\u4ECE SillyTavern \u4E0A\u4E0B\u6587\u8BFB\u53D6\u5F53\u524D\u804A\u5929", error);
+    }
+    try {
+      const phoneChatId = getLegacy("PhoneSystem")?.newsSystem?.getChatId?.();
+      if (phoneChatId) return String(phoneChatId);
+    } catch (error) {
+      logger.warn?.("[LandlordBridge] \u65E0\u6CD5\u4ECE\u5C0F\u624B\u673A\u8BFB\u53D6\u5F53\u524D\u804A\u5929", error);
+    }
+    return String(chatDb?.currentChatId || "default_chat");
+  }
+  async function ensureChatDbReady(chatDb) {
+    const chatId = getCurrentChatId(chatDb);
+    if (chatDb?.db && chatDb.currentChatId === chatId) return;
+    if (typeof chatDb?.init !== "function") {
+      if (chatDb?.db) return;
+      throw new Error("\u5FAE\u4FE1\u6570\u636E\u5E93\u5C1A\u672A\u521D\u59CB\u5316\uFF0C\u4E14\u7F3A\u5C11\u521D\u59CB\u5316\u63A5\u53E3");
+    }
+    await chatDb.init(chatId);
+  }
   return Object.freeze({
     capabilities() {
       const chatDb = getLegacy("ChatDB");
       const phone = getLegacy("PhoneSystem");
       return Object.freeze({
         \u6B63\u6587: typeof getLegacy("injectPrompts") === "function",
-        \u5FAE\u4FE1: Boolean(chatDb?.getOrCreateGroupChat && chatDb?.addMessage),
+        \u5FAE\u4FE1: Boolean(chatDb?.getOrCreateGroupChat && chatDb?.addMessage && (chatDb.db || chatDb.init)),
         \u65B0\u95FB: Boolean(phone?.newsSystem?.newsData && phone?.emit),
         \u5EFA\u7B51: true
       });
@@ -22841,6 +22866,7 @@ function createLegacyChannelPorts({ getLegacy, logger = console }) {
     async wechat(draft) {
       const chatDb = getLegacy("ChatDB");
       if (!chatDb?.getOrCreateGroupChat || !chatDb?.addMessage) throw new Error("\u5FAE\u4FE1\u6570\u636E\u5E93\u5C1A\u672A\u5C31\u7EEA");
+      await ensureChatDbReady(chatDb);
       const conversation = await chatDb.getOrCreateGroupChat(draft.conversationName);
       const message = await chatDb.addMessage(conversation.id, draft.sender, draft.content, { isImportant: true });
       try {
@@ -25861,4 +25887,4 @@ var modules = [
     load: () => Promise.resolve().then(() => (init_landlord_console(), landlord_console_exports))
   }
 ];
-await startLandlordRuntime({ version: "0.3.0-preview.23", modules });
+await startLandlordRuntime({ version: "0.3.0-preview.24", modules });

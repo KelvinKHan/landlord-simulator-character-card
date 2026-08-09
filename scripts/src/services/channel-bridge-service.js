@@ -9,13 +9,41 @@ function escapePromptXml(value) {
 
 export function createLegacyChannelPorts({ getLegacy, logger = console }) {
   if (typeof getLegacy !== 'function') throw new TypeError('旧模块适配器需要延迟全局读取函数');
+
+  function getCurrentChatId(chatDb) {
+    try {
+      const context = getLegacy('SillyTavern')?.getContext?.();
+      const contextChatId = context?.getCurrentChatId?.() ?? context?.chatId ?? context?.chat_id;
+      if (contextChatId) return String(contextChatId);
+    } catch (error) {
+      logger.warn?.('[LandlordBridge] 无法从 SillyTavern 上下文读取当前聊天', error);
+    }
+    try {
+      const phoneChatId = getLegacy('PhoneSystem')?.newsSystem?.getChatId?.();
+      if (phoneChatId) return String(phoneChatId);
+    } catch (error) {
+      logger.warn?.('[LandlordBridge] 无法从小手机读取当前聊天', error);
+    }
+    return String(chatDb?.currentChatId || 'default_chat');
+  }
+
+  async function ensureChatDbReady(chatDb) {
+    const chatId = getCurrentChatId(chatDb);
+    if (chatDb?.db && chatDb.currentChatId === chatId) return;
+    if (typeof chatDb?.init !== 'function') {
+      if (chatDb?.db) return;
+      throw new Error('微信数据库尚未初始化，且缺少初始化接口');
+    }
+    await chatDb.init(chatId);
+  }
+
   return Object.freeze({
     capabilities() {
       const chatDb = getLegacy('ChatDB');
       const phone = getLegacy('PhoneSystem');
       return Object.freeze({
         正文: typeof getLegacy('injectPrompts') === 'function',
-        微信: Boolean(chatDb?.getOrCreateGroupChat && chatDb?.addMessage),
+        微信: Boolean(chatDb?.getOrCreateGroupChat && chatDb?.addMessage && (chatDb.db || chatDb.init)),
         新闻: Boolean(phone?.newsSystem?.newsData && phone?.emit),
         建筑: true,
       });
@@ -39,6 +67,7 @@ export function createLegacyChannelPorts({ getLegacy, logger = console }) {
     async wechat(draft) {
       const chatDb = getLegacy('ChatDB');
       if (!chatDb?.getOrCreateGroupChat || !chatDb?.addMessage) throw new Error('微信数据库尚未就绪');
+      await ensureChatDbReady(chatDb);
       const conversation = await chatDb.getOrCreateGroupChat(draft.conversationName);
       const message = await chatDb.addMessage(conversation.id, draft.sender, draft.content, { isImportant: true });
       try {
