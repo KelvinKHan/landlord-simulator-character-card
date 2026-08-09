@@ -19041,6 +19041,22 @@ var init_landlord_schema = __esm({
             \u53D1\u751F\u65F6\u95F4: z.string().prefault("\u521A\u521A"),
             \u53C2\u4E0E\u8005: z.record(z.string().describe("\u4EBA\u7269ID"), z.string().prefault("\u53C2\u4E0E")).prefault({})
           }).prefault({})
+        ).prefault({}),
+        \u8054\u52A8\u961F\u5217: z.record(
+          z.string().describe("\u8054\u52A8\u9879ID"),
+          z.object({
+            \u4E8B\u4EF6ID: z.string().prefault(""),
+            \u9891\u9053: z.enum(["\u6B63\u6587", "\u5FAE\u4FE1", "\u65B0\u95FB", "\u5EFA\u7B51"]).prefault("\u5EFA\u7B51"),
+            \u6807\u9898: z.string().prefault("\u672A\u547D\u540D\u8054\u52A8"),
+            \u6458\u8981: z.string().prefault("\u6682\u65E0\u6458\u8981"),
+            \u5EFA\u7B51ID: z.string().prefault("building_headquarters"),
+            \u7A7A\u95F4ID: z.string().prefault(""),
+            \u4EBA\u7269ID: z.string().prefault(""),
+            \u6765\u6E90\u7C7B\u578B: z.string().prefault("\u65E5\u5E38"),
+            \u72B6\u6001: z.enum(["\u5F85\u5206\u53D1", "\u5DF2\u8BFB\u53D6", "\u5DF2\u5FFD\u7565"]).prefault("\u5F85\u5206\u53D1"),
+            \u521B\u5EFA\u65F6\u95F4: z.string().prefault("\u521A\u521A"),
+            \u4E0A\u4E0B\u6587: z.record(z.string(), z.string()).prefault({})
+          }).prefault({})
         ).prefault({})
       }).prefault({})
     });
@@ -19081,47 +19097,201 @@ var init_landlord_schema2 = __esm({
   }
 });
 
+// scripts/src/ai/management-ai-contracts.js
+var colorRecord, takeoverDirection, renovationPlan, recruitmentCandidate, ManagementAiSchemas, ManagementAiJsonSchemas;
+var init_management_ai_contracts = __esm({
+  "scripts/src/ai/management-ai-contracts.js"() {
+    colorRecord = z.record(z.string(), z.string());
+    takeoverDirection = z.object({
+      id: z.string().min(1),
+      name: z.string().min(1),
+      buildingName: z.string().min(1),
+      description: z.string().min(1),
+      highlight: z.string().min(1),
+      summary: z.string().min(1),
+      tags: z.array(z.string().min(1)).min(2).max(5),
+      theme: z.object({
+        \u4E3B\u8272: z.string().min(1),
+        \u8F85\u8272: z.string().min(1),
+        \u7EB9\u7406: z.string().min(1)
+      }),
+      opportunities: z.array(z.string().min(1)).min(2).max(5)
+    });
+    renovationPlan = z.object({
+      id: z.string().min(1),
+      name: z.string().min(1),
+      style: z.string().min(1),
+      tagline: z.string().min(1),
+      palette: colorRecord,
+      materials: z.record(z.string(), z.string()),
+      furniture: z.record(z.string(), z.string()),
+      lighting: z.string().min(1),
+      atmosphere: z.string().min(1),
+      resultDescription: z.string().min(1),
+      impacts: z.array(z.string().min(1)).min(2).max(5)
+    });
+    recruitmentCandidate = z.object({
+      id: z.string().min(1),
+      name: z.string().min(1),
+      origin: z.string().min(1),
+      role: z.string().min(1),
+      profession: z.string().min(1),
+      appearance: z.string().min(1),
+      personality: z.string().min(1),
+      firstThought: z.string().min(1),
+      collision: z.string().min(1),
+      quote: z.string().min(1),
+      tags: z.array(z.string().min(1)).min(2).max(5),
+      visualIdentity: z.object({
+        \u56FE\u6807: z.string().min(1),
+        \u4E3B\u8272: z.string().min(1),
+        \u7EB9\u6837: z.string().min(1)
+      })
+    });
+    ManagementAiSchemas = Object.freeze({
+      takeover: z.object({ directions: z.array(takeoverDirection).length(3) }),
+      renovation: z.object({ plans: z.array(renovationPlan).length(3) }),
+      recruitment: z.object({ candidates: z.array(recruitmentCandidate).length(3) })
+    });
+    ManagementAiJsonSchemas = Object.freeze(
+      Object.fromEntries(
+        Object.entries(ManagementAiSchemas).map(([kind, schema]) => [kind, z.toJSONSchema(schema)])
+      )
+    );
+  }
+});
+
+// scripts/src/ai/management-ai-provider.js
+function clone2(value) {
+  if (typeof structuredClone === "function") return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+}
+function abortError() {
+  const error = new Error("AI \u4EFB\u52A1\u5DF2\u53D6\u6D88");
+  error.name = "AbortError";
+  return error;
+}
+function compactInput(input) {
+  const copy = clone2(input);
+  return copy;
+}
+function createManagementAiProvider({ tavern, isEnabled = () => false, logger = console }) {
+  if (!tavern || typeof tavern.generateStructured !== "function") {
+    throw new TypeError("\u7ECF\u8425 AI \u63D0\u4F9B\u5668\u9700\u8981\u9152\u9986\u52A9\u624B\u751F\u6210\u670D\u52A1");
+  }
+  return Object.freeze({
+    id: "management-ai",
+    // available 只表示宿主是否具备生成能力；玩家授权仍在 run 里单独校验。
+    // 否则会出现「尚未启用→按钮不可点→永远无法启用」的循环依赖。
+    available: () => tavern.has?.("generateRaw") === true,
+    supports: (kind) => Object.hasOwn(ManagementAiSchemas, kind),
+    async run(kind, input, { signal, taskId, attempt }) {
+      const contract = ManagementAiSchemas[kind];
+      if (!contract) throw new Error(`\u7ECF\u8425 AI \u4E0D\u652F\u6301\u4EFB\u52A1\uFF1A${kind}`);
+      if (!isEnabled()) throw new Error("AI \u7ECF\u8425\u6A21\u5F0F\u5C1A\u672A\u7531\u73A9\u5BB6\u542F\u7528");
+      if (signal?.aborted) throw abortError();
+      const payload = compactInput(input);
+      logger.info?.(`[\u7ECF\u8425AI] ${kind} \u4EFB\u52A1\u5F00\u59CB`, { taskId, attempt });
+      const generated = await tavern.generateStructured({
+        schemaName: `landlord_${kind}_preview`,
+        schema: ManagementAiJsonSchemas[kind],
+        mode: "raw",
+        should_stream: false,
+        max_chat_history: 0,
+        ordered_prompts: [
+          {
+            role: "system",
+            content: [
+              "\u4F60\u662F\u300A\u623F\u4E1C\u6A21\u62DF\u5668\u300B\u7684\u7ECF\u8425\u5185\u5BB9\u751F\u6210\u5668\u3002",
+              taskInstructions[kind],
+              "\u53EA\u751F\u6210\u9884\u89C8\u65B9\u6848\uFF0C\u4E0D\u4FEE\u6539\u53D8\u91CF\uFF0C\u4E0D\u8F93\u51FA JSON \u4E4B\u5916\u7684\u89E3\u91CA\uFF0C\u4E0D\u5236\u9020\u6750\u6599\u7A0E\u3001\u5012\u8BA1\u65F6\u6216\u5F3A\u5236\u5931\u8D25\u3002"
+            ].join("\n")
+          },
+          {
+            role: "user",
+            content: `\u5F53\u524D\u7ECF\u8425\u6570\u636E\uFF1A
+${JSON.stringify(payload)}`
+          }
+        ]
+      });
+      if (signal?.aborted) throw abortError();
+      const parsed = contract.parse(generated);
+      return { source: "ai", ...clone2(parsed) };
+    }
+  });
+}
+var taskInstructions;
+var init_management_ai_provider = __esm({
+  "scripts/src/ai/management-ai-provider.js"() {
+    init_management_ai_contracts();
+    taskInstructions = Object.freeze({
+      takeover: "\u6839\u636E\u5EFA\u7B51\u7C7B\u578B\u3001\u73B0\u6709\u683C\u5C40\u548C\u4E16\u754C\u89C2\u63D0\u51FA\u4E09\u79CD\u5DEE\u5F02\u660E\u663E\u3001\u504F\u723D\u6587\u4F53\u9A8C\u7684\u63A5\u7BA1\u65B9\u5411\u3002\u4FDD\u7559\u53EF\u7ACB\u5373\u6E38\u73A9\u7684\u57FA\u7840\uFF0C\u4E0D\u589E\u52A0\u7E41\u7410\u60E9\u7F5A\u3002",
+      renovation: "\u9488\u5BF9\u6307\u5B9A\u7A7A\u95F4\u63D0\u51FA\u4E09\u79CD\u53EF\u89C6\u5316\u5DEE\u5F02\u660E\u663E\u7684\u88C5\u4FEE\u65B9\u6848\u3002\u65B9\u6848\u5FC5\u987B\u80FD\u6539\u53D8\u914D\u8272\u3001\u6750\u8D28\u3001\u5BB6\u5177\u3001\u7167\u660E\u3001\u7A7A\u95F4\u63CF\u8FF0\u548C\u540E\u7EED\u4EBA\u7269\u4E92\u52A8\u3002",
+      recruitment: "\u4E3A\u5F53\u524D\u5EFA\u7B51\u751F\u6210\u4E09\u540D\u6765\u81EA\u4E0D\u540C\u4E16\u754C\u3001\u80FD\u4E0E\u73B0\u6709\u7A7A\u95F4\u548C\u4EBA\u7269\u4EA7\u751F\u78B0\u649E\u7684\u5019\u9009\u4EBA\u3002\u4EBA\u7269\u5FC5\u987B\u9002\u5408\u88AB\u5B89\u7F6E\u5230\u5F53\u524D\u5EFA\u7B51\u3002"
+    });
+  }
+});
+
 // scripts/src/buildings/compiler.js
 function byOrderDescending(left, right) {
   return right.order - left.order || left.name.localeCompare(right.name, "zh-CN");
 }
-function visible(value) {
-  return Number(value?.\u611F\u77E5\u5EA6 ?? 100) > 0;
+function awarenessTier(value) {
+  const awareness = Math.max(0, Math.min(100, Number(value) || 0));
+  if (awareness === 0) return "hidden";
+  if (awareness < 25) return "outline";
+  if (awareness < 60) return "partial";
+  if (awareness < 90) return "revealed";
+  return "full";
+}
+function redact(value, tier, kind) {
+  if (tier === "outline") return kind === "floor" ? "\u53EA\u80FD\u786E\u8BA4\u8FD9\u91CC\u5B58\u5728\u4E00\u5C42\u7A7A\u95F4\u3002" : "\u53EA\u80FD\u770B\u51FA\u5927\u81F4\u8F6E\u5ED3\uFF0C\u7528\u9014\u4E0E\u5185\u90E8\u4ECD\u662F\u672A\u77E5\u3002";
+  if (tier === "partial") return kind === "floor" ? `\u5DF2\u521D\u6B65\u786E\u8BA4\uFF1A${value}` : `\u521D\u6B65\u89C2\u5BDF\uFF1A${value}`;
+  return value;
 }
 function compileBuilding(buildingId, building, people = {}) {
   if (!building || typeof building !== "object") throw new TypeError(`\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${buildingId}`);
-  const floors = Object.entries(building.\u697C\u5C42\u5217\u8868 ?? {}).filter(([, floor]) => visible(floor)).map(([id, floor]) => ({
-    id,
-    name: floor.\u540D\u79F0,
-    order: Number(floor.\u987A\u5E8F ?? 0),
-    description: floor.\u63CF\u8FF0,
-    awareness: Number(floor.\u611F\u77E5\u5EA6 ?? 100),
-    spaces: []
-  })).sort(byOrderDescending);
+  const floors = Object.entries(building.\u697C\u5C42\u5217\u8868 ?? {}).map(([id, floor]) => {
+    const awareness = Math.min(Number(building.\u611F\u77E5\u5EA6 ?? 0), Number(floor.\u611F\u77E5\u5EA6 ?? 100));
+    const visibility = awarenessTier(awareness);
+    return {
+      id,
+      name: visibility === "outline" ? "\u672A\u786E\u8BA4\u697C\u5C42" : floor.\u540D\u79F0,
+      order: Number(floor.\u987A\u5E8F ?? 0),
+      description: redact(floor.\u63CF\u8FF0, visibility, "floor"),
+      awareness,
+      visibility,
+      spaces: []
+    };
+  }).filter((floor) => floor.visibility !== "hidden").sort(byOrderDescending);
   const floorMap = new Map(floors.map((floor) => [floor.id, floor]));
   for (const [id, space] of Object.entries(building.\u7A7A\u95F4\u5217\u8868 ?? {})) {
-    if (!visible(space)) continue;
     const floor = floorMap.get(space.\u697C\u5C42ID);
     if (!floor) continue;
-    const occupants = Object.keys(space.\u5360\u7528\u8005 ?? {}).map((personId) => ({
+    const awareness = Math.min(floor.awareness, Number(space.\u611F\u77E5\u5EA6 ?? 100));
+    const visibility = awarenessTier(awareness);
+    if (visibility === "hidden") continue;
+    const occupants = ["revealed", "full"].includes(visibility) ? Object.keys(space.\u5360\u7528\u8005 ?? {}).map((personId) => ({
       id: personId,
       name: people[personId]?.\u59D3\u540D ?? personId,
       role: space.\u5360\u7528\u8005[personId],
       color: people[personId]?.\u89C6\u89C9\u8EAB\u4EFD?.\u4E3B\u8272 ?? "#FF9EAA"
-    }));
+    })) : [];
     floor.spaces.push({
       id,
-      name: space.\u540D\u79F0,
-      type: space.\u7C7B\u578B,
+      name: visibility === "outline" ? "\u672A\u77E5\u7A7A\u95F4" : space.\u540D\u79F0,
+      type: visibility === "outline" ? "\u5F85\u63A2\u7D22" : space.\u7C7B\u578B,
       size: space.\u5C3A\u5BF8,
       weight: sizeWeight[space.\u5C3A\u5BF8] ?? sizeWeight.\u4E2D\u578B,
-      status: space.\u72B6\u6001,
-      purpose: space.\u7528\u9014,
-      description: space.\u63CF\u8FF0,
-      awareness: Number(space.\u611F\u77E5\u5EA6 ?? 100),
+      status: visibility === "outline" ? "\u672A\u77E5" : space.\u72B6\u6001,
+      purpose: ["outline", "partial"].includes(visibility) ? "\u7B49\u5F85\u8FDB\u4E00\u6B65\u63A2\u7D22" : space.\u7528\u9014,
+      description: redact(space.\u63CF\u8FF0, visibility, "space"),
+      awareness,
+      visibility,
       occupants,
-      facilityCount: Object.keys(space.\u8BBE\u65BD ?? {}).length,
-      renovation: space.\u88C5\u4FEE ?? {}
+      facilityCount: visibility === "full" ? Object.keys(space.\u8BBE\u65BD ?? {}).length : 0,
+      renovation: ["revealed", "full"].includes(visibility) ? space.\u88C5\u4FEE ?? {} : {},
+      adjacentSpaceIds: ["revealed", "full"].includes(visibility) ? Object.keys(space.\u76F8\u90BB\u7A7A\u95F4 ?? {}) : []
     });
   }
   for (const floor of floors) {
@@ -19146,7 +19316,9 @@ function compileBuilding(buildingId, building, people = {}) {
       spaces: visibleSpaces.length,
       occupiedSpaces,
       emptySpaces,
-      people: new Set(visibleSpaces.flatMap((space) => space.occupants.map((person) => person.id))).size
+      people: new Set(visibleSpaces.flatMap((space) => space.occupants.map((person) => person.id))).size,
+      partialSpaces: visibleSpaces.filter((space) => ["outline", "partial"].includes(space.visibility)).length,
+      fullyKnownSpaces: visibleSpaces.filter((space) => space.visibility === "full").length
     },
     floors
   };
@@ -19168,6 +19340,166 @@ var sizeWeight;
 var init_compiler = __esm({
   "scripts/src/buildings/compiler.js"() {
     sizeWeight = Object.freeze({ \u5FAE\u578B: 1, \u5C0F\u578B: 2, \u4E2D\u578B: 3, \u5927\u578B: 5, \u8D85\u5927\u578B: 8 });
+  }
+});
+
+// scripts/src/buildings/layout-engine.js
+function round(value) {
+  return Math.round(value * 1e3) / 1e3;
+}
+function splitNearHalf(items) {
+  const total = items.reduce((sum2, item) => sum2 + item.weight, 0);
+  let sum = 0;
+  let index = 1;
+  let bestDifference = Infinity;
+  for (let candidate = 1; candidate < items.length; candidate += 1) {
+    sum += items[candidate - 1].weight;
+    const difference = Math.abs(total / 2 - sum);
+    if (difference < bestDifference) {
+      bestDifference = difference;
+      index = candidate;
+    }
+  }
+  return [items.slice(0, index), items.slice(index), total];
+}
+function tile(items, rect, depth = 0) {
+  if (items.length === 0) return [];
+  if (items.length === 1) return [{ ...items[0], ...rect }];
+  const [left, right, total] = splitNearHalf(items);
+  const leftWeight = left.reduce((sum, item) => sum + item.weight, 0);
+  const ratio = leftWeight / total;
+  const vertical = rect.w > rect.h || rect.w === rect.h && depth % 2 === 0;
+  if (vertical) {
+    const width = rect.w * ratio;
+    return [
+      ...tile(left, { x: rect.x, y: rect.y, w: width, h: rect.h }, depth + 1),
+      ...tile(right, { x: rect.x + width, y: rect.y, w: rect.w - width, h: rect.h }, depth + 1)
+    ];
+  }
+  const height = rect.h * ratio;
+  return [
+    ...tile(left, { x: rect.x, y: rect.y, w: rect.w, h: height }, depth + 1),
+    ...tile(right, { x: rect.x, y: rect.y + height, w: rect.w, h: rect.h - height }, depth + 1)
+  ];
+}
+function uniqueEdges(spaces) {
+  const known = new Set(spaces.map((space) => space.id));
+  const edges = /* @__PURE__ */ new Map();
+  for (const space of spaces) {
+    for (const targetId of space.adjacentSpaceIds ?? []) {
+      if (!known.has(targetId) || targetId === space.id) continue;
+      const ids = [space.id, targetId].sort();
+      const key = ids.join("::");
+      if (!edges.has(key)) edges.set(key, Object.freeze({ id: key, from: ids[0], to: ids[1] }));
+    }
+  }
+  return [...edges.values()];
+}
+function createBuildingLayout(building) {
+  if (!building || !Array.isArray(building.floors)) throw new TypeError("\u6570\u5B57\u5B6A\u751F\u5E03\u5C40\u9700\u8981\u7F16\u8BD1\u540E\u7684\u5EFA\u7B51");
+  const floors = building.floors.map((floor) => {
+    const source = floor.spaces.map((space) => ({
+      id: space.id,
+      name: space.name,
+      type: space.type,
+      status: space.status,
+      visibility: space.visibility,
+      awareness: space.awareness,
+      occupants: space.occupants,
+      adjacentSpaceIds: space.adjacentSpaceIds,
+      weight: Math.max(1, Number(space.weight) || 1)
+    }));
+    const nodes = tile(source, { x: 0, y: 0, w: 100, h: 100 }).map((node) => Object.freeze({
+      ...node,
+      x: round(node.x),
+      y: round(node.y),
+      w: round(node.w),
+      h: round(node.h)
+    }));
+    return Object.freeze({
+      id: floor.id,
+      name: floor.name,
+      order: floor.order,
+      awareness: floor.awareness,
+      visibility: floor.visibility,
+      nodes,
+      edges: uniqueEdges(source)
+    });
+  });
+  return Object.freeze({
+    buildingId: building.id,
+    name: building.name,
+    theme: building.theme,
+    floors,
+    metrics: Object.freeze({ floors: floors.length, nodes: floors.reduce((sum, floor) => sum + floor.nodes.length, 0), edges: floors.reduce((sum, floor) => sum + floor.edges.length, 0) })
+  });
+}
+function createBuildingLayoutService() {
+  return Object.freeze({ compile: createBuildingLayout });
+}
+var init_layout_engine = __esm({
+  "scripts/src/buildings/layout-engine.js"() {
+  }
+});
+
+// scripts/src/events/building-event-bus.js
+function clone3(value) {
+  if (typeof structuredClone === "function") return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+}
+function createBuildingEventBus({ store }) {
+  if (!store || typeof store.getState !== "function") throw new TypeError("\u5EFA\u7B51\u4E8B\u4EF6\u603B\u7EBF\u9700\u8981\u72B6\u6001\u670D\u52A1");
+  const listeners = /* @__PURE__ */ new Set();
+  function list({ channel = null, status = null, limit = Infinity } = {}) {
+    if (channel && !channels.includes(channel)) throw new Error(`\u672A\u77E5\u8054\u52A8\u9891\u9053\uFF1A${channel}`);
+    return Object.entries(store.getState().\u8054\u52A8\u961F\u5217 ?? {}).map(([id, item]) => Object.freeze({ id, ...clone3(item) })).filter((item) => !channel || item.\u9891\u9053 === channel).filter((item) => !status || item.\u72B6\u6001 === status).slice(-Math.max(0, Number(limit) || 0));
+  }
+  function counts() {
+    const result = Object.fromEntries(channels.map((channel) => [channel, 0]));
+    for (const item of list({ status: "\u5F85\u5206\u53D1" })) result[item.\u9891\u9053] += 1;
+    return Object.freeze(result);
+  }
+  function buildContext(channel, { limit = 5, includeRead = false } = {}) {
+    const items = list({ channel, status: includeRead ? null : "\u5F85\u5206\u53D1", limit });
+    if (items.length === 0) return "";
+    return [
+      `<landlord_link channel="${channel}">`,
+      ...items.map((item) => `- [${item.\u6765\u6E90\u7C7B\u578B}] ${item.\u6807\u9898}\uFF1A${item.\u6458\u8981}`),
+      "</landlord_link>"
+    ].join("\n");
+  }
+  const unsubscribeStore = store.subscribe((event) => {
+    const snapshot = Object.freeze({ label: event.label, counts: counts(), pending: list({ status: "\u5F85\u5206\u53D1" }) });
+    for (const listener of listeners) listener(snapshot);
+  });
+  return Object.freeze({
+    channels,
+    list,
+    counts,
+    buildContext,
+    async consume(deliveryId) {
+      await store.setDeliveryStatus(deliveryId, "\u5DF2\u8BFB\u53D6");
+      return list().find((item) => item.id === deliveryId) ?? null;
+    },
+    async ignore(deliveryId) {
+      await store.setDeliveryStatus(deliveryId, "\u5DF2\u5FFD\u7565");
+      return list().find((item) => item.id === deliveryId) ?? null;
+    },
+    subscribe(listener) {
+      if (typeof listener !== "function") throw new TypeError("\u4E8B\u4EF6\u603B\u7EBF\u8BA2\u9605\u8005\u5FC5\u987B\u662F\u51FD\u6570");
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    dispose() {
+      listeners.clear();
+      unsubscribeStore();
+    }
+  });
+}
+var channels;
+var init_building_event_bus = __esm({
+  "scripts/src/events/building-event-bus.js"() {
+    channels = Object.freeze(["\u6B63\u6587", "\u5FAE\u4FE1", "\u65B0\u95FB", "\u5EFA\u7B51"]);
   }
 });
 
@@ -19588,7 +19920,8 @@ function createDefaultLandlordState() {
       building_office_candidate: createOfficeCandidate()
     },
     \u4EBA\u7269\u5217\u8868: {},
-    \u4E8B\u4EF6\u5217\u8868: {}
+    \u4E8B\u4EF6\u5217\u8868: {},
+    \u8054\u52A8\u961F\u5217: {}
   };
 }
 function cloneLandlordState(value) {
@@ -19641,6 +19974,14 @@ function defaultIdFactory(prefix) {
   const random = Math.random().toString(36).slice(2, 8);
   return `${prefix}_${Date.now().toString(36)}_${random}`;
 }
+function awarenessTier2(value) {
+  const awareness = Math.max(0, Math.min(100, Number(value) || 0));
+  if (awareness === 0) return "\u672A\u53D1\u73B0";
+  if (awareness < 25) return "\u8F6E\u5ED3";
+  if (awareness < 60) return "\u521D\u6B65\u4E86\u89E3";
+  if (awareness < 90) return "\u5DF2\u663E\u9732";
+  return "\u5B8C\u5168\u638C\u63E1";
+}
 function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
   if (!mvu || typeof mvu.transaction !== "function") throw new TypeError("\u623F\u4E1C\u72B6\u6001\u670D\u52A1\u9700\u8981 MVU \u4E8B\u52A1\u670D\u52A1");
   if (!schema || typeof schema.parseState !== "function") throw new TypeError("\u623F\u4E1C\u72B6\u6001\u670D\u52A1\u9700\u8981 Schema \u89E3\u6790\u5668");
@@ -19673,6 +20014,28 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
     for (const listener of listeners) listener(event);
     return event;
   }
+  function appendDomainEvent(state, event) {
+    const eventId = idFactory("event");
+    state.\u4E8B\u4EF6\u5217\u8868[eventId] = event;
+    const personId = Object.keys(event.\u53C2\u4E0E\u8005 ?? {})[0] ?? "";
+    for (const channel of ["\u6B63\u6587", "\u5FAE\u4FE1", "\u65B0\u95FB", "\u5EFA\u7B51"]) {
+      const deliveryId = idFactory("link");
+      state.\u8054\u52A8\u961F\u5217[deliveryId] = {
+        \u4E8B\u4EF6ID: eventId,
+        \u9891\u9053: channel,
+        \u6807\u9898: event.\u6807\u9898,
+        \u6458\u8981: event.\u6458\u8981,
+        \u5EFA\u7B51ID: event.\u5EFA\u7B51ID,
+        \u7A7A\u95F4ID: event.\u7A7A\u95F4ID,
+        \u4EBA\u7269ID: personId,
+        \u6765\u6E90\u7C7B\u578B: event.\u7C7B\u578B,
+        \u72B6\u6001: "\u5F85\u5206\u53D1",
+        \u521B\u5EFA\u65F6\u95F4: event.\u53D1\u751F\u65F6\u95F4,
+        \u4E0A\u4E0B\u6587: {}
+      };
+    }
+    return eventId;
+  }
   return Object.freeze({
     getState,
     async ensureInitialized() {
@@ -19684,6 +20047,53 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
       return commit("\u5207\u6362\u5F53\u524D\u5EFA\u7B51", (state) => {
         if (!state.\u5EFA\u7B51\u5217\u8868[buildingId]) throw new Error(`\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${buildingId}`);
         state.\u5F53\u524D\u5EFA\u7B51ID = buildingId;
+      });
+    },
+    async setRunMode(mode) {
+      if (!["\u6A21\u62DF", "\u771F\u5B9E"].includes(mode)) throw new Error(`\u4E0D\u652F\u6301\u7684\u8FD0\u884C\u6A21\u5F0F\uFF1A${mode}`);
+      return commit("\u5207\u6362\u7ECF\u8425\u751F\u6210\u6A21\u5F0F", (state) => {
+        state.\u8FD0\u884C\u6A21\u5F0F = mode;
+      });
+    },
+    async increaseAwareness({ buildingId, floorId = null, spaceId = null, personId = null, amount = 10 }) {
+      const step = Number(amount);
+      if (!Number.isFinite(step) || step <= 0) throw new Error("\u611F\u77E5\u63D0\u5347\u5FC5\u987B\u5927\u4E8E 0");
+      return commit("\u63A2\u7D22\u4E0E\u9010\u6B65\u611F\u77E5", (state) => {
+        const building = state.\u5EFA\u7B51\u5217\u8868[buildingId];
+        if (!building) throw new Error(`\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${buildingId}`);
+        let target = building;
+        let targetName = building.\u540D\u79F0;
+        if (floorId) {
+          target = building.\u697C\u5C42\u5217\u8868[floorId];
+          if (!target) throw new Error(`\u697C\u5C42\u4E0D\u5B58\u5728\uFF1A${floorId}`);
+          targetName = target.\u540D\u79F0;
+        }
+        if (spaceId) {
+          target = building.\u7A7A\u95F4\u5217\u8868[spaceId];
+          if (!target) throw new Error(`\u7A7A\u95F4\u4E0D\u5B58\u5728\uFF1A${spaceId}`);
+          targetName = target.\u540D\u79F0;
+        }
+        if (personId) {
+          target = state.\u4EBA\u7269\u5217\u8868[personId];
+          if (!target) throw new Error(`\u4EBA\u7269\u4E0D\u5B58\u5728\uFF1A${personId}`);
+          if (target.\u6240\u5728\u5EFA\u7B51ID !== buildingId) throw new Error("\u4EBA\u7269\u4E0D\u5728\u6307\u5B9A\u5EFA\u7B51\u4E2D");
+          targetName = target.\u59D3\u540D;
+        }
+        const beforeTier = awarenessTier2(target.\u611F\u77E5\u5EA6);
+        target.\u611F\u77E5\u5EA6 = Math.min(100, Number(target.\u611F\u77E5\u5EA6 ?? 0) + step);
+        const afterTier = awarenessTier2(target.\u611F\u77E5\u5EA6);
+        if (beforeTier !== afterTier) {
+          appendDomainEvent(state, {
+            \u6807\u9898: `\u5BF9\u300C${targetName}\u300D\u7684\u4E86\u89E3\u52A0\u6DF1`,
+            \u7C7B\u578B: "\u63A2\u7D22\u53D1\u73B0",
+            \u5EFA\u7B51ID: buildingId,
+            \u7A7A\u95F4ID: spaceId ?? "",
+            \u72B6\u6001: "\u5DF2\u5B8C\u6210",
+            \u6458\u8981: `${targetName}\u4ECE\u300C${beforeTier}\u300D\u8FDB\u5165\u300C${afterTier}\u300D\u9636\u6BB5\u3002`,
+            \u53D1\u751F\u65F6\u95F4: "\u521A\u521A",
+            \u53C2\u4E0E\u8005: personId ? { [personId]: "\u88AB\u4E86\u89E3" } : {}
+          });
+        }
       });
     },
     async acquireBuilding(buildingId, direction = null) {
@@ -19701,8 +20111,7 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
           building.\u4E3B\u9898 = { ...building.\u4E3B\u9898, ...direction.theme ?? {} };
         }
         state.\u5F53\u524D\u5EFA\u7B51ID = buildingId;
-        const eventId = idFactory("event");
-        state.\u4E8B\u4EF6\u5217\u8868[eventId] = {
+        appendDomainEvent(state, {
           \u6807\u9898: `\u6B63\u5F0F\u63A5\u7BA1\u300C${building.\u540D\u79F0}\u300D`,
           \u7C7B\u578B: "\u5EFA\u7B51\u63A5\u7BA1",
           \u5EFA\u7B51ID: buildingId,
@@ -19711,7 +20120,7 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
           \u6458\u8981: direction?.summary ?? "\u65B0\u7684\u5EFA\u7B51\u5DF2\u7ECF\u52A0\u5165\u623F\u4E1C\u7ECF\u8425\u7248\u56FE\u3002",
           \u53D1\u751F\u65F6\u95F4: "\u521A\u521A",
           \u53C2\u4E0E\u8005: {}
-        };
+        });
       });
     },
     async applyRenovation({ buildingId, spaceId, plan }) {
@@ -19732,8 +20141,7 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
         space.\u72B6\u6001 = "\u6B63\u5E38";
         space.\u63CF\u8FF0 = plan.resultDescription ?? space.\u63CF\u8FF0;
         building.\u7ECF\u8425\u6458\u8981.\u4ECA\u65E5\u4EAE\u70B9 = `${space.\u540D\u79F0}\u5B8C\u6210\u4E86\u300C${plan.name}\u300D\u6539\u9020`;
-        const eventId = idFactory("event");
-        state.\u4E8B\u4EF6\u5217\u8868[eventId] = {
+        appendDomainEvent(state, {
           \u6807\u9898: `${space.\u540D\u79F0}\u7115\u7136\u4E00\u65B0`,
           \u7C7B\u578B: "\u88C5\u4FEE\u5B8C\u6210",
           \u5EFA\u7B51ID: buildingId,
@@ -19742,7 +20150,7 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
           \u6458\u8981: plan.resultDescription,
           \u53D1\u751F\u65F6\u95F4: "\u521A\u521A",
           \u53C2\u4E0E\u8005: {}
-        };
+        });
       });
     },
     async recruit({ buildingId, spaceId, candidate }) {
@@ -19770,8 +20178,7 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
         };
         space.\u5360\u7528\u8005[personId] = candidate.role;
         building.\u7ECF\u8425\u6458\u8981.\u6D3B\u8DC3\u5EA6 = Math.min(100, building.\u7ECF\u8425\u6458\u8981.\u6D3B\u8DC3\u5EA6 + 8);
-        const eventId = idFactory("event");
-        state.\u4E8B\u4EF6\u5217\u8868[eventId] = {
+        appendDomainEvent(state, {
           \u6807\u9898: `${candidate.name}\u52A0\u5165\u4E86${building.\u540D\u79F0}`,
           \u7C7B\u578B: "\u4EBA\u7269\u52A0\u5165",
           \u5EFA\u7B51ID: buildingId,
@@ -19780,7 +20187,15 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
           \u6458\u8981: `${candidate.name}\u5DF2\u7ECF\u88AB\u5B89\u6392\u5230${space.\u540D\u79F0}\u3002`,
           \u53D1\u751F\u65F6\u95F4: "\u521A\u521A",
           \u53C2\u4E0E\u8005: { [personId]: "\u65B0\u6210\u5458" }
-        };
+        });
+      });
+    },
+    async setDeliveryStatus(deliveryId, status) {
+      if (!["\u5F85\u5206\u53D1", "\u5DF2\u8BFB\u53D6", "\u5DF2\u5FFD\u7565"].includes(status)) throw new Error(`\u4E0D\u652F\u6301\u7684\u8054\u52A8\u72B6\u6001\uFF1A${status}`);
+      return commit("\u66F4\u65B0\u8054\u52A8\u961F\u5217", (state) => {
+        const delivery = state.\u8054\u52A8\u961F\u5217[deliveryId];
+        if (!delivery) throw new Error(`\u8054\u52A8\u9879\u4E0D\u5B58\u5728\uFF1A${deliveryId}`);
+        delivery.\u72B6\u6001 = status;
       });
     },
     subscribe(listener) {
@@ -19797,56 +20212,441 @@ var init_landlord_store = __esm({
   }
 });
 
-// scripts/src/services/mock-task-service.js
-function clone2(value) {
+// scripts/src/services/perception-service.js
+function clamp(value) {
+  return Math.max(0, Math.min(100, Number(value) || 0));
+}
+function createPerceptionService({ store, step = 18 }) {
+  if (!store || typeof store.increaseAwareness !== "function") throw new TypeError("\u9010\u6B65\u611F\u77E5\u670D\u52A1\u9700\u8981\u72B6\u6001\u670D\u52A1");
+  function findNext(buildingId) {
+    const state = store.getState();
+    const building = state.\u5EFA\u7B51\u5217\u8868[buildingId];
+    if (!building) throw new Error(`\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${buildingId}`);
+    if (clamp(building.\u611F\u77E5\u5EA6) < 100) return { kind: "building", id: buildingId, name: building.\u540D\u79F0, awareness: clamp(building.\u611F\u77E5\u5EA6) };
+    const floors = Object.entries(building.\u697C\u5C42\u5217\u8868 ?? {}).filter(([, floor]) => clamp(floor.\u611F\u77E5\u5EA6) < 100).sort((left, right) => clamp(left[1].\u611F\u77E5\u5EA6) - clamp(right[1].\u611F\u77E5\u5EA6) || Number(left[1].\u987A\u5E8F) - Number(right[1].\u987A\u5E8F));
+    if (floors.length) return { kind: "floor", id: floors[0][0], name: floors[0][1].\u540D\u79F0, awareness: clamp(floors[0][1].\u611F\u77E5\u5EA6) };
+    const spaces = Object.entries(building.\u7A7A\u95F4\u5217\u8868 ?? {}).filter(([, space]) => clamp(space.\u611F\u77E5\u5EA6) < 100).sort((left, right) => clamp(left[1].\u611F\u77E5\u5EA6) - clamp(right[1].\u611F\u77E5\u5EA6));
+    if (spaces.length) return { kind: "space", id: spaces[0][0], name: spaces[0][1].\u540D\u79F0, awareness: clamp(spaces[0][1].\u611F\u77E5\u5EA6) };
+    return null;
+  }
+  return Object.freeze({
+    findNext,
+    async exploreNext(buildingId) {
+      const target = findNext(buildingId);
+      if (!target) return Object.freeze({ complete: true, target: null });
+      await store.increaseAwareness({
+        buildingId,
+        floorId: target.kind === "floor" ? target.id : null,
+        spaceId: target.kind === "space" ? target.id : null,
+        amount: step
+      });
+      const after = target.kind === "building" ? store.getState().\u5EFA\u7B51\u5217\u8868[buildingId].\u611F\u77E5\u5EA6 : target.kind === "floor" ? store.getState().\u5EFA\u7B51\u5217\u8868[buildingId].\u697C\u5C42\u5217\u8868[target.id].\u611F\u77E5\u5EA6 : store.getState().\u5EFA\u7B51\u5217\u8868[buildingId].\u7A7A\u95F4\u5217\u8868[target.id].\u611F\u77E5\u5EA6;
+      return Object.freeze({ complete: false, target: Object.freeze({ ...target, awareness: clamp(after) }) });
+    }
+  });
+}
+var init_perception_service = __esm({
+  "scripts/src/services/perception-service.js"() {
+  }
+});
+
+// scripts/src/services/tenant-identity-service.js
+function stableHash(value) {
+  let hash = 2166136261;
+  for (const char of String(value)) {
+    hash ^= char.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+function safeColor(value) {
+  return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : "#FF9EAA";
+}
+function createTenantIdentityService({ store }) {
+  if (!store || typeof store.getState !== "function") throw new TypeError("\u79DF\u5BA2\u8EAB\u4EFD\u670D\u52A1\u9700\u8981\u72B6\u6001\u670D\u52A1");
+  function get(personId) {
+    const state = store.getState();
+    const person = state.\u4EBA\u7269\u5217\u8868[personId];
+    if (!person) return null;
+    const building = state.\u5EFA\u7B51\u5217\u8868[person.\u6240\u5728\u5EFA\u7B51ID];
+    const space = building?.\u7A7A\u95F4\u5217\u8868?.[person.\u6240\u5728\u7A7A\u95F4ID];
+    const key = stableHash(personId);
+    return Object.freeze({
+      id: personId,
+      name: person.\u59D3\u540D,
+      initial: person.\u59D3\u540D.slice(0, 1),
+      avatarKey: `tenant_${key}`,
+      contactId: `landlord_wechat_${key}`,
+      markerId: `building_marker_${key}`,
+      color: safeColor(person.\u89C6\u89C9\u8EAB\u4EFD?.\u4E3B\u8272),
+      icon: person.\u89C6\u89C9\u8EAB\u4EFD?.\u56FE\u6807 ?? "person",
+      pattern: person.\u89C6\u89C9\u8EAB\u4EFD?.\u7EB9\u6837 ?? "dots",
+      origin: person.\u6765\u6E90\u4E16\u754C,
+      role: person.\u8EAB\u4EFD\u7C7B\u578B,
+      profession: person.\u804C\u4E1A,
+      status: person.\u72B6\u6001,
+      buildingId: person.\u6240\u5728\u5EFA\u7B51ID,
+      buildingName: building?.\u540D\u79F0 ?? "\u672A\u77E5\u5EFA\u7B51",
+      spaceId: person.\u6240\u5728\u7A7A\u95F4ID,
+      spaceName: space?.\u540D\u79F0 ?? "\u672A\u5206\u914D\u7A7A\u95F4",
+      signature: `${person.\u6765\u6E90\u4E16\u754C} \xB7 ${person.\u804C\u4E1A} \xB7 ${person.\u72B6\u6001}`
+    });
+  }
+  function listForBuilding(buildingId) {
+    return Object.keys(store.getState().\u4EBA\u7269\u5217\u8868).map(get).filter((identity) => identity?.buildingId === buildingId);
+  }
+  function project(personId, channel) {
+    const identity = get(personId);
+    if (!identity) throw new Error(`\u4EBA\u7269\u4E0D\u5B58\u5728\uFF1A${personId}`);
+    if (channel === "\u5FAE\u4FE1") return Object.freeze({ id: identity.contactId, name: identity.name, avatarKey: identity.avatarKey, color: identity.color, signature: identity.signature });
+    if (channel === "\u65B0\u95FB") return Object.freeze({ subjectId: identity.id, displayName: identity.name, descriptor: `${identity.origin}\u6765\u7684${identity.profession}` });
+    if (channel === "\u6B63\u6587") return Object.freeze({ characterId: identity.id, name: identity.name, location: `${identity.buildingName}\xB7${identity.spaceName}`, status: identity.status });
+    if (channel === "\u5EFA\u7B51") return Object.freeze({ markerId: identity.markerId, label: identity.name, color: identity.color, buildingId: identity.buildingId, spaceId: identity.spaceId });
+    throw new Error(`\u672A\u77E5\u8EAB\u4EFD\u6295\u5F71\u9891\u9053\uFF1A${channel}`);
+  }
+  return Object.freeze({ get, listForBuilding, project });
+}
+var init_tenant_identity_service = __esm({
+  "scripts/src/services/tenant-identity-service.js"() {
+  }
+});
+
+// scripts/src/services/channel-bridge-service.js
+function clone4(value) {
+  if (typeof structuredClone === "function") return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+}
+function createLegacyChannelPorts({ getLegacy, logger = console }) {
+  if (typeof getLegacy !== "function") throw new TypeError("\u65E7\u6A21\u5757\u9002\u914D\u5668\u9700\u8981\u5EF6\u8FDF\u5168\u5C40\u8BFB\u53D6\u51FD\u6570");
+  return Object.freeze({
+    capabilities() {
+      const chatDb = getLegacy("ChatDB");
+      const phone = getLegacy("PhoneSystem");
+      return Object.freeze({
+        \u6B63\u6587: true,
+        \u5FAE\u4FE1: Boolean(chatDb?.getOrCreateGroupChat && chatDb?.addMessage),
+        \u65B0\u95FB: Boolean(phone?.newsSystem?.newsData && phone?.emit),
+        \u5EFA\u7B51: true
+      });
+    },
+    async story(draft) {
+      return draft;
+    },
+    async wechat(draft) {
+      const chatDb = getLegacy("ChatDB");
+      if (!chatDb?.getOrCreateGroupChat || !chatDb?.addMessage) throw new Error("\u5FAE\u4FE1\u6570\u636E\u5E93\u5C1A\u672A\u5C31\u7EEA");
+      const conversation = await chatDb.getOrCreateGroupChat(draft.conversationName);
+      const message = await chatDb.addMessage(conversation.id, draft.sender, draft.content, { isImportant: true });
+      try {
+        await getLegacy("ChatSync")?.onMessageSent?.(conversation.id);
+      } catch (error) {
+        logger.warn?.("[LandlordBridge] \u5FAE\u4FE1\u8349\u7A3F\u5DF2\u5199\u5165\uFF0C\u4F46\u6B63\u6587\u540C\u6B65\u5931\u8D25", error);
+      }
+      return message;
+    },
+    async news(draft) {
+      const phone = getLegacy("PhoneSystem");
+      const newsSystem = phone?.newsSystem;
+      if (!newsSystem?.newsData || !phone?.emit) throw new Error("\u65B0\u95FB\u7CFB\u7EDF\u5C1A\u672A\u5C31\u7EEA");
+      const existing = Array.isArray(newsSystem.newsData.headlines) ? newsSystem.newsData.headlines : [];
+      newsSystem.newsData.headlines = [clone4(draft.headline), ...existing].slice(0, 20);
+      newsSystem.newsData.lastUpdate = /* @__PURE__ */ new Date();
+      newsSystem.saveNewsToVariable?.();
+      phone.emit("news-updated", newsSystem.newsData);
+      return draft.headline;
+    },
+    async building(draft) {
+      return draft;
+    }
+  });
+}
+function createChannelBridgeService({ events, identities, ports }) {
+  if (!events || typeof events.list !== "function") throw new TypeError("\u9891\u9053\u6865\u63A5\u670D\u52A1\u9700\u8981\u4E8B\u4EF6\u603B\u7EBF");
+  if (!ports || typeof ports.capabilities !== "function") throw new TypeError("\u9891\u9053\u6865\u63A5\u670D\u52A1\u9700\u8981\u6295\u9012\u7AEF\u53E3");
+  function find(deliveryId) {
+    const item = events.list().find((entry) => entry.id === deliveryId);
+    if (!item) throw new Error(`\u8054\u52A8\u9879\u4E0D\u5B58\u5728\uFF1A${deliveryId}`);
+    return item;
+  }
+  function draft(deliveryId) {
+    const item = find(deliveryId);
+    const person = item.\u4EBA\u7269ID ? identities?.get(item.\u4EBA\u7269ID) : null;
+    const base = { deliveryId: item.id, eventId: item.\u4E8B\u4EF6ID, channel: item.\u9891\u9053, title: item.\u6807\u9898, summary: item.\u6458\u8981, buildingId: item.\u5EFA\u7B51ID, spaceId: item.\u7A7A\u95F4ID };
+    if (item.\u9891\u9053 === "\u6B63\u6587") return Object.freeze({ ...base, kind: "story-context", content: events.buildContext("\u6B63\u6587", { limit: 8 }) });
+    if (item.\u9891\u9053 === "\u5FAE\u4FE1") return Object.freeze({ ...base, kind: "wechat-message", conversationName: `${person?.buildingName ?? "\u623F\u4E1C\u7ECF\u8425"}\xB7\u7ECF\u8425\u7FA4`, sender: person?.name ?? "\u623F\u4E1C\u7CFB\u7EDF", content: item.\u6458\u8981, contactId: person?.contactId ?? "landlord_system" });
+    if (item.\u9891\u9053 === "\u65B0\u95FB") return Object.freeze({ ...base, kind: "news-headline", headline: Object.freeze({ tag: item.\u6765\u6E90\u7C7B\u578B, title: item.\u6807\u9898, summary: item.\u6458\u8981, source: "\u623F\u4E1C\u7ECF\u8425\u4E2D\u67A2", time: item.\u521B\u5EFA\u65F6\u95F4 }) });
+    return Object.freeze({ ...base, kind: "building-event" });
+  }
+  return Object.freeze({
+    capabilities: () => ports.capabilities(),
+    draft,
+    preview(channel) {
+      return events.list({ channel, status: "\u5F85\u5206\u53D1" }).map((item) => draft(item.id));
+    },
+    async dispatch(deliveryId, { confirmed = false } = {}) {
+      if (!confirmed) throw new Error("\u6295\u9012\u8054\u52A8\u8349\u7A3F\u5FC5\u987B\u7531\u73A9\u5BB6\u663E\u5F0F\u786E\u8BA4");
+      const prepared = draft(deliveryId);
+      const capability = ports.capabilities()[prepared.channel];
+      if (!capability) throw new Error(`${prepared.channel}\u9891\u9053\u5C1A\u672A\u5C31\u7EEA`);
+      const method = { \u6B63\u6587: "story", \u5FAE\u4FE1: "wechat", \u65B0\u95FB: "news", \u5EFA\u7B51: "building" }[prepared.channel];
+      const result = await ports[method](prepared);
+      await events.consume(deliveryId);
+      return Object.freeze({ draft: prepared, result: clone4(result) });
+    }
+  });
+}
+var init_channel_bridge_service = __esm({
+  "scripts/src/services/channel-bridge-service.js"() {
+  }
+});
+
+// scripts/src/services/task-center.js
+function clone5(value) {
   if (typeof structuredClone === "function") return structuredClone(value);
   return JSON.parse(JSON.stringify(value));
 }
 function defaultIdFactory2(kind) {
   return `${kind}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
-function createMockTaskService({ recipes, idFactory = defaultIdFactory2 }) {
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+function publicTask(task) {
+  return Object.freeze(clone5(task));
+}
+function createDeferred() {
+  let resolve;
+  const promise = new Promise((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+function assertPositiveInteger(value, name) {
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < 1) throw new TypeError(`${name}\u5FC5\u987B\u662F\u5927\u4E8E 0 \u7684\u6574\u6570`);
+  return number;
+}
+function createRecipeTaskProvider({ id = "local", recipes, source = "local-mock" }) {
+  if (!recipes || typeof recipes !== "object") throw new TypeError("\u4EFB\u52A1\u914D\u65B9\u5FC5\u987B\u662F\u5BF9\u8C61");
+  return Object.freeze({
+    id,
+    available: () => true,
+    supports: (kind) => typeof recipes[kind] === "function",
+    async run(kind, input, context) {
+      const recipe = recipes[kind];
+      if (typeof recipe !== "function") throw new Error(`\u4EFB\u52A1\u63D0\u4F9B\u5668 ${id} \u4E0D\u652F\u6301\uFF1A${kind}`);
+      const preview = await recipe(clone5(input), context);
+      return { source, ...clone5(preview) };
+    }
+  });
+}
+function createTaskCenter({
+  providers,
+  defaultMode = "local",
+  concurrency = 1,
+  timeoutMs = 45e3,
+  maxAttempts = 2,
+  idFactory = defaultIdFactory2,
+  clock = () => Date.now()
+}) {
+  if (!providers || typeof providers !== "object") throw new TypeError("\u4EFB\u52A1\u4E2D\u5FC3\u9700\u8981\u81F3\u5C11\u4E00\u4E2A\u63D0\u4F9B\u5668");
+  const providerMap = new Map(Object.entries(providers).filter(([, provider]) => provider?.run));
+  if (providerMap.size === 0) throw new TypeError("\u4EFB\u52A1\u4E2D\u5FC3\u6CA1\u6709\u53EF\u7528\u63D0\u4F9B\u5668");
+  if (!providerMap.has(defaultMode)) throw new Error(`\u9ED8\u8BA4\u4EFB\u52A1\u6A21\u5F0F\u4E0D\u5B58\u5728\uFF1A${defaultMode}`);
+  const limit = assertPositiveInteger(concurrency, "\u5E76\u53D1\u6570");
+  const defaultAttempts = assertPositiveInteger(maxAttempts, "\u6700\u5927\u5C1D\u8BD5\u6B21\u6570");
   const tasks = /* @__PURE__ */ new Map();
   const listeners = /* @__PURE__ */ new Set();
+  const queue = [];
+  const waiters = /* @__PURE__ */ new Map();
+  const controllers = /* @__PURE__ */ new Map();
+  let activeCount = 0;
+  let selectedMode = defaultMode;
+  let disposed = false;
+  function getProvider(mode, kind) {
+    const provider = providerMap.get(mode);
+    if (!provider) throw new Error(`\u4EFB\u52A1\u6A21\u5F0F\u4E0D\u5B58\u5728\uFF1A${mode}`);
+    if (provider.available?.() === false) throw new Error(`\u4EFB\u52A1\u6A21\u5F0F ${mode} \u5F53\u524D\u4E0D\u53EF\u7528`);
+    if (provider.supports?.(kind) === false) throw new Error(`\u4EFB\u52A1\u6A21\u5F0F ${mode} \u4E0D\u652F\u6301\uFF1A${kind}`);
+    return provider;
+  }
+  function assertModeAvailable(mode) {
+    const provider = providerMap.get(mode);
+    if (!provider) throw new Error(`\u4EFB\u52A1\u6A21\u5F0F\u4E0D\u5B58\u5728\uFF1A${mode}`);
+    if (provider.available?.() === false) throw new Error(`\u4EFB\u52A1\u6A21\u5F0F ${mode} \u5F53\u524D\u4E0D\u53EF\u7528`);
+    return provider;
+  }
   function publish(task) {
-    const snapshot = Object.freeze(clone2(task));
+    task.updatedAt = clock();
+    const snapshot = publicTask(task);
     for (const listener of listeners) listener(snapshot);
     return snapshot;
   }
+  function settle(task) {
+    const deferred = waiters.get(task.id);
+    if (!deferred) return;
+    waiters.delete(task.id);
+    deferred.resolve(publicTask(task));
+  }
   function get(taskId) {
     const task = tasks.get(taskId);
-    return task ? Object.freeze(clone2(task)) : null;
+    return task ? publicTask(task) : null;
   }
-  return Object.freeze({
-    mode: "mock",
-    get,
-    list() {
-      return [...tasks.values()].map((task) => Object.freeze(clone2(task)));
-    },
-    async run(kind, input) {
-      const recipe = recipes[kind];
-      if (typeof recipe !== "function") throw new Error(`\u6CA1\u6709\u6CE8\u518C\u6A21\u62DF\u4EFB\u52A1\uFF1A${kind}`);
-      const id = idFactory("task");
-      const task = { id, kind, status: "running", input: clone2(input), preview: null, error: null };
-      tasks.set(id, task);
+  async function invokeProvider(task, provider) {
+    const controller = new AbortController();
+    controllers.set(task.id, controller);
+    let timer = null;
+    const timeout = task.timeoutMs > 0 ? new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        controller.abort("timeout");
+        const error = new Error(`\u4EFB\u52A1\u8D85\u8FC7 ${task.timeoutMs}ms \u672A\u5B8C\u6210`);
+        error.code = "TASK_TIMEOUT";
+        reject(error);
+      }, task.timeoutMs);
+    }) : null;
+    try {
+      const request = Promise.resolve(
+        provider.run(task.kind, clone5(task.input), {
+          signal: controller.signal,
+          attempt: task.attempt,
+          taskId: task.id,
+          metadata: clone5(task.metadata)
+        })
+      );
+      return await (timeout ? Promise.race([request, timeout]) : request);
+    } finally {
+      if (timer) clearTimeout(timer);
+      if (controllers.get(task.id) === controller) controllers.delete(task.id);
+    }
+  }
+  async function execute(task) {
+    let provider;
+    try {
+      provider = getProvider(task.mode, task.kind);
+    } catch (error) {
+      task.status = "failed";
+      task.error = errorMessage(error);
+      publish(task);
+      settle(task);
+      return;
+    }
+    while (task.attempt < task.maxAttempts && task.status !== "cancelled") {
+      task.attempt += 1;
+      task.status = task.attempt === 1 ? "running" : "retrying";
+      task.error = null;
       publish(task);
       try {
-        const preview = await recipe(clone2(input));
-        if (task.status === "cancelled") return get(id);
-        task.preview = clone2(preview);
+        const preview = await invokeProvider(task, provider);
+        if (task.status === "cancelled") break;
+        task.preview = clone5(preview);
         task.status = "ready";
+        publish(task);
+        settle(task);
+        return;
       } catch (error) {
-        task.status = "failed";
-        task.error = error instanceof Error ? error.message : String(error);
+        if (task.status === "cancelled") break;
+        task.error = errorMessage(error);
+        if (task.attempt >= task.maxAttempts) {
+          task.status = "failed";
+          publish(task);
+          settle(task);
+          return;
+        }
+        task.status = "waiting-retry";
+        publish(task);
       }
-      return publish(task);
+    }
+    settle(task);
+  }
+  function drain() {
+    if (disposed) return;
+    while (activeCount < limit && queue.length > 0) {
+      const task = queue.shift();
+      if (!task || task.status === "cancelled") continue;
+      activeCount += 1;
+      void execute(task).finally(() => {
+        activeCount -= 1;
+        drain();
+      });
+    }
+  }
+  function enqueue(task) {
+    const deferred = createDeferred();
+    waiters.set(task.id, deferred);
+    task.status = "queued";
+    queue.push(task);
+    publish(task);
+    drain();
+    return deferred.promise;
+  }
+  function submit(kind, input, options = {}) {
+    if (disposed) throw new Error("\u4EFB\u52A1\u4E2D\u5FC3\u5DF2\u7ECF\u5173\u95ED");
+    const mode = options.mode ?? selectedMode;
+    getProvider(mode, kind);
+    const now = clock();
+    const task = {
+      id: idFactory("task"),
+      kind,
+      mode,
+      status: "created",
+      input: clone5(input),
+      metadata: clone5(options.metadata ?? {}),
+      preview: null,
+      error: null,
+      attempt: 0,
+      maxAttempts: assertPositiveInteger(options.maxAttempts ?? defaultAttempts, "\u6700\u5927\u5C1D\u8BD5\u6B21\u6570"),
+      timeoutMs: Math.max(0, Number(options.timeoutMs ?? timeoutMs) || 0),
+      createdAt: now,
+      updatedAt: now
+    };
+    tasks.set(task.id, task);
+    return Object.freeze({ id: task.id, result: enqueue(task) });
+  }
+  return Object.freeze({
+    get mode() {
+      return selectedMode;
+    },
+    get,
+    list({ status = null, mode = null } = {}) {
+      return [...tasks.values()].filter((task) => !status || task.status === status).filter((task) => !mode || task.mode === mode).map(publicTask);
+    },
+    capabilities() {
+      return [...providerMap.entries()].map(
+        ([mode, provider]) => Object.freeze({ mode, available: provider.available?.() !== false, id: provider.id ?? mode })
+      );
+    },
+    setMode(mode) {
+      assertModeAvailable(mode);
+      selectedMode = mode;
+      return selectedMode;
+    },
+    submit,
+    async run(kind, input, options = {}) {
+      return await submit(kind, input, options).result;
     },
     cancel(taskId) {
       const task = tasks.get(taskId);
-      if (!task || !["running", "ready"].includes(task.status)) return false;
+      if (!task || !["queued", "running", "retrying", "waiting-retry", "ready"].includes(task.status)) return false;
       task.status = "cancelled";
+      task.error = null;
+      const controller = controllers.get(taskId);
+      if (controller) controller.abort("cancelled");
       publish(task);
+      settle(task);
       return true;
+    },
+    async retry(taskId, options = {}) {
+      const task = tasks.get(taskId);
+      if (!task) throw new Error(`\u4EFB\u52A1\u4E0D\u5B58\u5728\uFF1A${taskId}`);
+      if (!["failed", "cancelled"].includes(task.status)) throw new Error(`\u4EFB\u52A1\u5F53\u524D\u4E0D\u53EF\u91CD\u8BD5\uFF1A${task.status}`);
+      task.attempt = 0;
+      task.error = null;
+      task.preview = null;
+      if (options.mode) task.mode = options.mode;
+      if (options.timeoutMs != null) task.timeoutMs = Math.max(0, Number(options.timeoutMs) || 0);
+      if (options.maxAttempts != null) task.maxAttempts = assertPositiveInteger(options.maxAttempts, "\u6700\u5927\u5C1D\u8BD5\u6B21\u6570");
+      getProvider(task.mode, task.kind);
+      return await enqueue(task);
     },
     async confirm(taskId, apply) {
       const task = tasks.get(taskId);
@@ -19856,11 +20656,12 @@ function createMockTaskService({ recipes, idFactory = defaultIdFactory2 }) {
       task.status = "applying";
       publish(task);
       try {
-        await apply(clone2(task.preview));
+        await apply(clone5(task.preview), publicTask(task));
         task.status = "confirmed";
+        task.error = null;
       } catch (error) {
         task.status = "ready";
-        task.error = error instanceof Error ? error.message : String(error);
+        task.error = errorMessage(error);
         publish(task);
         throw error;
       }
@@ -19870,11 +20671,25 @@ function createMockTaskService({ recipes, idFactory = defaultIdFactory2 }) {
       if (typeof listener !== "function") throw new TypeError("\u4EFB\u52A1\u8BA2\u9605\u8005\u5FC5\u987B\u662F\u51FD\u6570");
       listeners.add(listener);
       return () => listeners.delete(listener);
+    },
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      for (const task of tasks.values()) {
+        if (["queued", "running", "retrying", "waiting-retry"].includes(task.status)) {
+          task.status = "cancelled";
+          controllers.get(task.id)?.abort("disposed");
+          publish(task);
+          settle(task);
+        }
+      }
+      queue.length = 0;
+      listeners.clear();
     }
   });
 }
-var init_mock_task_service = __esm({
-  "scripts/src/services/mock-task-service.js"() {
+var init_task_center = __esm({
+  "scripts/src/services/task-center.js"() {
   }
 });
 
@@ -19886,18 +20701,56 @@ __export(landlord_core_exports, {
 function activate2(context) {
   const schema = context.services.require("landlord.schema");
   const store = createLandlordStore({ mvu: context.mvu, schema });
-  const tasks = createMockTaskService({ recipes: managementMockRecipes });
+  const localProvider = createRecipeTaskProvider({
+    id: "management-local",
+    recipes: managementMockRecipes,
+    source: "local-mock"
+  });
+  const aiProvider = createManagementAiProvider({
+    tavern: context.tavern,
+    isEnabled: () => store.getState().\u8FD0\u884C\u6A21\u5F0F === "\u771F\u5B9E",
+    logger: context.logger
+  });
+  const tasks = createTaskCenter({
+    providers: { local: localProvider, ai: aiProvider },
+    defaultMode: "local",
+    concurrency: 1,
+    timeoutMs: 45e3,
+    maxAttempts: 2
+  });
   const compiler = Object.freeze({ compileBuilding, compilePortfolio });
+  const events = createBuildingEventBus({ store });
+  const perception = createPerceptionService({ store });
+  const identities = createTenantIdentityService({ store });
+  const layouts = createBuildingLayoutService();
+  const bridges = createChannelBridgeService({
+    events,
+    identities,
+    ports: createLegacyChannelPorts({ getLegacy: (name) => context.legacy.get(name), logger: context.logger })
+  });
   context.services.register("landlord.store", store, { legacyGlobal: "LandlordStore" });
   context.services.register("landlord.tasks", tasks);
+  context.services.register("landlord.events", events);
+  context.services.register("landlord.perception", perception);
+  context.services.register("landlord.identities", identities);
+  context.services.register("building.layout", layouts);
+  context.services.register("landlord.bridges", bridges);
   context.services.register("building.compiler", compiler);
+  context.lifecycle.onDispose(() => tasks.dispose());
+  context.lifecycle.onDispose(() => events.dispose());
 }
 var init_landlord_core = __esm({
   "scripts/modules/landlord-core/index.js"() {
+    init_management_ai_provider();
     init_compiler();
+    init_layout_engine();
+    init_building_event_bus();
     init_management_recipes();
     init_landlord_store();
-    init_mock_task_service();
+    init_perception_service();
+    init_tenant_identity_service();
+    init_channel_bridge_service();
+    init_task_center();
   }
 });
 
@@ -19908,7 +20761,7 @@ function icon(name) {
 function escapeHtml(value) {
   return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
-function safeColor(value, fallback = "#FF9EAA") {
+function safeColor2(value, fallback = "#FF9EAA") {
   return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : fallback;
 }
 function tags(values = []) {
@@ -19920,14 +20773,20 @@ function emptyState(title, text) {
 function navItem(section, current, label, iconName) {
   return `<button class="lmo-nav-item ${section === current ? "active" : ""}" data-action="navigate" data-section="${section}">${icon(iconName)}<span>${label}</span></button>`;
 }
-function renderSidebar(ui, portfolio) {
+function taskModeCopy(state) {
+  return state.\u8FD0\u884C\u6A21\u5F0F === "\u771F\u5B9E" ? { title: "AI \u751F\u6210\u6A21\u5F0F", detail: "\u751F\u6210\u540E\u4ECD\u9700\u786E\u8BA4\u5199\u5165", verb: "\u751F\u6210 AI" } : { title: "\u672C\u5730\u6A21\u62DF\u6A21\u5F0F", detail: "\u4E0D\u4F1A\u8C03\u7528\u771F\u5B9E AI", verb: "\u751F\u6210\u672C\u5730" };
+}
+function renderSidebar(state, ui, portfolio) {
+  const mode = taskModeCopy(state);
   return `<aside class="lmo-sidebar">
     <div class="lmo-brand"><div class="lmo-brand-mark">L</div><div><strong>Landlord</strong><span>\u623F\u4E1C\u7ECF\u8425\u4E2D\u67A2</span></div></div>
     <nav>
       ${navItem("portfolio", ui.section, "\u8D44\u4EA7\u603B\u89C8", "buildings")}
       ${navItem("building", ui.section, "\u5F53\u524D\u5EFA\u7B51", "home")}
+      ${navItem("twin", ui.section, "\u6570\u5B57\u5B6A\u751F", "room")}
       ${navItem("renovation", ui.section, "\u88C5\u4FEE\u4E2D\u5FC3", "renovate")}
       ${navItem("recruitment", ui.section, "\u62DB\u52DF\u4E2D\u5FC3", "recruit")}
+      ${navItem("tasks", ui.section, "\u4EFB\u52A1\u4E2D\u5FC3", "tasks")}
       ${navItem("events", ui.section, "\u52A8\u6001\u8BB0\u5F55", "event")}
     </nav>
     <div class="lmo-sidebar-summary">
@@ -19935,7 +20794,7 @@ function renderSidebar(ui, portfolio) {
       <div><i style="width:${Math.min(100, 28 + portfolio.owned.length * 18)}%"></i></div>
       <p>${portfolio.available.length} \u4E2A\u63A5\u7BA1\u673A\u4F1A\u6B63\u5728\u7B49\u5F85</p>
     </div>
-    <div class="lmo-mode"><span class="lmo-pulse"></span><div><strong>\u672C\u5730\u6A21\u62DF\u6A21\u5F0F</strong><small>\u4E0D\u4F1A\u8C03\u7528\u771F\u5B9E AI</small></div></div>
+    <div class="lmo-mode ${state.\u8FD0\u884C\u6A21\u5F0F === "\u771F\u5B9E" ? "ai" : ""}"><span class="lmo-pulse"></span><div><strong>${mode.title}</strong><small>${mode.detail}</small></div></div>
   </aside>`;
 }
 function renderHeader(current, ui) {
@@ -19948,13 +20807,15 @@ function renderHeader(current, ui) {
 function sectionTitle(section, current) {
   if (section === "portfolio") return "\u6211\u7684\u5EFA\u7B51\u7248\u56FE";
   if (section === "renovation") return "\u88C5\u4FEE\u5177\u73B0\u5316\u4E2D\u5FC3";
+  if (section === "twin") return "\u5EFA\u7B51\u6570\u5B57\u5B6A\u751F";
   if (section === "recruitment") return "\u8DE8\u4E16\u754C\u62DB\u52DF\u4E2D\u5FC3";
   if (section === "takeover") return "\u5EFA\u7B51\u63A5\u7BA1\u63D0\u6848";
+  if (section === "tasks") return "\u7EDF\u4E00\u4EFB\u52A1\u4E2D\u5FC3";
   if (section === "events") return "\u5EFA\u7B51\u52A8\u6001\u8BB0\u5F55";
   return current.name;
 }
 function buildingCard(building, action) {
-  const accent = safeColor(building.theme?.\u4E3B\u8272);
+  const accent = safeColor2(building.theme?.\u4E3B\u8272);
   const owned = ["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.status);
   return `<button class="lmo-building-card" data-action="${action}" data-building-id="${escapeHtml(building.id)}" style="--building-accent:${accent}">
     <div class="lmo-building-visual"><span class="lmo-building-type">${escapeHtml(building.type)}</span><span class="lmo-building-glyph">${icon(building.isHeadquarters ? "home" : "buildings")}</span><i></i><i></i><i></i></div>
@@ -19967,7 +20828,7 @@ function renderPortfolio(state, portfolio) {
   const current = portfolio.buildings.find((item) => item.id === state.\u5F53\u524D\u5EFA\u7B51ID) ?? portfolio.headquarters;
   const recentEvents = Object.entries(state.\u4E8B\u4EF6\u5217\u8868 ?? {}).slice(-3).reverse();
   return `<section class="lmo-view lmo-portfolio">
-    <div class="lmo-hero" style="--building-accent:${safeColor(current.theme?.\u4E3B\u8272)}">
+    <div class="lmo-hero" style="--building-accent:${safeColor2(current.theme?.\u4E3B\u8272)}">
       <div><span class="lmo-kicker">\u5F53\u524D\u7ECF\u8425\u7126\u70B9</span><h2>${escapeHtml(current.name)}</h2><p>${escapeHtml(current.summary.\u4ECA\u65E5\u4EAE\u70B9)}</p>
       <button class="lmo-primary" data-action="open-building" data-building-id="${escapeHtml(current.id)}">\u8FDB\u5165\u5EFA\u7B51 ${icon("arrow")}</button></div>
       <div class="lmo-hero-orbit"><span>${portfolio.owned.length}</span><small>\u680B\u5EFA\u7B51</small><i></i><i></i><i></i></div>
@@ -19985,68 +20846,100 @@ function renderPortfolio(state, portfolio) {
 }
 function spaceCard(space) {
   const sizeClass = `size-${escapeHtml(space.size)}`;
-  return `<button class="lmo-space-card ${sizeClass}" data-action="select-space" data-space-id="${escapeHtml(space.id)}">
+  return `<button class="lmo-space-card ${sizeClass} visibility-${escapeHtml(space.visibility)}" data-action="select-space" data-space-id="${escapeHtml(space.id)}">
     <div><span class="lmo-space-type">${escapeHtml(space.type)}</span><span class="lmo-space-status status-${escapeHtml(space.status)}">${escapeHtml(space.status)}</span></div>
     <strong>${escapeHtml(space.name)}</strong><p>${escapeHtml(space.purpose)}</p>
-    <footer><span>${space.occupants.length ? `${space.occupants.length} \u4EBA\u6B63\u5728\u4F7F\u7528` : "\u7B49\u5F85\u4EBA\u7269\u8FDB\u5165"}</span><span>${escapeHtml(space.renovation?.\u98CE\u683C ?? "\u57FA\u7840\u88C5\u4FEE")}</span></footer>
+    <footer><span>${space.occupants.length ? `${space.occupants.length} \u4EBA\u6B63\u5728\u4F7F\u7528` : `\u611F\u77E5 ${space.awareness}%`}</span><span>${escapeHtml(space.renovation?.\u98CE\u683C ?? "\u5F85\u63A2\u7D22")}</span></footer>
   </button>`;
 }
-function renderBuilding(building) {
+function renderBuilding(building, identityCenter) {
   return `<section class="lmo-view">
-    <div class="lmo-building-banner" style="--building-accent:${safeColor(building.theme?.\u4E3B\u8272)}"><div><span>${escapeHtml(building.type)} \xB7 ${escapeHtml(building.worldview)}</span><h2>${escapeHtml(building.name)}</h2><p>${escapeHtml(building.description)}</p></div><div class="lmo-banner-actions"><button class="lmo-secondary" data-action="navigate" data-section="renovation">${icon("renovate")} \u5F00\u59CB\u88C5\u4FEE</button><button class="lmo-primary" data-action="navigate" data-section="recruitment">${icon("recruit")} \u62DB\u52DF\u4EBA\u7269</button></div></div>
+    <div class="lmo-building-banner" style="--building-accent:${safeColor2(building.theme?.\u4E3B\u8272)}"><div><span>${escapeHtml(building.type)} \xB7 ${escapeHtml(building.worldview)}</span><h2>${escapeHtml(building.name)}</h2><p>${escapeHtml(building.description)}</p></div><div class="lmo-banner-actions"><button class="lmo-secondary" data-action="explore-next">${icon("sparkle")} \u63A2\u7D22\u4E0B\u4E00\u5904</button><button class="lmo-secondary" data-action="navigate" data-section="renovation">${icon("renovate")} \u5F00\u59CB\u88C5\u4FEE</button><button class="lmo-primary" data-action="navigate" data-section="recruitment">${icon("recruit")} \u62DB\u52DF\u4EBA\u7269</button></div></div>
     <div class="lmo-metric-strip"><div><span>\u53EF\u89C1\u697C\u5C42</span><strong>${building.metrics.floors}</strong></div><div><span>\u5F53\u524D\u7A7A\u95F4</span><strong>${building.metrics.spaces}</strong></div><div><span>\u5DF2\u5B89\u7F6E\u4EBA\u7269</span><strong>${building.metrics.people}</strong></div><div><span>\u6D3B\u8DC3\u5EA6</span><strong>${building.summary.\u6D3B\u8DC3\u5EA6 ?? 0}<small>%</small></strong></div></div>
-    <div class="lmo-floor-list">${building.floors.map((floor) => `<article class="lmo-floor"><header><div><span>${String(floor.order).padStart(2, "0")}</span><div><strong>${escapeHtml(floor.name)}</strong><small>${escapeHtml(floor.description)}</small></div></div><em>\u611F\u77E5 ${floor.awareness}%</em></header><div class="lmo-space-grid">${floor.spaces.length ? floor.spaces.map(spaceCard).join("") : emptyState("\u8FD9\u4E00\u5C42\u4ECD\u662F\u672A\u77E5", "\u968F\u7740\u63A5\u7BA1\u548C\u63A2\u7D22\uFF0C\u65B0\u7684\u7A7A\u95F4\u4F1A\u9010\u6B65\u663E\u73B0\u3002")}</div></article>`).join("")}</div>
+    ${identityCenter.residents.length ? `<article class="lmo-panel"><div class="lmo-panel-title"><div>${icon("person")}<span><strong>\u5EFA\u7B51\u6210\u5458</strong><small>\u8DE8\u754C\u9762\u5171\u7528\u540C\u4E00\u4EFD\u89C6\u89C9\u8EAB\u4EFD\u548C\u4F4D\u7F6E</small></span></div></div><div class="lmo-resident-strip">${identityCenter.residents.map((person) => `<div style="--person-accent:${safeColor2(person.color)}"><span>${escapeHtml(person.initial)}</span><p><strong>${escapeHtml(person.name)}</strong><small>${escapeHtml(person.role)} \xB7 ${escapeHtml(person.spaceName)}</small></p><code>${escapeHtml(person.contactId)}</code></div>`).join("")}</div></article>` : ""}
+    <div class="lmo-floor-list">${building.floors.map((floor) => `<article class="lmo-floor visibility-${escapeHtml(floor.visibility)}"><header><div><span>${String(floor.order).padStart(2, "0")}</span><div><strong>${escapeHtml(floor.name)}</strong><small>${escapeHtml(floor.description)}</small></div></div><em>\u611F\u77E5 ${floor.awareness}% \xB7 ${escapeHtml(floor.visibility)}</em></header><div class="lmo-space-grid">${floor.spaces.length ? floor.spaces.map(spaceCard).join("") : emptyState("\u8FD9\u4E00\u5C42\u4ECD\u662F\u672A\u77E5", "\u968F\u7740\u63A5\u7BA1\u548C\u63A2\u7D22\uFF0C\u65B0\u7684\u7A7A\u95F4\u4F1A\u9010\u6B65\u663E\u73B0\u3002")}</div></article>`).join("")}</div>
+  </section>`;
+}
+function renderTwin(twin) {
+  return `<section class="lmo-view lmo-twin-view">
+    <div class="lmo-section-heading"><div><span>BUILDING DIGITAL TWIN</span><h2>${escapeHtml(twin.name)}\xB7\u53EF\u8BA1\u7B97\u7A7A\u95F4\u955C\u50CF</h2></div><p>\u5E03\u5C40\u7531\u7A7A\u95F4\u5C3A\u5BF8\u548C\u76F8\u90BB\u5173\u7CFB\u786E\u5B9A\u6027\u751F\u6210\uFF0C\u4E0D\u9700\u8981 AI \u731C\u6D4B\u5750\u6807\u3002</p></div>
+    <div class="lmo-twin-metrics"><span><b>${twin.metrics.floors}</b>\u53EF\u89C1\u697C\u5C42</span><span><b>${twin.metrics.nodes}</b>\u7A7A\u95F4\u8282\u70B9</span><span><b>${twin.metrics.edges}</b>\u5DF2\u77E5\u8FDE\u63A5</span></div>
+    <div class="lmo-twin-floors">${twin.floors.map((floor) => `<article><header><div><strong>${escapeHtml(floor.name)}</strong><small>\u611F\u77E5 ${floor.awareness}% \xB7 ${floor.nodes.length} \u4E2A\u7A7A\u95F4</small></div><span>${String(floor.order).padStart(2, "0")}</span></header>${floor.nodes.length ? `<div class="lmo-twin-map" style="--twin-accent:${safeColor2(twin.theme?.\u4E3B\u8272)}">${floor.nodes.map((node) => `<button class="visibility-${escapeHtml(node.visibility)}" data-action="select-space" data-space-id="${escapeHtml(node.id)}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%"><strong>${escapeHtml(node.name)}</strong><small>${escapeHtml(node.type)} \xB7 ${node.awareness}%</small>${node.occupants?.length ? `<em>${node.occupants.map((person) => escapeHtml(person.name)).join(" / ")}</em>` : ""}</button>`).join("")}</div>` : emptyState("\u6682\u65E0\u53EF\u89C1\u7A7A\u95F4", "\u7EE7\u7EED\u63A2\u7D22\u540E\uFF0C\u7A7A\u95F4\u4F1A\u8FDB\u5165\u6570\u5B57\u5B6A\u751F\u3002")}</article>`).join("")}</div>
   </section>`;
 }
 function workflowSteps(active) {
   return `<div class="lmo-workflow-steps"><span class="done"><b>1</b>\u9009\u62E9\u76EE\u6807</span><i></i><span class="${active >= 2 ? "done" : ""}"><b>2</b>\u751F\u6210\u9884\u89C8</span><i></i><span class="${active >= 3 ? "done" : ""}"><b>3</b>\u786E\u8BA4\u5199\u5165</span></div>`;
 }
-function renderTakeover(building, task, selectedId, busy) {
+function renderTakeover(state, building, task, selectedId, busy) {
+  const mode = taskModeCopy(state);
   const directions = task?.status === "ready" ? task.preview.directions : [];
   return `<section class="lmo-view lmo-workflow">${workflowSteps(directions.length ? 2 : 1)}
-    <div class="lmo-workflow-intro" style="--building-accent:${safeColor(building.theme?.\u4E3B\u8272)}"><button class="lmo-text-button" data-action="navigate" data-section="portfolio">${icon("back")} \u8FD4\u56DE\u8D44\u4EA7\u603B\u89C8</button><div><span class="lmo-building-type">${escapeHtml(building.type)}</span><h2>${escapeHtml(building.name)}</h2><p>${escapeHtml(building.description)}</p></div><div class="lmo-facts"><span><b>${building.metrics.floors}</b> \u5C42\u57FA\u7840\u683C\u5C40</span><span><b>${building.metrics.spaces}</b> \u4E2A\u73B0\u6709\u7A7A\u95F4</span><span><b>${building.awareness}%</b> \u5DF2\u611F\u77E5</span></div></div>
-    ${!directions.length ? `<div class="lmo-generation-callout">${icon("sparkle")}<div><strong>\u751F\u6210\u4E09\u79CD\u63A5\u7BA1\u65B9\u5411</strong><p>\u5F53\u524D\u53EA\u8BFB\u53D6\u672C\u5730\u56FA\u5B9A\u6837\u4F8B\uFF0C\u4E0D\u4F1A\u8BBF\u95EE\u804A\u5929\u8BB0\u5F55\uFF0C\u4E5F\u4E0D\u4F1A\u8C03\u7528\u4EFB\u4F55\u771F\u5B9E AI\u3002</p></div><button class="lmo-primary" data-action="run-takeover" data-building-id="${escapeHtml(building.id)}" ${busy ? "disabled" : ""}>${busy ? "\u6B63\u5728\u6574\u7406\u2026" : "\u751F\u6210\u672C\u5730\u63D0\u6848"}</button></div>` : `<div class="lmo-option-grid">${directions.map((direction) => `<button class="lmo-option-card ${selectedId === direction.id ? "selected" : ""}" data-action="choose-option" data-option-id="${escapeHtml(direction.id)}"><div class="lmo-option-check">${selectedId === direction.id ? icon("check") : ""}</div><span>\u7ECF\u8425\u65B9\u5411</span><h3>${escapeHtml(direction.name)}</h3><p>${escapeHtml(direction.description)}</p>${tags(direction.tags)}<ul>${direction.opportunities.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></button>`).join("")}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? "\u65B9\u6848\u5DF2\u7ECF\u9009\u5B9A" : "\u9009\u62E9\u4E00\u4E2A\u65B9\u5411\u7EE7\u7EED"}</strong><span>\u53EA\u6709\u70B9\u51FB\u786E\u8BA4\u540E\uFF0C\u5EFA\u7B51\u72B6\u6001\u624D\u4F1A\u6B63\u5F0F\u6539\u53D8\u3002</span></div><button class="lmo-primary" data-action="confirm-takeover" ${selectedId && !busy ? "" : "disabled"}>\u786E\u8BA4\u63A5\u7BA1 ${icon("arrow")}</button></div>`}
+    <div class="lmo-workflow-intro" style="--building-accent:${safeColor2(building.theme?.\u4E3B\u8272)}"><button class="lmo-text-button" data-action="navigate" data-section="portfolio">${icon("back")} \u8FD4\u56DE\u8D44\u4EA7\u603B\u89C8</button><div><span class="lmo-building-type">${escapeHtml(building.type)}</span><h2>${escapeHtml(building.name)}</h2><p>${escapeHtml(building.description)}</p></div><div class="lmo-facts"><span><b>${building.metrics.floors}</b> \u5C42\u57FA\u7840\u683C\u5C40</span><span><b>${building.metrics.spaces}</b> \u4E2A\u73B0\u6709\u7A7A\u95F4</span><span><b>${building.awareness}%</b> \u5DF2\u611F\u77E5</span></div></div>
+    ${!directions.length ? `<div class="lmo-generation-callout">${icon("sparkle")}<div><strong>\u751F\u6210\u4E09\u79CD\u63A5\u7BA1\u65B9\u5411</strong><p>${state.\u8FD0\u884C\u6A21\u5F0F === "\u771F\u5B9E" ? "\u8C03\u7528\u9152\u9986\u52A9\u624B\u7684\u7ED3\u6784\u5316\u751F\u6210\uFF1B\u4E0D\u8BFB\u53D6\u804A\u5929\u5386\u53F2\uFF0C\u7ED3\u679C\u4E0D\u4F1A\u81EA\u52A8\u5199\u5165\u3002" : "\u5F53\u524D\u53EA\u8BFB\u53D6\u672C\u5730\u56FA\u5B9A\u6837\u4F8B\uFF0C\u4E0D\u4F1A\u8BBF\u95EE\u804A\u5929\u8BB0\u5F55\uFF0C\u4E5F\u4E0D\u4F1A\u8C03\u7528\u4EFB\u4F55\u771F\u5B9E AI\u3002"}</p></div><button class="lmo-primary" data-action="run-takeover" data-building-id="${escapeHtml(building.id)}" ${busy ? "disabled" : ""}>${busy ? "\u6B63\u5728\u6574\u7406\u2026" : `${mode.verb}\u63D0\u6848`}</button></div>` : `<div class="lmo-option-grid">${directions.map((direction) => `<button class="lmo-option-card ${selectedId === direction.id ? "selected" : ""}" data-action="choose-option" data-option-id="${escapeHtml(direction.id)}"><div class="lmo-option-check">${selectedId === direction.id ? icon("check") : ""}</div><span>\u7ECF\u8425\u65B9\u5411</span><h3>${escapeHtml(direction.name)}</h3><p>${escapeHtml(direction.description)}</p>${tags(direction.tags)}<ul>${direction.opportunities.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></button>`).join("")}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? "\u65B9\u6848\u5DF2\u7ECF\u9009\u5B9A" : "\u9009\u62E9\u4E00\u4E2A\u65B9\u5411\u7EE7\u7EED"}</strong><span>\u53EA\u6709\u70B9\u51FB\u786E\u8BA4\u540E\uFF0C\u5EFA\u7B51\u72B6\u6001\u624D\u4F1A\u6B63\u5F0F\u6539\u53D8\u3002</span></div><button class="lmo-primary" data-action="confirm-takeover" ${selectedId && !busy ? "" : "disabled"}>\u786E\u8BA4\u63A5\u7BA1 ${icon("arrow")}</button></div>`}
   </section>`;
 }
 function ownedSpaceOptions(building, selectedSpaceId, action = "choose-workflow-space") {
   return building.floors.flatMap((floor) => floor.spaces).map((space) => `<button class="lmo-compact-space ${selectedSpaceId === space.id ? "selected" : ""}" data-action="${action}" data-space-id="${escapeHtml(space.id)}"><span>${escapeHtml(space.type)}</span><strong>${escapeHtml(space.name)}</strong><small>${escapeHtml(space.status)} \xB7 ${escapeHtml(space.size)}</small></button>`).join("");
 }
-function renderRenovation(building, task, selectedSpaceId, selectedId, busy) {
+function renderRenovation(state, building, task, selectedSpaceId, selectedId, busy) {
   const plans = task?.status === "ready" ? task.preview.plans : [];
   const space = building.floors.flatMap((floor) => floor.spaces).find((item) => item.id === selectedSpaceId);
-  return `<section class="lmo-view lmo-workflow">${workflowSteps(plans.length ? 2 : selectedSpaceId ? 1 : 0)}
+  const markup = `<section class="lmo-view lmo-workflow">${workflowSteps(plans.length ? 2 : selectedSpaceId ? 1 : 0)}
     <div class="lmo-two-column"><aside class="lmo-selector"><span class="lmo-kicker">\u9009\u62E9\u88C5\u4FEE\u76EE\u6807</span><h2>${escapeHtml(building.name)}</h2><div class="lmo-compact-list">${ownedSpaceOptions(building, selectedSpaceId)}</div></aside>
-    <div class="lmo-workspace">${!space ? emptyState("\u5148\u9009\u62E9\u4E00\u4E2A\u7A7A\u95F4", "\u53EF\u4EE5\u4ECE\u4E00\u4E2A\u623F\u95F4\u5F00\u59CB\uFF0C\u4E0D\u9700\u8981\u4E00\u6B21\u88C5\u4FEE\u6574\u680B\u5EFA\u7B51\u3002") : !plans.length ? `<div class="lmo-preview-room"><span>${escapeHtml(space.type)} \xB7 ${escapeHtml(space.size)}</span><h2>${escapeHtml(space.name)}</h2><p>${escapeHtml(space.description)}</p><div class="lmo-current-style"><small>\u5F53\u524D\u88C5\u4FEE</small><strong>${escapeHtml(space.renovation?.\u98CE\u683C)}</strong><span>${escapeHtml(space.renovation?.\u6C1B\u56F4)}</span></div><button class="lmo-primary" data-action="run-renovation" ${busy ? "disabled" : ""}>${icon("sparkle")} ${busy ? "\u6B63\u5728\u6574\u7406\u2026" : "\u751F\u6210\u4E09\u4E2A\u672C\u5730\u65B9\u6848"}</button></div>` : `<div class="lmo-renovation-plans">${plans.map((plan) => `<button class="lmo-renovation-card ${selectedId === plan.id ? "selected" : ""}" data-action="choose-option" data-option-id="${escapeHtml(plan.id)}"><div class="lmo-palette">${Object.values(plan.palette).map((color) => `<i style="--swatch:${safeColor(color, "#E2E8F0")}"></i>`).join("")}</div><span>${escapeHtml(plan.style)}</span><h3>${escapeHtml(plan.name)}</h3><p>${escapeHtml(plan.tagline)}</p>${tags(plan.impacts)}<small>${escapeHtml(plan.lighting)}</small></button>`).join("")}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? "\u88C5\u4FEE\u6548\u679C\u53EF\u4EE5\u5177\u73B0\u5316" : "\u6311\u9009\u6700\u559C\u6B22\u7684\u65B9\u6848"}</strong><span>\u786E\u8BA4\u540E\u4F1A\u6539\u53D8\u7A7A\u95F4\u63CF\u8FF0\u3001\u914D\u8272\u3001\u6750\u8D28\u548C\u4E8B\u4EF6\u8BB0\u5F55\u3002</span></div><button class="lmo-primary" data-action="confirm-renovation" ${selectedId && !busy ? "" : "disabled"}>\u5E94\u7528\u88C5\u4FEE ${icon("arrow")}</button></div>`}</div></div>
+    <div class="lmo-workspace">${!space ? emptyState("\u5148\u9009\u62E9\u4E00\u4E2A\u7A7A\u95F4", "\u53EF\u4EE5\u4ECE\u4E00\u4E2A\u623F\u95F4\u5F00\u59CB\uFF0C\u4E0D\u9700\u8981\u4E00\u6B21\u88C5\u4FEE\u6574\u680B\u5EFA\u7B51\u3002") : !plans.length ? `<div class="lmo-preview-room"><span>${escapeHtml(space.type)} \xB7 ${escapeHtml(space.size)}</span><h2>${escapeHtml(space.name)}</h2><p>${escapeHtml(space.description)}</p><div class="lmo-current-style"><small>\u5F53\u524D\u88C5\u4FEE</small><strong>${escapeHtml(space.renovation?.\u98CE\u683C)}</strong><span>${escapeHtml(space.renovation?.\u6C1B\u56F4)}</span></div><button class="lmo-primary" data-action="run-renovation" ${busy ? "disabled" : ""}>${icon("sparkle")} ${busy ? "\u6B63\u5728\u6574\u7406\u2026" : "\u751F\u6210\u4E09\u4E2A\u672C\u5730\u65B9\u6848"}</button></div>` : `<div class="lmo-renovation-plans">${plans.map((plan) => `<button class="lmo-renovation-card ${selectedId === plan.id ? "selected" : ""}" data-action="choose-option" data-option-id="${escapeHtml(plan.id)}"><div class="lmo-palette">${Object.values(plan.palette).map((color) => `<i style="--swatch:${safeColor2(color, "#E2E8F0")}"></i>`).join("")}</div><span>${escapeHtml(plan.style)}</span><h3>${escapeHtml(plan.name)}</h3><p>${escapeHtml(plan.tagline)}</p>${tags(plan.impacts)}<small>${escapeHtml(plan.lighting)}</small></button>`).join("")}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? "\u88C5\u4FEE\u6548\u679C\u53EF\u4EE5\u5177\u73B0\u5316" : "\u6311\u9009\u6700\u559C\u6B22\u7684\u65B9\u6848"}</strong><span>\u786E\u8BA4\u540E\u4F1A\u6539\u53D8\u7A7A\u95F4\u63CF\u8FF0\u3001\u914D\u8272\u3001\u6750\u8D28\u548C\u4E8B\u4EF6\u8BB0\u5F55\u3002</span></div><button class="lmo-primary" data-action="confirm-renovation" ${selectedId && !busy ? "" : "disabled"}>\u5E94\u7528\u88C5\u4FEE ${icon("arrow")}</button></div>`}</div></div>
   </section>`;
+  return state.\u8FD0\u884C\u6A21\u5F0F === "\u771F\u5B9E" ? markup.replace("\u751F\u6210\u4E09\u4E2A\u672C\u5730\u65B9\u6848", "\u751F\u6210\u4E09\u4E2A AI \u65B9\u6848") : markup;
 }
-function renderRecruitment(building, task, selectedSpaceId, selectedId, busy) {
+function renderRecruitment(state, building, task, selectedSpaceId, selectedId, busy) {
+  const mode = taskModeCopy(state);
   const candidates = task?.status === "ready" ? task.preview.candidates : [];
   return `<section class="lmo-view lmo-workflow">${workflowSteps(candidates.length ? 2 : 1)}
-    <div class="lmo-generation-callout compact">${icon("recruit")}<div><strong>\u4E3A\u300C${escapeHtml(building.name)}\u300D\u5BFB\u627E\u65B0\u6210\u5458</strong><p>\u5019\u9009\u4EBA\u6765\u81EA\u672C\u5730\u6837\u4F8B\uFF0C\u786E\u8BA4\u524D\u4E0D\u4F1A\u51FA\u73B0\u5728\u4EBA\u7269\u5217\u8868\u6216\u5EFA\u7B51\u91CC\u3002</p></div>${!candidates.length ? `<button class="lmo-primary" data-action="run-recruitment" ${busy ? "disabled" : ""}>${busy ? "\u6B63\u5728\u6574\u7406\u2026" : "\u751F\u6210\u672C\u5730\u5019\u9009\u4EBA"}</button>` : ""}</div>
-    ${candidates.length ? `<div class="lmo-recruit-layout"><div class="lmo-candidate-list">${candidates.map((candidate) => `<button class="lmo-candidate ${selectedId === candidate.id ? "selected" : ""}" data-action="choose-option" data-option-id="${escapeHtml(candidate.id)}" style="--person-accent:${safeColor(candidate.visualIdentity.\u4E3B\u8272)}"><div class="lmo-avatar">${escapeHtml(candidate.name.slice(0, 1))}</div><div><span>${escapeHtml(candidate.origin)} \xB7 ${escapeHtml(candidate.profession)}</span><h3>${escapeHtml(candidate.name)}</h3><p>${escapeHtml(candidate.personality)}</p><blockquote>\u201C${escapeHtml(candidate.quote)}\u201D</blockquote>${tags(candidate.tags)}</div><i class="lmo-option-check">${selectedId === candidate.id ? icon("check") : ""}</i></button>`).join("")}</div><aside class="lmo-placement"><span class="lmo-kicker">\u5B89\u6392\u4F4D\u7F6E</span><h3>\u8BA9\u4EBA\u7269\u771F\u6B63\u8FDB\u5165\u5EFA\u7B51</h3><p>\u9009\u62E9\u4E00\u4E2A\u7A7A\u95F4\u540E\uFF0C\u4EBA\u7269\u6863\u6848\u3001\u95E8\u724C\u548C\u5EFA\u7B51\u5360\u7528\u8BB0\u5F55\u4F1A\u540C\u65F6\u521B\u5EFA\u3002</p><div class="lmo-compact-list">${ownedSpaceOptions(building, selectedSpaceId, "choose-recruit-space")}</div></aside></div><div class="lmo-confirm-bar"><div><strong>${selectedId && selectedSpaceId ? "\u4EBA\u7269\u4E0E\u4F4D\u7F6E\u5DF2\u7ECF\u786E\u5B9A" : "\u8BF7\u9009\u62E9\u4EBA\u7269\u548C\u5B89\u7F6E\u4F4D\u7F6E"}</strong><span>\u8FD9\u4E00\u6B65\u4F1A\u5199\u5165\u4EBA\u7269\u3001\u7A7A\u95F4\u548C\u4E8B\u4EF6\u4E09\u5904\u72B6\u6001\u3002</span></div><button class="lmo-primary" data-action="confirm-recruitment" ${selectedId && selectedSpaceId && !busy ? "" : "disabled"}>\u786E\u8BA4\u52A0\u5165 ${icon("arrow")}</button></div>` : emptyState("\u5019\u9009\u540D\u5355\u5C1A\u672A\u751F\u6210", "\u70B9\u51FB\u4E0A\u65B9\u6309\u94AE\uFF0C\u7528\u672C\u5730\u6A21\u62DF\u6570\u636E\u9884\u89C8\u5B8C\u6574\u6D41\u7A0B\u3002")}
+    <div class="lmo-generation-callout compact">${icon("recruit")}<div><strong>\u4E3A\u300C${escapeHtml(building.name)}\u300D\u5BFB\u627E\u65B0\u6210\u5458</strong><p>\u5019\u9009\u4EBA\u53EA\u662F\u9884\u89C8\uFF0C\u786E\u8BA4\u524D\u4E0D\u4F1A\u51FA\u73B0\u5728\u4EBA\u7269\u5217\u8868\u6216\u5EFA\u7B51\u91CC\u3002</p></div>${!candidates.length ? `<button class="lmo-primary" data-action="run-recruitment" ${busy ? "disabled" : ""}>${busy ? "\u6B63\u5728\u6574\u7406\u2026" : `${mode.verb}\u5019\u9009\u4EBA`}</button>` : ""}</div>
+    ${candidates.length ? `<div class="lmo-recruit-layout"><div class="lmo-candidate-list">${candidates.map((candidate) => `<button class="lmo-candidate ${selectedId === candidate.id ? "selected" : ""}" data-action="choose-option" data-option-id="${escapeHtml(candidate.id)}" style="--person-accent:${safeColor2(candidate.visualIdentity.\u4E3B\u8272)}"><div class="lmo-avatar">${escapeHtml(candidate.name.slice(0, 1))}</div><div><span>${escapeHtml(candidate.origin)} \xB7 ${escapeHtml(candidate.profession)}</span><h3>${escapeHtml(candidate.name)}</h3><p>${escapeHtml(candidate.personality)}</p><blockquote>\u201C${escapeHtml(candidate.quote)}\u201D</blockquote>${tags(candidate.tags)}</div><i class="lmo-option-check">${selectedId === candidate.id ? icon("check") : ""}</i></button>`).join("")}</div><aside class="lmo-placement"><span class="lmo-kicker">\u5B89\u6392\u4F4D\u7F6E</span><h3>\u8BA9\u4EBA\u7269\u771F\u6B63\u8FDB\u5165\u5EFA\u7B51</h3><p>\u9009\u62E9\u4E00\u4E2A\u7A7A\u95F4\u540E\uFF0C\u4EBA\u7269\u6863\u6848\u3001\u95E8\u724C\u548C\u5EFA\u7B51\u5360\u7528\u8BB0\u5F55\u4F1A\u540C\u65F6\u521B\u5EFA\u3002</p><div class="lmo-compact-list">${ownedSpaceOptions(building, selectedSpaceId, "choose-recruit-space")}</div></aside></div><div class="lmo-confirm-bar"><div><strong>${selectedId && selectedSpaceId ? "\u4EBA\u7269\u4E0E\u4F4D\u7F6E\u5DF2\u7ECF\u786E\u5B9A" : "\u8BF7\u9009\u62E9\u4EBA\u7269\u548C\u5B89\u7F6E\u4F4D\u7F6E"}</strong><span>\u8FD9\u4E00\u6B65\u4F1A\u5199\u5165\u4EBA\u7269\u3001\u7A7A\u95F4\u548C\u4E8B\u4EF6\u4E09\u5904\u72B6\u6001\u3002</span></div><button class="lmo-primary" data-action="confirm-recruitment" ${selectedId && selectedSpaceId && !busy ? "" : "disabled"}>\u786E\u8BA4\u52A0\u5165 ${icon("arrow")}</button></div>` : emptyState("\u5019\u9009\u540D\u5355\u5C1A\u672A\u751F\u6210", "\u70B9\u51FB\u4E0A\u65B9\u6309\u94AE\uFF0C\u7528\u672C\u5730\u6A21\u62DF\u6570\u636E\u9884\u89C8\u5B8C\u6574\u6D41\u7A0B\u3002")}
   </section>`;
 }
-function renderEvents(state, portfolio) {
+function renderTasks(taskCenter) {
+  const ai = taskCenter.capabilities.find((item) => item.mode === "ai");
+  const recent = taskCenter.tasks.slice(-12).reverse();
+  return `<section class="lmo-view lmo-task-center">
+    <div class="lmo-section-heading"><div><span>GENERATION ORCHESTRATOR</span><h2>\u4E00\u4E2A\u5165\u53E3\uFF0C\u4E24\u79CD\u751F\u6210\u65B9\u5F0F</h2></div><p>\u4EFB\u52A1\u4E2D\u5FC3\u7EDF\u4E00\u8D1F\u8D23\u6392\u961F\u3001\u8D85\u65F6\u3001\u91CD\u8BD5\u3001\u53D6\u6D88\u548C\u9884\u89C8\u786E\u8BA4\u3002</p></div>
+    <div class="lmo-mode-grid">
+      <button class="lmo-mode-card ${taskCenter.mode === "local" ? "selected" : ""}" data-action="set-task-mode" data-mode="local"><div>${icon("tasks")}<span class="lmo-option-check">${taskCenter.mode === "local" ? icon("check") : ""}</span></div><strong>\u672C\u5730\u6A21\u62DF</strong><p>\u4F7F\u7528\u5185\u7F6E\u6837\u4F8B\u9A8C\u8BC1\u6574\u5957\u6D41\u7A0B\uFF0C\u6C38\u8FDC\u4E0D\u8C03\u7528 AI\u3002</p><small>\u5FEB\u901F \xB7 \u53EF\u91CD\u73B0 \xB7 \u9002\u5408\u6D4B\u8BD5</small></button>
+      <button class="lmo-mode-card ${taskCenter.mode === "ai" ? "selected" : ""}" data-action="set-task-mode" data-mode="ai" ${ai?.available ? "" : "disabled"}><div>${icon("sparkle")}<span class="lmo-option-check">${taskCenter.mode === "ai" ? icon("check") : ""}</span></div><strong>AI \u7ED3\u6784\u5316\u751F\u6210</strong><p>\u901A\u8FC7\u9152\u9986\u52A9\u624B\u751F\u6210\u5019\u9009\u65B9\u6848\uFF0C\u5E76\u5148\u505A\u683C\u5F0F\u6821\u9A8C\u3002</p><small>${ai?.available ? "\u5DF2\u68C0\u6D4B\u5230\u751F\u6210\u80FD\u529B \xB7 \u4E0D\u81EA\u52A8\u5199\u5165" : "\u5F53\u524D\u73AF\u5883\u672A\u63D0\u4F9B\u751F\u6210\u80FD\u529B"}</small></button>
+    </div>
+    <div class="lmo-safety-line">${icon("check")}<span><strong>\u5207\u6362\u6A21\u5F0F\u4E0D\u4F1A\u53D1\u8D77\u751F\u6210</strong><small>\u53EA\u6709\u5728\u63A5\u7BA1\u3001\u88C5\u4FEE\u6216\u62DB\u52DF\u9875\u9762\u4E3B\u52A8\u70B9\u51FB\u540E\uFF0C\u624D\u4F1A\u521B\u5EFA\u4EFB\u52A1\u3002</small></span></div>
+    <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon("tasks")}<span><strong>\u4EFB\u52A1\u6392\u961F</strong><small>\u6700\u8FD1 ${recent.length} \u6761\u4EFB\u52A1</small></span></div></div>
+      ${recent.length ? `<div class="lmo-task-list">${recent.map((task) => `<div class="lmo-task-row"><span class="lmo-task-state status-${escapeHtml(task.status)}">${escapeHtml(taskStatusLabels[task.status] ?? task.status)}</span><div><strong>${escapeHtml(taskKindLabels[task.kind] ?? task.kind)}</strong><small>${task.mode === "ai" ? "AI \u751F\u6210" : "\u672C\u5730\u6A21\u62DF"} \xB7 \u7B2C ${task.attempt}/${task.maxAttempts} \u6B21${task.error ? ` \xB7 ${escapeHtml(task.error)}` : ""}</small></div><code>${escapeHtml(task.id)}</code><span class="lmo-task-actions">${["queued", "running", "retrying", "waiting-retry", "ready"].includes(task.status) ? `<button data-action="cancel-task" data-task-id="${escapeHtml(task.id)}">\u53D6\u6D88</button>` : ""}${["failed", "cancelled"].includes(task.status) ? `<button data-action="retry-task" data-task-id="${escapeHtml(task.id)}">\u91CD\u8BD5</button>` : ""}</span></div>`).join("")}</div>` : emptyState("\u961F\u5217\u8FD8\u662F\u7A7A\u7684", "\u4ECE\u63A5\u7BA1\u3001\u88C5\u4FEE\u6216\u62DB\u52DF\u4E2D\u5FC3\u53D1\u8D77\u7684\u4EFB\u52A1\u4F1A\u5728\u8FD9\u91CC\u7559\u4E0B\u5168\u8FC7\u7A0B\u72B6\u6001\u3002")}
+    </article>
+  </section>`;
+}
+function renderEvents(state, portfolio, linkCenter) {
   const events = Object.entries(state.\u4E8B\u4EF6\u5217\u8868 ?? {}).reverse();
-  return `<section class="lmo-view"><div class="lmo-section-heading"><div><span>BUILDING MEMORY</span><h2>\u771F\u6B63\u53D1\u751F\u8FC7\u7684\u53D8\u5316</h2></div><p>\u8FD9\u91CC\u53EA\u6709\u786E\u8BA4\u5199\u5165\u8FC7\u7684\u64CD\u4F5C\uFF0C\u4E0D\u5C55\u793A\u4E34\u65F6\u5019\u9009\u548C\u53D6\u6D88\u7684\u65B9\u6848\u3002</p></div>${events.length ? `<div class="lmo-event-timeline">${events.map(([id, event]) => {
+  const channels2 = ["\u6B63\u6587", "\u5FAE\u4FE1", "\u65B0\u95FB", "\u5EFA\u7B51"];
+  return `<section class="lmo-view"><div class="lmo-section-heading"><div><span>BUILDING MEMORY</span><h2>\u771F\u6B63\u53D1\u751F\u8FC7\u7684\u53D8\u5316</h2></div><p>\u8FD9\u91CC\u53EA\u6709\u786E\u8BA4\u5199\u5165\u8FC7\u7684\u64CD\u4F5C\uFF0C\u4E0D\u5C55\u793A\u4E34\u65F6\u5019\u9009\u548C\u53D6\u6D88\u7684\u65B9\u6848\u3002</p></div>
+    <div class="lmo-link-channels">${channels2.map((channel) => `<div><span>${escapeHtml(channel)}</span><strong>${linkCenter.counts[channel] ?? 0}</strong><small>\u5F85\u5206\u53D1\u8054\u52A8</small>${linkCenter.capabilities[channel] && linkCenter.counts[channel] ? `<button data-action="dispatch-next-link" data-channel="${escapeHtml(channel)}">\u6295\u9012\u4E0B\u4E00\u6761</button>` : ""}</div>`).join("")}</div>
+    <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon("sparkle")}<span><strong>\u8DE8\u7CFB\u7EDF\u8054\u52A8\u961F\u5217</strong><small>\u6B63\u6587\u3001\u5FAE\u4FE1\u3001\u65B0\u95FB\u548C\u5EFA\u7B51\u4F7F\u7528\u540C\u4E00\u4E2A\u4E8B\u4EF6\u6E90</small></span></div></div>${linkCenter.pending.length ? `<div class="lmo-link-list">${linkCenter.pending.map((item) => `<div><span>${escapeHtml(item.\u9891\u9053)}</span><p><strong>${escapeHtml(item.\u6807\u9898)}</strong><small>${escapeHtml(item.\u6458\u8981)}</small></p><button data-action="consume-link" data-link-id="${escapeHtml(item.id)}">\u5DF2\u8BFB</button><button data-action="ignore-link" data-link-id="${escapeHtml(item.id)}">\u5FFD\u7565</button></div>`).join("")}</div>` : emptyState("\u8054\u52A8\u961F\u5217\u5DF2\u6E05\u7A7A", "\u65B0\u7684\u7ECF\u8425\u53D8\u5316\u4F1A\u81EA\u52A8\u6295\u9012\u5230\u56DB\u4E2A\u9891\u9053\u3002")}</article>
+    ${events.length ? `<div class="lmo-event-timeline">${events.map(([id, event]) => {
     const building = portfolio.buildings.find((item) => item.id === event.\u5EFA\u7B51ID);
     return `<article><div class="lmo-event-mark">${icon(event.\u7C7B\u578B === "\u4EBA\u7269\u52A0\u5165" ? "person" : event.\u7C7B\u578B === "\u88C5\u4FEE\u5B8C\u6210" ? "renovate" : "buildings")}</div><div><span>${escapeHtml(event.\u7C7B\u578B)} \xB7 ${escapeHtml(building?.name ?? "\u672A\u77E5\u5EFA\u7B51")}</span><h3>${escapeHtml(event.\u6807\u9898)}</h3><p>${escapeHtml(event.\u6458\u8981)}</p><small>${escapeHtml(event.\u53D1\u751F\u65F6\u95F4)} \xB7 ${escapeHtml(id)}</small></div><em>${escapeHtml(event.\u72B6\u6001)}</em></article>`;
   }).join("")}</div>` : emptyState("\u8FD8\u6CA1\u6709\u7ECF\u8425\u8BB0\u5F55", "\u5B8C\u6210\u7B2C\u4E00\u6B21\u63A5\u7BA1\u3001\u88C5\u4FEE\u6216\u62DB\u52DF\u540E\uFF0C\u5EFA\u7B51\u8BB0\u5FC6\u4F1A\u51FA\u73B0\u5728\u8FD9\u91CC\u3002")}</section>`;
 }
-function renderConsole({ state, portfolio, current, ui, task }) {
+function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, twin }) {
   let content;
   if (ui.section === "portfolio") content = renderPortfolio(state, portfolio);
-  else if (ui.section === "building") content = renderBuilding(current);
-  else if (ui.section === "takeover") content = renderTakeover(ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
-  else if (ui.section === "renovation") content = renderRenovation(current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
-  else if (ui.section === "recruitment") content = renderRecruitment(current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
-  else content = renderEvents(state, portfolio);
+  else if (ui.section === "building") content = renderBuilding(current, identityCenter);
+  else if (ui.section === "twin") content = renderTwin(twin);
+  else if (ui.section === "takeover") content = renderTakeover(state, ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
+  else if (ui.section === "renovation") content = renderRenovation(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
+  else if (ui.section === "recruitment") content = renderRecruitment(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
+  else if (ui.section === "tasks") content = renderTasks(taskCenter);
+  else content = renderEvents(state, portfolio, linkCenter);
   const displayBuilding = ui.section === "takeover" ? ui.targetBuilding : current;
-  return `<div class="lmo-backdrop" data-action="close-backdrop"><div class="lmo-shell" role="dialog" aria-modal="true" aria-label="\u623F\u4E1C\u7ECF\u8425\u4E2D\u67A2" style="--active-accent:${safeColor(displayBuilding.theme?.\u4E3B\u8272)}">
-    ${renderSidebar(ui, portfolio)}<main class="lmo-main">${renderHeader(displayBuilding, ui)}<div class="lmo-scroll">${ui.notice ? `<div class="lmo-notice ${ui.notice.type}">${escapeHtml(ui.notice.text)}</div>` : ""}${content}</div></main>
+  return `<div class="lmo-backdrop" data-action="close-backdrop"><div class="lmo-shell" role="dialog" aria-modal="true" aria-label="\u623F\u4E1C\u7ECF\u8425\u4E2D\u67A2" style="--active-accent:${safeColor2(displayBuilding.theme?.\u4E3B\u8272)}">
+    ${renderSidebar(state, ui, portfolio)}<main class="lmo-main">${renderHeader(displayBuilding, ui)}<div class="lmo-scroll">${ui.notice ? `<div class="lmo-notice ${ui.notice.type}">${escapeHtml(ui.notice.text)}</div>` : ""}${content}</div></main>
   </div></div>`;
 }
-var icons;
+var icons, taskStatusLabels, taskKindLabels;
 var init_templates = __esm({
   "scripts/src/ui/console/templates.js"() {
     icons = Object.freeze({
@@ -20056,6 +20949,7 @@ var init_templates = __esm({
       renovate: '<svg viewBox="0 0 24 24"><path d="m14 6 4 4M4 20l4.5-1 10-10a2.8 2.8 0 0 0-4-4l-10 10zM13 6l4 4M5 15l4 4"/></svg>',
       recruit: '<svg viewBox="0 0 24 24"><path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M16 11h6"/></svg>',
       event: '<svg viewBox="0 0 24 24"><path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M18 12h3M6 21h12M8 17a6 6 0 1 1 8 0l-1 1H9z"/></svg>',
+      tasks: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9h6M9 13h6M9 17h3M8 2v3M16 2v3"/></svg>',
       close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
       arrow: '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
       sparkle: '<svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
@@ -20063,13 +20957,26 @@ var init_templates = __esm({
       check: '<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>',
       person: '<svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/></svg>'
     });
+    taskStatusLabels = Object.freeze({
+      created: "\u5DF2\u521B\u5EFA",
+      queued: "\u6392\u961F\u4E2D",
+      running: "\u6267\u884C\u4E2D",
+      retrying: "\u91CD\u8BD5\u4E2D",
+      "waiting-retry": "\u7B49\u5F85\u91CD\u8BD5",
+      ready: "\u5F85\u786E\u8BA4",
+      applying: "\u5199\u5165\u4E2D",
+      confirmed: "\u5DF2\u786E\u8BA4",
+      failed: "\u5931\u8D25",
+      cancelled: "\u5DF2\u53D6\u6D88"
+    });
+    taskKindLabels = Object.freeze({ takeover: "\u5EFA\u7B51\u63A5\u7BA1", renovation: "\u7A7A\u95F4\u88C5\u4FEE", recruitment: "\u4EBA\u7269\u62DB\u52DF" });
   }
 });
 
 // scripts/src/ui/console/controller.js
-function createLandlordConsole({ document: document2, store, tasks, compiler, logger }) {
+function createLandlordConsole({ document: document2, store, tasks, events = null, perception = null, identities = null, layouts = null, bridges = null, compiler, logger }) {
   let root = null;
-  let visible2 = false;
+  let visible = false;
   let disposed = false;
   const ui = {
     section: "portfolio",
@@ -20085,7 +20992,15 @@ function createLandlordConsole({ document: document2, store, tasks, compiler, lo
     const portfolio = compiler.compilePortfolio(state);
     const current = portfolio.buildings.find((item) => item.id === state.\u5F53\u524D\u5EFA\u7B51ID) ?? portfolio.headquarters;
     const targetBuilding = portfolio.buildings.find((item) => item.id === ui.targetBuildingId) ?? current;
-    return { state, portfolio, current, targetBuilding };
+    const taskCenter = {
+      mode: tasks.mode,
+      capabilities: tasks.capabilities(),
+      tasks: tasks.list()
+    };
+    const linkCenter = events ? { counts: events.counts(), pending: events.list({ status: "\u5F85\u5206\u53D1", limit: 20 }), capabilities: bridges?.capabilities() ?? {} } : { counts: { \u6B63\u6587: 0, \u5FAE\u4FE1: 0, \u65B0\u95FB: 0, \u5EFA\u7B51: 0 }, pending: [], capabilities: {} };
+    const identityCenter = { residents: identities?.listForBuilding(current.id) ?? [] };
+    const twin = layouts?.compile(current) ?? { buildingId: current.id, name: current.name, theme: current.theme, floors: [], metrics: { floors: 0, nodes: 0, edges: 0 } };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, twin };
   }
   function resetWorkflow({ keepSpace = false } = {}) {
     ui.taskId = null;
@@ -20097,7 +21012,7 @@ function createLandlordConsole({ document: document2, store, tasks, compiler, lo
     ui.notice = { text, type };
   }
   function render() {
-    if (!visible2 || disposed) return;
+    if (!visible || disposed) return;
     const data = getData();
     ui.targetBuilding = data.targetBuilding;
     const task = ui.taskId ? tasks.get(ui.taskId) : null;
@@ -20152,6 +21067,16 @@ function createLandlordConsole({ document: document2, store, tasks, compiler, lo
       ui.section = "renovation";
       return render();
     }
+    if (action === "explore-next") {
+      if (!perception) throw new Error("\u9010\u6B65\u611F\u77E5\u670D\u52A1\u5C1A\u672A\u52A0\u8F7D");
+      return withBusy(async () => {
+        const result = await perception.exploreNext(data.current.id);
+        setNotice(
+          result.complete ? "\u8FD9\u680B\u5EFA\u7B51\u7684\u5F53\u524D\u7ED3\u6784\u5DF2\u5168\u90E8\u638C\u63E1\u3002" : `\u5BF9\u300C${result.target.name}\u300D\u7684\u4E86\u89E3\u63D0\u5347\u5230 ${result.target.awareness}%\u3002`,
+          "success"
+        );
+      });
+    }
     if (action === "choose-workflow-space" || action === "choose-recruit-space") {
       const changed = ui.selectedSpaceId !== button.dataset.spaceId;
       ui.selectedSpaceId = button.dataset.spaceId;
@@ -20164,6 +21089,63 @@ function createLandlordConsole({ document: document2, store, tasks, compiler, lo
     if (action === "choose-option") {
       ui.selectedOptionId = button.dataset.optionId;
       return render();
+    }
+    if (action === "set-task-mode") {
+      const mode = button.dataset.mode;
+      return withBusy(async () => {
+        if (mode === "local") {
+          tasks.setMode("local");
+          await store.setRunMode("\u6A21\u62DF");
+          setNotice("\u5DF2\u5207\u6362\u5230\u672C\u5730\u6A21\u62DF\uFF1B\u4E0D\u4F1A\u8C03\u7528\u771F\u5B9E AI\u3002", "success");
+          return;
+        }
+        await store.setRunMode("\u771F\u5B9E");
+        try {
+          tasks.setMode("ai");
+          setNotice("\u5DF2\u542F\u7528 AI \u7ED3\u6784\u5316\u751F\u6210\uFF1B\u6240\u6709\u7ED3\u679C\u4ECD\u9700\u8981\u4F60\u786E\u8BA4\u540E\u624D\u4F1A\u5199\u5165\u3002", "success");
+        } catch (error) {
+          await store.setRunMode("\u6A21\u62DF");
+          tasks.setMode("local");
+          throw error;
+        }
+      });
+    }
+    if (action === "cancel-task") {
+      tasks.cancel(button.dataset.taskId);
+      setNotice("\u4EFB\u52A1\u5DF2\u53D6\u6D88\uFF0C\u672A\u5199\u5165\u4EFB\u4F55\u7ECF\u8425\u72B6\u6001\u3002", "info");
+      return render();
+    }
+    if (action === "retry-task") {
+      return withBusy(async () => {
+        const task = await tasks.retry(button.dataset.taskId);
+        if (task.status === "failed") throw new Error(task.error ?? "\u4EFB\u52A1\u91CD\u8BD5\u5931\u8D25");
+        setNotice("\u4EFB\u52A1\u91CD\u8BD5\u5B8C\u6210\uFF0C\u8BF7\u8FD4\u56DE\u5BF9\u5E94\u7ECF\u8425\u6D41\u7A0B\u67E5\u770B\u65B0\u9884\u89C8\u3002", "success");
+      });
+    }
+    if (action === "consume-link" || action === "ignore-link") {
+      if (!events) throw new Error("\u8054\u52A8\u4E8B\u4EF6\u670D\u52A1\u5C1A\u672A\u52A0\u8F7D");
+      return withBusy(async () => {
+        if (action === "consume-link") await events.consume(button.dataset.linkId);
+        else await events.ignore(button.dataset.linkId);
+        setNotice(action === "consume-link" ? "\u8BE5\u8054\u52A8\u5DF2\u6807\u8BB0\u4E3A\u5DF2\u8BFB\u53D6\u3002" : "\u8BE5\u8054\u52A8\u5DF2\u5FFD\u7565\u3002", "success");
+      });
+    }
+    if (action === "dispatch-link") {
+      if (!bridges) throw new Error("\u8054\u52A8\u6295\u9012\u6865\u5C1A\u672A\u52A0\u8F7D");
+      return withBusy(async () => {
+        const dispatched = await bridges.dispatch(button.dataset.linkId, { confirmed: true });
+        setNotice(`\u8349\u7A3F\u5DF2\u6295\u9012\u5230${dispatched.draft.channel}\u9891\u9053\u3002`, "success");
+      });
+    }
+    if (action === "dispatch-next-link") {
+      if (!bridges) throw new Error("\u8054\u52A8\u6295\u9012\u6865\u5C1A\u672A\u52A0\u8F7D");
+      const channel = button.dataset.channel;
+      const next = data.linkCenter.pending.find((item) => item.\u9891\u9053 === channel);
+      if (!next) throw new Error(`${channel}\u9891\u9053\u6CA1\u6709\u5F85\u6295\u9012\u8349\u7A3F`);
+      return withBusy(async () => {
+        await bridges.dispatch(next.id, { confirmed: true });
+        setNotice(`\u5DF2\u5C06\u4E0B\u4E00\u6761\u8349\u7A3F\u6295\u9012\u5230${channel}\u9891\u9053\u3002`, "success");
+      });
     }
     if (action === "run-takeover") {
       return withBusy(() => runTask("takeover", { building: data.targetBuilding }));
@@ -20222,17 +21204,17 @@ function createLandlordConsole({ document: document2, store, tasks, compiler, lo
     void handleAction(button);
   }
   function onKeyDown(event) {
-    if (visible2 && event.key === "Escape") close();
+    if (visible && event.key === "Escape") close();
   }
   async function open() {
     if (disposed) return;
     await store.ensureInitialized();
-    visible2 = true;
+    visible = true;
     root.hidden = false;
     render();
   }
   function close() {
-    visible2 = false;
+    visible = false;
     if (root) {
       root.hidden = true;
       root.innerHTML = "";
@@ -20277,7 +21259,7 @@ var init_controller = __esm({
 var styles_default;
 var init_styles = __esm({
   "scripts/modules/landlord-console/styles.css"() {
-    styles_default = '#landlord-console-root { position: relative; z-index: 2147483000; }\n.lmo-backdrop {\n  --lmo-bg: #fffafb; --lmo-surface: rgba(255,255,255,.86); --lmo-panel: #fff; --lmo-panel-soft: #fff5f7;\n  --lmo-text: #283044; --lmo-muted: #778096; --lmo-line: rgba(99,73,85,.12); --lmo-shadow: 0 28px 80px rgba(82,47,67,.22);\n  --lmo-positive: #46a98e; --lmo-danger: #d85a72; --lmo-sidebar: linear-gradient(165deg,#fff 0%,#fff4f7 100%);\n  position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; padding: 24px;\n  background: rgba(38,29,43,.48); backdrop-filter: blur(14px) saturate(1.15); -webkit-backdrop-filter: blur(14px) saturate(1.15);\n  font-family: Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color: var(--lmo-text);\n  animation: lmo-fade-in .2s ease-out;\n}\n.lmo-backdrop[data-theme="dark"] {\n  --lmo-bg: #232136; --lmo-surface: rgba(42,39,63,.9); --lmo-panel: #2a273f; --lmo-panel-soft: #312d49;\n  --lmo-text: #e0def4; --lmo-muted: #9893ad; --lmo-line: rgba(224,222,244,.1); --lmo-shadow: 0 30px 90px rgba(0,0,0,.52);\n  --lmo-positive: #9ccfd8; --lmo-danger: #eb6f92; --lmo-sidebar: linear-gradient(165deg,#2a273f 0%,#232136 100%);\n}\n.lmo-backdrop * { box-sizing: border-box; }\n.lmo-backdrop button { font: inherit; color: inherit; }\n.lmo-backdrop svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }\n.lmo-shell { width: min(1180px,96vw); height: min(880px,92vh); display: grid; grid-template-columns: 224px minmax(0,1fr); overflow: hidden; border: 1px solid rgba(255,255,255,.56); border-radius: 26px; background: var(--lmo-bg); box-shadow: var(--lmo-shadow); animation: lmo-rise .34s cubic-bezier(.2,.8,.2,1); }\n.lmo-icon { display: inline-grid; place-items: center; width: 20px; height: 20px; flex: 0 0 auto; }\n.lmo-sidebar { min-width: 0; padding: 26px 17px 18px; display: flex; flex-direction: column; gap: 26px; border-right: 1px solid var(--lmo-line); background: var(--lmo-sidebar); }\n.lmo-brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; }\n.lmo-brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(135deg,#ff9eaa,#c4a7e7); box-shadow: 0 8px 20px rgba(235,111,146,.25); color: white; font: 800 19px/1 Georgia,serif; }\n.lmo-brand div:last-child { display: grid; gap: 1px; }\n.lmo-brand strong { font: 750 15px/1.2 Georgia,"Songti SC",serif; letter-spacing: .02em; }\n.lmo-brand span { color: var(--lmo-muted); font-size: 10px; letter-spacing: .08em; }\n.lmo-sidebar nav { display: grid; gap: 5px; }\n.lmo-nav-item { border: 0; background: transparent; width: 100%; min-height: 43px; padding: 0 12px; border-radius: 13px; display: flex; align-items: center; gap: 11px; cursor: pointer; color: var(--lmo-muted); font-size: 13px; text-align: left; transition: .18s ease; }\n.lmo-nav-item:hover { background: var(--lmo-panel); color: var(--lmo-text); transform: translateX(2px); }\n.lmo-nav-item.active { color: var(--lmo-text); background: var(--lmo-panel); box-shadow: 0 8px 24px rgba(82,47,67,.08); }\n.lmo-nav-item.active .lmo-icon { color: var(--active-accent); }\n.lmo-sidebar-summary { margin-top: auto; padding: 15px; border: 1px solid var(--lmo-line); border-radius: 16px; background: color-mix(in srgb,var(--lmo-panel) 82%,transparent); }\n.lmo-sidebar-summary > span { color: var(--lmo-muted); font-size: 10px; letter-spacing: .12em; }\n.lmo-sidebar-summary strong { display: block; margin: 7px 0; font-size: 24px; }\n.lmo-sidebar-summary small { color: var(--lmo-muted); font-size: 10px; font-weight: 500; }\n.lmo-sidebar-summary > div { height: 5px; border-radius: 9px; overflow: hidden; background: var(--lmo-line); }\n.lmo-sidebar-summary i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#ff9eaa,#c4a7e7); }\n.lmo-sidebar-summary p { margin: 8px 0 0; color: var(--lmo-muted); font-size: 10px; line-height: 1.5; }\n.lmo-mode { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 12px; background: rgba(70,169,142,.09); }\n.lmo-mode div { display: grid; gap: 1px; }\n.lmo-mode strong { font-size: 10px; color: var(--lmo-positive); }\n.lmo-mode small { font-size: 9px; color: var(--lmo-muted); }\n.lmo-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lmo-positive); box-shadow: 0 0 0 4px color-mix(in srgb,var(--lmo-positive) 18%,transparent); }\n.lmo-main { min-width: 0; display: grid; grid-template-rows: 76px minmax(0,1fr); }\n.lmo-header { padding: 0 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--lmo-line); background: color-mix(in srgb,var(--lmo-surface) 92%,transparent); backdrop-filter: blur(16px); }\n.lmo-header h1 { margin: 3px 0 0; font: 700 20px/1.2 Georgia,"Songti SC",serif; }\n.lmo-eyebrow,.lmo-kicker { display: block; color: var(--active-accent); font-size: 9px; font-weight: 800; letter-spacing: .16em; }\n.lmo-header-actions { display: flex; align-items: center; gap: 12px; }\n.lmo-status-dot { padding: 6px 9px; border-radius: 99px; background: rgba(70,169,142,.1); color: var(--lmo-positive); font-size: 10px; }\n.lmo-icon-button { width: 34px; height: 34px; padding: 7px; border: 1px solid var(--lmo-line); border-radius: 11px; background: var(--lmo-panel); cursor: pointer; transition: .15s; }\n.lmo-icon-button:hover { color: var(--lmo-danger); transform: rotate(4deg); }\n.lmo-scroll { min-height: 0; overflow: auto; padding: 25px 28px 40px; scrollbar-width: thin; scrollbar-color: var(--lmo-line) transparent; }\n.lmo-view { display: grid; gap: 22px; max-width: 970px; margin: 0 auto; animation: lmo-content-in .24s ease-out; }\n.lmo-notice { max-width: 970px; margin: 0 auto 14px; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--lmo-line); background: var(--lmo-panel); font-size: 12px; }\n.lmo-notice.success { border-color: color-mix(in srgb,var(--lmo-positive) 35%,var(--lmo-line)); color: var(--lmo-positive); }\n.lmo-notice.error { border-color: color-mix(in srgb,var(--lmo-danger) 35%,var(--lmo-line)); color: var(--lmo-danger); }\n.lmo-hero { min-height: 210px; padding: 28px 31px; border-radius: 22px; display: grid; grid-template-columns: 1fr 210px; align-items: center; overflow: hidden; position: relative; background: linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 16%,var(--lmo-panel)),var(--lmo-panel)); border: 1px solid color-mix(in srgb,var(--building-accent) 25%,var(--lmo-line)); }\n.lmo-hero::before { content:""; position:absolute; inset:0; opacity:.32; background-image: radial-gradient(var(--building-accent) 1px,transparent 1px); background-size:18px 18px; mask-image:linear-gradient(90deg,transparent,black); pointer-events:none; }\n.lmo-hero > div { position: relative; }\n.lmo-hero h2 { margin: 8px 0 6px; font: 750 clamp(24px,3vw,37px)/1.1 Georgia,"Songti SC",serif; }\n.lmo-hero p { max-width: 540px; margin: 0 0 20px; color: var(--lmo-muted); font-size: 12px; }\n.lmo-primary,.lmo-secondary { min-height: 39px; padding: 0 16px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; font-size: 12px; font-weight: 700; transition: .17s ease; }\n.lmo-primary { color: white !important; background: linear-gradient(135deg,var(--active-accent),color-mix(in srgb,var(--active-accent) 66%,#7c6ce7)); box-shadow: 0 8px 20px color-mix(in srgb,var(--active-accent) 26%,transparent); }\n.lmo-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 26px color-mix(in srgb,var(--active-accent) 32%,transparent); }\n.lmo-primary:disabled { opacity: .42; cursor: not-allowed; box-shadow: none; }\n.lmo-primary .lmo-icon,.lmo-secondary .lmo-icon { width: 16px; height: 16px; }\n.lmo-secondary { border: 1px solid var(--lmo-line); background: var(--lmo-panel); }\n.lmo-secondary:hover { border-color: var(--active-accent); color: var(--active-accent); }\n.lmo-hero-orbit { justify-self: center; width: 132px; height: 132px; border: 1px solid color-mix(in srgb,var(--building-accent) 35%,transparent); border-radius: 50%; display: grid; place-content: center; text-align: center; }\n.lmo-hero-orbit::before,.lmo-hero-orbit::after { content:""; position:absolute; inset:-14px; border:1px dashed color-mix(in srgb,var(--building-accent) 25%,transparent); border-radius:50%; animation:lmo-spin 18s linear infinite; }\n.lmo-hero-orbit::after { inset:18px; animation-direction:reverse; animation-duration:10s; }\n.lmo-hero-orbit span { font: 800 38px/1 Georgia,serif; color: var(--building-accent); }\n.lmo-hero-orbit small { margin-top: 4px; color: var(--lmo-muted); font-size: 10px; }\n.lmo-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-top: 4px; }\n.lmo-section-heading span { color: var(--active-accent); font-size: 9px; font-weight: 800; letter-spacing: .17em; }\n.lmo-section-heading h2 { margin: 4px 0 0; font: 700 20px/1.2 Georgia,"Songti SC",serif; }\n.lmo-section-heading > p { max-width: 390px; margin: 0; color: var(--lmo-muted); font-size: 10px; line-height: 1.6; text-align: right; }\n.lmo-building-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }\n.lmo-building-card { min-width: 0; padding: 0; display: grid; grid-template-columns: 128px 1fr; overflow: hidden; border: 1px solid var(--lmo-line); border-radius: 18px; background: var(--lmo-panel); text-align: left; cursor: pointer; transition: .2s ease; }\n.lmo-building-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb,var(--building-accent) 44%,var(--lmo-line)); box-shadow: 0 15px 35px rgba(82,47,67,.1); }\n.lmo-building-visual { min-height: 172px; position: relative; overflow: hidden; display: grid; place-items: center; background: linear-gradient(145deg,color-mix(in srgb,var(--building-accent) 19%,var(--lmo-panel-soft)),var(--lmo-panel-soft)); }\n.lmo-building-visual::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg,transparent 49%,color-mix(in srgb,var(--building-accent) 15%,transparent) 50%,transparent 51%),linear-gradient(0deg,transparent 49%,color-mix(in srgb,var(--building-accent) 15%,transparent) 50%,transparent 51%); background-size:20px 20px; }\n.lmo-building-type { display: inline-flex; width: fit-content; padding: 4px 8px; border-radius: 99px; color: var(--building-accent); background: color-mix(in srgb,var(--building-accent) 10%,var(--lmo-panel)); font-size: 9px; font-weight: 700; }\n.lmo-building-visual > .lmo-building-type { position:absolute; left:10px; top:10px; }\n.lmo-building-glyph { position:relative; width:56px; height:56px; padding:14px; border-radius:18px; color:white; background:var(--building-accent); box-shadow:0 12px 25px color-mix(in srgb,var(--building-accent) 32%,transparent); transform:rotate(-4deg); }\n.lmo-building-glyph .lmo-icon { width:100%; height:100%; }\n.lmo-building-visual > i { position:absolute; bottom:16px; width:12px; height:20px; border-radius:3px 3px 0 0; background:color-mix(in srgb,var(--building-accent) 25%,var(--lmo-panel)); }\n.lmo-building-visual > i:nth-last-child(3) { left:29px; height:31px; }.lmo-building-visual > i:nth-last-child(2){left:48px;height:22px}.lmo-building-visual > i:last-child{left:67px;height:39px}\n.lmo-building-copy { min-width:0; padding:15px 16px; display:flex; flex-direction:column; }\n.lmo-card-title { display:flex; align-items:start; justify-content:space-between; gap:8px; }\n.lmo-card-title > div { min-width:0; display:grid; gap:3px; }.lmo-card-title strong{font-size:14px}.lmo-card-title span{font-size:9px;color:var(--lmo-muted)}\n.lmo-badge { flex:0 0 auto; padding:4px 7px; border-radius:99px; background:rgba(246,193,119,.13); color:#b98532!important; font-size:9px!important; }.lmo-badge.owned{background:rgba(70,169,142,.12);color:var(--lmo-positive)!important}\n.lmo-building-copy > p { margin:10px 0; color:var(--lmo-muted); font-size:10px; line-height:1.55; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }\n.lmo-card-metrics { margin-top:auto; padding-top:10px; display:flex; gap:9px; border-top:1px solid var(--lmo-line); align-items:center; }\n.lmo-card-metrics span { color:var(--lmo-muted); font-size:8px; }.lmo-card-metrics b{color:var(--lmo-text);font-size:10px}.lmo-card-metrics em{margin-left:auto;display:flex;align-items:center;gap:3px;color:var(--building-accent);font-size:9px;font-style:normal;font-weight:700}.lmo-card-metrics em .lmo-icon{width:12px;height:12px}\n.lmo-dashboard-row { display:grid; grid-template-columns:1.2fr .8fr; gap:14px; }.lmo-panel{padding:18px;border:1px solid var(--lmo-line);border-radius:17px;background:var(--lmo-panel)}\n.lmo-panel-title > div{display:flex;align-items:center;gap:10px}.lmo-panel-title .lmo-icon{width:27px;height:27px;padding:6px;border-radius:9px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-panel-title span{display:grid;gap:2px}.lmo-panel-title strong{font-size:12px}.lmo-panel-title small{font-size:8px;color:var(--lmo-muted)}\n.lmo-mini-timeline{display:grid;margin-top:15px}.lmo-mini-timeline>div{display:grid;grid-template-columns:10px 1fr auto;gap:9px;padding:8px 0;border-top:1px solid var(--lmo-line)}.lmo-mini-timeline i{width:7px;height:7px;margin-top:4px;border-radius:50%;background:var(--active-accent)}.lmo-mini-timeline span{display:grid;gap:3px}.lmo-mini-timeline strong{font-size:10px}.lmo-mini-timeline small,.lmo-mini-timeline time{color:var(--lmo-muted);font-size:8px}.lmo-world-card>p{margin:14px 0;color:var(--lmo-muted);font-size:10px;line-height:1.65}\n.lmo-tags{display:flex;flex-wrap:wrap;gap:5px}.lmo-tags span{padding:4px 7px;border:1px solid color-mix(in srgb,var(--active-accent) 20%,var(--lmo-line));border-radius:99px;background:color-mix(in srgb,var(--active-accent) 7%,transparent);color:var(--active-accent);font-size:8px}\n.lmo-empty{min-height:130px;padding:22px;display:grid;place-items:center;align-content:center;gap:6px;text-align:center;color:var(--lmo-muted)}.lmo-empty .lmo-icon{width:27px;height:27px;color:var(--active-accent)}.lmo-empty strong{color:var(--lmo-text);font-size:12px}.lmo-empty p{max-width:330px;margin:0;font-size:9px;line-height:1.5}\n.lmo-building-banner{padding:22px 24px;display:flex;align-items:end;justify-content:space-between;gap:20px;border:1px solid color-mix(in srgb,var(--building-accent) 24%,var(--lmo-line));border-radius:19px;background:linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 12%,var(--lmo-panel)),var(--lmo-panel))}.lmo-building-banner span{color:var(--building-accent);font-size:9px;font-weight:700;letter-spacing:.1em}.lmo-building-banner h2{margin:5px 0;font:750 28px/1.15 Georgia,"Songti SC",serif}.lmo-building-banner p{max-width:590px;margin:0;color:var(--lmo-muted);font-size:10px;line-height:1.55}.lmo-banner-actions{display:flex;gap:8px;flex:0 0 auto}\n.lmo-metric-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-metric-strip>div{padding:14px 17px;display:grid;gap:4px;border-right:1px solid var(--lmo-line)}.lmo-metric-strip>div:last-child{border:0}.lmo-metric-strip span{color:var(--lmo-muted);font-size:8px}.lmo-metric-strip strong{font:700 20px/1 Georgia,serif}.lmo-metric-strip small{font:500 9px sans-serif;color:var(--lmo-muted)}\n.lmo-floor-list{display:grid;gap:14px}.lmo-floor{overflow:hidden;border:1px solid var(--lmo-line);border-radius:18px;background:var(--lmo-panel)}.lmo-floor>header{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--lmo-line);background:var(--lmo-panel-soft)}.lmo-floor>header>div{display:flex;align-items:center;gap:11px}.lmo-floor>header>div>span{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:var(--active-accent);color:white;font:700 10px Georgia,serif}.lmo-floor>header div div{display:grid;gap:2px}.lmo-floor>header strong{font-size:11px}.lmo-floor>header small,.lmo-floor>header em{color:var(--lmo-muted);font-size:8px;font-style:normal}\n.lmo-space-grid{padding:13px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.lmo-space-card{grid-column:span 2;min-height:112px;padding:12px;border:1px solid var(--lmo-line);border-radius:13px;background:var(--lmo-surface);text-align:left;cursor:pointer;transition:.17s}.lmo-space-card.size-\u5927\u578B{grid-column:span 3}.lmo-space-card.size-\u8D85\u5927\u578B{grid-column:span 4}.lmo-space-card.size-\u5C0F\u578B,.lmo-space-card.size-\u5FAE\u578B{grid-column:span 1}.lmo-space-card:hover{border-color:var(--active-accent);transform:translateY(-2px)}.lmo-space-card>div{display:flex;justify-content:space-between;gap:6px}.lmo-space-type,.lmo-space-status{font-size:7px;color:var(--lmo-muted)}.lmo-space-status{padding:2px 5px;border-radius:99px;background:var(--lmo-panel-soft)}.lmo-space-status.status-\u7A7A\u7F6E{color:#b98532;background:rgba(246,193,119,.12)}.lmo-space-card>strong{display:block;margin:9px 0 3px;font-size:11px}.lmo-space-card>p{margin:0;color:var(--lmo-muted);font-size:8px}.lmo-space-card footer{margin-top:12px;padding-top:7px;display:flex;justify-content:space-between;gap:5px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:7px}\n.lmo-workflow-steps{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px}.lmo-workflow-steps span{display:flex;align-items:center;gap:6px;color:var(--lmo-muted);font-size:9px}.lmo-workflow-steps b{width:23px;height:23px;display:grid;place-items:center;border:1px solid var(--lmo-line);border-radius:50%;font-size:9px}.lmo-workflow-steps span.done{color:var(--lmo-text)}.lmo-workflow-steps span.done b{background:var(--active-accent);border-color:var(--active-accent);color:white}.lmo-workflow-steps>i{width:45px;height:1px;background:var(--lmo-line)}\n.lmo-workflow-intro{padding:20px 22px;border-radius:18px;border:1px solid color-mix(in srgb,var(--building-accent) 24%,var(--lmo-line));background:linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 10%,var(--lmo-panel)),var(--lmo-panel))}.lmo-text-button{padding:0;border:0;background:transparent;display:flex;align-items:center;gap:4px;color:var(--lmo-muted);font-size:9px;cursor:pointer}.lmo-text-button .lmo-icon{width:14px;height:14px}.lmo-workflow-intro>div:nth-child(2){margin-top:15px}.lmo-workflow-intro h2{margin:7px 0 5px;font:700 24px Georgia,"Songti SC",serif}.lmo-workflow-intro p{margin:0;max-width:650px;color:var(--lmo-muted);font-size:10px;line-height:1.6}.lmo-facts{margin-top:16px!important;display:flex;gap:8px}.lmo-facts span{padding:7px 10px;border-radius:9px;background:color-mix(in srgb,var(--lmo-panel) 72%,transparent);font-size:8px;color:var(--lmo-muted)}.lmo-facts b{color:var(--lmo-text);font-size:10px}\n.lmo-generation-callout{min-height:100px;padding:16px 18px;display:flex;align-items:center;gap:13px;border:1px dashed color-mix(in srgb,var(--active-accent) 36%,var(--lmo-line));border-radius:16px;background:color-mix(in srgb,var(--active-accent) 5%,var(--lmo-panel))}.lmo-generation-callout>.lmo-icon{width:38px;height:38px;padding:9px;border-radius:12px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-generation-callout>div{margin-right:auto}.lmo-generation-callout strong{font-size:12px}.lmo-generation-callout p{margin:4px 0 0;color:var(--lmo-muted);font-size:9px}.lmo-generation-callout.compact{min-height:82px}\n.lmo-option-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.lmo-option-card{position:relative;padding:18px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.18s}.lmo-option-card:hover,.lmo-option-card.selected{border-color:var(--active-accent);transform:translateY(-2px);box-shadow:0 12px 28px rgba(82,47,67,.09)}.lmo-option-card>span{color:var(--active-accent);font-size:8px;font-weight:700;letter-spacing:.1em}.lmo-option-card h3{margin:7px 0;font:700 16px Georgia,"Songti SC",serif}.lmo-option-card>p{min-height:62px;margin:0 0 10px;color:var(--lmo-muted);font-size:9px;line-height:1.55}.lmo-option-card ul{margin:12px 0 0;padding:10px 0 0 15px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:8px;line-height:1.8}.lmo-option-check{position:absolute;right:10px;top:10px;width:20px;height:20px;padding:3px;border-radius:50%;color:white;background:var(--active-accent)}.lmo-option-check:empty{background:transparent;border:1px solid var(--lmo-line)}.lmo-option-check .lmo-icon{width:100%;height:100%}\n.lmo-confirm-bar{position:sticky;bottom:-26px;z-index:2;margin-top:4px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid var(--lmo-line);border-radius:15px;background:color-mix(in srgb,var(--lmo-surface) 92%,transparent);backdrop-filter:blur(16px);box-shadow:0 -8px 28px rgba(82,47,67,.08)}.lmo-confirm-bar>div{display:grid;gap:3px}.lmo-confirm-bar strong{font-size:10px}.lmo-confirm-bar span{color:var(--lmo-muted);font-size:8px}\n.lmo-two-column{display:grid;grid-template-columns:220px minmax(0,1fr);gap:15px;align-items:start}.lmo-selector,.lmo-placement{padding:16px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-selector h2{margin:6px 0 14px;font:700 17px Georgia,"Songti SC",serif}.lmo-compact-list{display:grid;gap:6px;max-height:470px;overflow:auto}.lmo-compact-space{padding:9px 10px;display:grid;gap:3px;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-surface);text-align:left;cursor:pointer}.lmo-compact-space:hover,.lmo-compact-space.selected{border-color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel))}.lmo-compact-space span,.lmo-compact-space small{color:var(--lmo-muted);font-size:7px}.lmo-compact-space strong{font-size:10px}\n.lmo-workspace{min-width:0}.lmo-preview-room{min-height:360px;padding:27px;display:flex;flex-direction:column;align-items:start;border:1px solid var(--lmo-line);border-radius:18px;background:radial-gradient(circle at 90% 10%,color-mix(in srgb,var(--active-accent) 13%,transparent),transparent 35%),var(--lmo-panel)}.lmo-preview-room>span{color:var(--active-accent);font-size:8px;font-weight:700;letter-spacing:.08em}.lmo-preview-room h2{margin:10px 0 7px;font:750 27px Georgia,"Songti SC",serif}.lmo-preview-room>p{max-width:510px;margin:0;color:var(--lmo-muted);font-size:10px;line-height:1.6}.lmo-current-style{min-width:220px;margin:26px 0;padding:14px;display:grid;gap:4px;border:1px solid var(--lmo-line);border-radius:12px;background:var(--lmo-panel-soft)}.lmo-current-style small,.lmo-current-style span{font-size:8px;color:var(--lmo-muted)}.lmo-current-style strong{font-size:12px}\n.lmo-renovation-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.lmo-renovation-card{padding:13px;border:1px solid var(--lmo-line);border-radius:14px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.17s}.lmo-renovation-card:hover,.lmo-renovation-card.selected{border-color:var(--active-accent);transform:translateY(-2px)}.lmo-palette{height:57px;margin:-6px -6px 12px;display:flex;overflow:hidden;border-radius:10px}.lmo-palette i{flex:1;background:var(--swatch)}.lmo-renovation-card>span{color:var(--active-accent);font-size:7px;font-weight:700}.lmo-renovation-card h3{margin:5px 0;font:700 14px Georgia,"Songti SC",serif}.lmo-renovation-card>p{min-height:38px;margin:0 0 9px;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-renovation-card>small{display:block;margin-top:10px;padding-top:8px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:7px}\n.lmo-recruit-layout{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:14px;align-items:start}.lmo-candidate-list{display:grid;gap:9px}.lmo-candidate{position:relative;padding:14px;display:grid;grid-template-columns:48px 1fr;gap:12px;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.17s}.lmo-candidate:hover,.lmo-candidate.selected{border-color:var(--person-accent);transform:translateX(2px);box-shadow:0 10px 25px color-mix(in srgb,var(--person-accent) 10%,transparent)}.lmo-avatar{width:48px;height:48px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(135deg,var(--person-accent),color-mix(in srgb,var(--person-accent) 55%,#c4a7e7));color:white;font:700 18px Georgia,serif;box-shadow:0 8px 18px color-mix(in srgb,var(--person-accent) 22%,transparent)}.lmo-candidate>div:nth-child(2)>span{color:var(--person-accent);font-size:7px;font-weight:700}.lmo-candidate h3{margin:4px 0;font:700 14px Georgia,"Songti SC",serif}.lmo-candidate p{margin:0;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-candidate blockquote{margin:8px 0;padding:7px 9px;border-left:2px solid var(--person-accent);border-radius:0 8px 8px 0;background:var(--lmo-panel-soft);color:var(--lmo-muted);font-size:8px;font-style:italic}.lmo-candidate .lmo-tags span{color:var(--person-accent);border-color:color-mix(in srgb,var(--person-accent) 22%,var(--lmo-line));background:color-mix(in srgb,var(--person-accent) 6%,transparent)}.lmo-placement{position:sticky;top:0}.lmo-placement h3{margin:6px 0;font:700 15px Georgia,"Songti SC",serif}.lmo-placement>p{margin:0 0 13px;color:var(--lmo-muted);font-size:8px;line-height:1.5}\n.lmo-event-timeline{display:grid;gap:9px}.lmo-event-timeline article{padding:15px 17px;display:grid;grid-template-columns:38px 1fr auto;gap:13px;align-items:start;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel)}.lmo-event-mark{width:38px;height:38px;padding:9px;border-radius:12px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-event-mark .lmo-icon{width:100%;height:100%}.lmo-event-timeline article>div:nth-child(2){display:grid;gap:3px}.lmo-event-timeline span,.lmo-event-timeline small{color:var(--lmo-muted);font-size:8px}.lmo-event-timeline h3{margin:1px 0;font-size:11px}.lmo-event-timeline p{margin:0;color:var(--lmo-muted);font-size:9px}.lmo-event-timeline em{padding:4px 7px;border-radius:99px;background:rgba(70,169,142,.1);color:var(--lmo-positive);font-size:8px;font-style:normal}\n@keyframes lmo-fade-in{from{opacity:0}to{opacity:1}}@keyframes lmo-rise{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}@keyframes lmo-content-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}@keyframes lmo-spin{to{transform:rotate(360deg)}}\n@media(max-width:820px){.lmo-backdrop{padding:9px}.lmo-shell{width:100%;height:96vh;grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);border-radius:20px}.lmo-sidebar{padding:12px 14px;display:grid;grid-template-columns:auto 1fr;border-right:0;border-bottom:1px solid var(--lmo-line);gap:12px}.lmo-brand{padding:0}.lmo-sidebar nav{display:flex;overflow:auto;gap:4px}.lmo-nav-item{width:auto;min-height:38px;padding:0 10px;white-space:nowrap}.lmo-sidebar-summary,.lmo-mode{display:none}.lmo-main{grid-template-rows:62px minmax(0,1fr)}.lmo-header{padding:0 16px}.lmo-header h1{font-size:16px}.lmo-scroll{padding:16px 14px 34px}.lmo-building-grid,.lmo-dashboard-row{grid-template-columns:1fr}.lmo-building-card{grid-template-columns:110px 1fr}.lmo-section-heading>p{display:none}.lmo-two-column,.lmo-recruit-layout{grid-template-columns:1fr}.lmo-selector,.lmo-placement{position:static}.lmo-compact-list{grid-template-columns:repeat(2,1fr);max-height:220px}.lmo-option-grid,.lmo-renovation-plans{grid-template-columns:1fr}.lmo-space-grid{grid-template-columns:repeat(2,1fr)}.lmo-space-card,.lmo-space-card.size-\u5927\u578B,.lmo-space-card.size-\u8D85\u5927\u578B,.lmo-space-card.size-\u5C0F\u578B,.lmo-space-card.size-\u5FAE\u578B{grid-column:span 1}.lmo-hero{grid-template-columns:1fr;min-height:190px}.lmo-hero-orbit{display:none}.lmo-building-banner{align-items:start;flex-direction:column}.lmo-banner-actions{width:100%}.lmo-banner-actions button{flex:1}.lmo-metric-strip{grid-template-columns:repeat(2,1fr)}.lmo-metric-strip>div:nth-child(2){border-right:0}.lmo-metric-strip>div:nth-child(-n+2){border-bottom:1px solid var(--lmo-line)}.lmo-generation-callout{align-items:start;flex-wrap:wrap}.lmo-generation-callout button{width:100%}.lmo-confirm-bar{bottom:-16px}.lmo-workflow-steps{gap:5px}.lmo-workflow-steps>i{width:16px}.lmo-workflow-steps span{font-size:8px}}\n@media(max-width:520px){.lmo-brand div:last-child{display:none}.lmo-nav-item>span:last-child{display:none}.lmo-nav-item{padding:0 9px}.lmo-header-actions .lmo-status-dot{display:none}.lmo-building-card{grid-template-columns:90px 1fr}.lmo-building-visual{min-height:165px}.lmo-card-metrics span:nth-child(3){display:none}.lmo-facts{display:grid;grid-template-columns:1fr 1fr}.lmo-confirm-bar{align-items:stretch;flex-direction:column}.lmo-confirm-bar button{width:100%}.lmo-candidate{grid-template-columns:40px 1fr}.lmo-avatar{width:40px;height:40px}.lmo-event-timeline article{grid-template-columns:34px 1fr}.lmo-event-timeline article>em{display:none}}\n@media(prefers-reduced-motion:reduce){.lmo-backdrop,.lmo-shell,.lmo-view,.lmo-hero-orbit::before,.lmo-hero-orbit::after{animation:none!important}.lmo-backdrop *{scroll-behavior:auto!important;transition:none!important}}\n';
+    styles_default = '#landlord-console-root { position: relative; z-index: 2147483000; }\n.lmo-backdrop {\n  --lmo-bg: #fffafb; --lmo-surface: rgba(255,255,255,.86); --lmo-panel: #fff; --lmo-panel-soft: #fff5f7;\n  --lmo-text: #283044; --lmo-muted: #778096; --lmo-line: rgba(99,73,85,.12); --lmo-shadow: 0 28px 80px rgba(82,47,67,.22);\n  --lmo-positive: #46a98e; --lmo-danger: #d85a72; --lmo-sidebar: linear-gradient(165deg,#fff 0%,#fff4f7 100%);\n  position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; padding: 24px;\n  background: rgba(38,29,43,.48); backdrop-filter: blur(14px) saturate(1.15); -webkit-backdrop-filter: blur(14px) saturate(1.15);\n  font-family: Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color: var(--lmo-text);\n  animation: lmo-fade-in .2s ease-out;\n}\n.lmo-backdrop[data-theme="dark"] {\n  --lmo-bg: #232136; --lmo-surface: rgba(42,39,63,.9); --lmo-panel: #2a273f; --lmo-panel-soft: #312d49;\n  --lmo-text: #e0def4; --lmo-muted: #9893ad; --lmo-line: rgba(224,222,244,.1); --lmo-shadow: 0 30px 90px rgba(0,0,0,.52);\n  --lmo-positive: #9ccfd8; --lmo-danger: #eb6f92; --lmo-sidebar: linear-gradient(165deg,#2a273f 0%,#232136 100%);\n}\n.lmo-backdrop * { box-sizing: border-box; }\n.lmo-backdrop button { font: inherit; color: inherit; }\n.lmo-backdrop svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }\n.lmo-shell { width: min(1180px,96vw); height: min(880px,92vh); display: grid; grid-template-columns: 224px minmax(0,1fr); overflow: hidden; border: 1px solid rgba(255,255,255,.56); border-radius: 26px; background: var(--lmo-bg); box-shadow: var(--lmo-shadow); animation: lmo-rise .34s cubic-bezier(.2,.8,.2,1); }\n.lmo-icon { display: inline-grid; place-items: center; width: 20px; height: 20px; flex: 0 0 auto; }\n.lmo-sidebar { min-width: 0; padding: 26px 17px 18px; display: flex; flex-direction: column; gap: 26px; border-right: 1px solid var(--lmo-line); background: var(--lmo-sidebar); }\n.lmo-brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; }\n.lmo-brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(135deg,#ff9eaa,#c4a7e7); box-shadow: 0 8px 20px rgba(235,111,146,.25); color: white; font: 800 19px/1 Georgia,serif; }\n.lmo-brand div:last-child { display: grid; gap: 1px; }\n.lmo-brand strong { font: 750 15px/1.2 Georgia,"Songti SC",serif; letter-spacing: .02em; }\n.lmo-brand span { color: var(--lmo-muted); font-size: 10px; letter-spacing: .08em; }\n.lmo-sidebar nav { display: grid; gap: 5px; }\n.lmo-nav-item { border: 0; background: transparent; width: 100%; min-height: 43px; padding: 0 12px; border-radius: 13px; display: flex; align-items: center; gap: 11px; cursor: pointer; color: var(--lmo-muted); font-size: 13px; text-align: left; transition: .18s ease; }\n.lmo-nav-item:hover { background: var(--lmo-panel); color: var(--lmo-text); transform: translateX(2px); }\n.lmo-nav-item.active { color: var(--lmo-text); background: var(--lmo-panel); box-shadow: 0 8px 24px rgba(82,47,67,.08); }\n.lmo-nav-item.active .lmo-icon { color: var(--active-accent); }\n.lmo-sidebar-summary { margin-top: auto; padding: 15px; border: 1px solid var(--lmo-line); border-radius: 16px; background: color-mix(in srgb,var(--lmo-panel) 82%,transparent); }\n.lmo-sidebar-summary > span { color: var(--lmo-muted); font-size: 10px; letter-spacing: .12em; }\n.lmo-sidebar-summary strong { display: block; margin: 7px 0; font-size: 24px; }\n.lmo-sidebar-summary small { color: var(--lmo-muted); font-size: 10px; font-weight: 500; }\n.lmo-sidebar-summary > div { height: 5px; border-radius: 9px; overflow: hidden; background: var(--lmo-line); }\n.lmo-sidebar-summary i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#ff9eaa,#c4a7e7); }\n.lmo-sidebar-summary p { margin: 8px 0 0; color: var(--lmo-muted); font-size: 10px; line-height: 1.5; }\n.lmo-mode { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 12px; background: rgba(70,169,142,.09); }\n.lmo-mode div { display: grid; gap: 1px; }\n.lmo-mode strong { font-size: 10px; color: var(--lmo-positive); }\n.lmo-mode small { font-size: 9px; color: var(--lmo-muted); }\n.lmo-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lmo-positive); box-shadow: 0 0 0 4px color-mix(in srgb,var(--lmo-positive) 18%,transparent); }\n.lmo-mode.ai { background: color-mix(in srgb,#c4a7e7 12%,transparent); }.lmo-mode.ai strong{color:#9b78ce}.lmo-mode.ai .lmo-pulse{background:#c4a7e7;box-shadow:0 0 0 4px color-mix(in srgb,#c4a7e7 18%,transparent)}\n.lmo-main { min-width: 0; display: grid; grid-template-rows: 76px minmax(0,1fr); }\n.lmo-header { padding: 0 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--lmo-line); background: color-mix(in srgb,var(--lmo-surface) 92%,transparent); backdrop-filter: blur(16px); }\n.lmo-header h1 { margin: 3px 0 0; font: 700 20px/1.2 Georgia,"Songti SC",serif; }\n.lmo-eyebrow,.lmo-kicker { display: block; color: var(--active-accent); font-size: 9px; font-weight: 800; letter-spacing: .16em; }\n.lmo-header-actions { display: flex; align-items: center; gap: 12px; }\n.lmo-status-dot { padding: 6px 9px; border-radius: 99px; background: rgba(70,169,142,.1); color: var(--lmo-positive); font-size: 10px; }\n.lmo-icon-button { width: 34px; height: 34px; padding: 7px; border: 1px solid var(--lmo-line); border-radius: 11px; background: var(--lmo-panel); cursor: pointer; transition: .15s; }\n.lmo-icon-button:hover { color: var(--lmo-danger); transform: rotate(4deg); }\n.lmo-scroll { min-height: 0; overflow: auto; padding: 25px 28px 40px; scrollbar-width: thin; scrollbar-color: var(--lmo-line) transparent; }\n.lmo-view { display: grid; gap: 22px; max-width: 970px; margin: 0 auto; animation: lmo-content-in .24s ease-out; }\n.lmo-notice { max-width: 970px; margin: 0 auto 14px; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--lmo-line); background: var(--lmo-panel); font-size: 12px; }\n.lmo-notice.success { border-color: color-mix(in srgb,var(--lmo-positive) 35%,var(--lmo-line)); color: var(--lmo-positive); }\n.lmo-notice.error { border-color: color-mix(in srgb,var(--lmo-danger) 35%,var(--lmo-line)); color: var(--lmo-danger); }\n.lmo-hero { min-height: 210px; padding: 28px 31px; border-radius: 22px; display: grid; grid-template-columns: 1fr 210px; align-items: center; overflow: hidden; position: relative; background: linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 16%,var(--lmo-panel)),var(--lmo-panel)); border: 1px solid color-mix(in srgb,var(--building-accent) 25%,var(--lmo-line)); }\n.lmo-hero::before { content:""; position:absolute; inset:0; opacity:.32; background-image: radial-gradient(var(--building-accent) 1px,transparent 1px); background-size:18px 18px; mask-image:linear-gradient(90deg,transparent,black); pointer-events:none; }\n.lmo-hero > div { position: relative; }\n.lmo-hero h2 { margin: 8px 0 6px; font: 750 clamp(24px,3vw,37px)/1.1 Georgia,"Songti SC",serif; }\n.lmo-hero p { max-width: 540px; margin: 0 0 20px; color: var(--lmo-muted); font-size: 12px; }\n.lmo-primary,.lmo-secondary { min-height: 39px; padding: 0 16px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; font-size: 12px; font-weight: 700; transition: .17s ease; }\n.lmo-primary { color: white !important; background: linear-gradient(135deg,var(--active-accent),color-mix(in srgb,var(--active-accent) 66%,#7c6ce7)); box-shadow: 0 8px 20px color-mix(in srgb,var(--active-accent) 26%,transparent); }\n.lmo-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 26px color-mix(in srgb,var(--active-accent) 32%,transparent); }\n.lmo-primary:disabled { opacity: .42; cursor: not-allowed; box-shadow: none; }\n.lmo-primary .lmo-icon,.lmo-secondary .lmo-icon { width: 16px; height: 16px; }\n.lmo-secondary { border: 1px solid var(--lmo-line); background: var(--lmo-panel); }\n.lmo-secondary:hover { border-color: var(--active-accent); color: var(--active-accent); }\n.lmo-hero-orbit { justify-self: center; width: 132px; height: 132px; border: 1px solid color-mix(in srgb,var(--building-accent) 35%,transparent); border-radius: 50%; display: grid; place-content: center; text-align: center; }\n.lmo-hero-orbit::before,.lmo-hero-orbit::after { content:""; position:absolute; inset:-14px; border:1px dashed color-mix(in srgb,var(--building-accent) 25%,transparent); border-radius:50%; animation:lmo-spin 18s linear infinite; }\n.lmo-hero-orbit::after { inset:18px; animation-direction:reverse; animation-duration:10s; }\n.lmo-hero-orbit span { font: 800 38px/1 Georgia,serif; color: var(--building-accent); }\n.lmo-hero-orbit small { margin-top: 4px; color: var(--lmo-muted); font-size: 10px; }\n.lmo-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-top: 4px; }\n.lmo-section-heading span { color: var(--active-accent); font-size: 9px; font-weight: 800; letter-spacing: .17em; }\n.lmo-section-heading h2 { margin: 4px 0 0; font: 700 20px/1.2 Georgia,"Songti SC",serif; }\n.lmo-section-heading > p { max-width: 390px; margin: 0; color: var(--lmo-muted); font-size: 10px; line-height: 1.6; text-align: right; }\n.lmo-building-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }\n.lmo-building-card { min-width: 0; padding: 0; display: grid; grid-template-columns: 128px 1fr; overflow: hidden; border: 1px solid var(--lmo-line); border-radius: 18px; background: var(--lmo-panel); text-align: left; cursor: pointer; transition: .2s ease; }\n.lmo-building-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb,var(--building-accent) 44%,var(--lmo-line)); box-shadow: 0 15px 35px rgba(82,47,67,.1); }\n.lmo-building-visual { min-height: 172px; position: relative; overflow: hidden; display: grid; place-items: center; background: linear-gradient(145deg,color-mix(in srgb,var(--building-accent) 19%,var(--lmo-panel-soft)),var(--lmo-panel-soft)); }\n.lmo-building-visual::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg,transparent 49%,color-mix(in srgb,var(--building-accent) 15%,transparent) 50%,transparent 51%),linear-gradient(0deg,transparent 49%,color-mix(in srgb,var(--building-accent) 15%,transparent) 50%,transparent 51%); background-size:20px 20px; }\n.lmo-building-type { display: inline-flex; width: fit-content; padding: 4px 8px; border-radius: 99px; color: var(--building-accent); background: color-mix(in srgb,var(--building-accent) 10%,var(--lmo-panel)); font-size: 9px; font-weight: 700; }\n.lmo-building-visual > .lmo-building-type { position:absolute; left:10px; top:10px; }\n.lmo-building-glyph { position:relative; width:56px; height:56px; padding:14px; border-radius:18px; color:white; background:var(--building-accent); box-shadow:0 12px 25px color-mix(in srgb,var(--building-accent) 32%,transparent); transform:rotate(-4deg); }\n.lmo-building-glyph .lmo-icon { width:100%; height:100%; }\n.lmo-building-visual > i { position:absolute; bottom:16px; width:12px; height:20px; border-radius:3px 3px 0 0; background:color-mix(in srgb,var(--building-accent) 25%,var(--lmo-panel)); }\n.lmo-building-visual > i:nth-last-child(3) { left:29px; height:31px; }.lmo-building-visual > i:nth-last-child(2){left:48px;height:22px}.lmo-building-visual > i:last-child{left:67px;height:39px}\n.lmo-building-copy { min-width:0; padding:15px 16px; display:flex; flex-direction:column; }\n.lmo-card-title { display:flex; align-items:start; justify-content:space-between; gap:8px; }\n.lmo-card-title > div { min-width:0; display:grid; gap:3px; }.lmo-card-title strong{font-size:14px}.lmo-card-title span{font-size:9px;color:var(--lmo-muted)}\n.lmo-badge { flex:0 0 auto; padding:4px 7px; border-radius:99px; background:rgba(246,193,119,.13); color:#b98532!important; font-size:9px!important; }.lmo-badge.owned{background:rgba(70,169,142,.12);color:var(--lmo-positive)!important}\n.lmo-building-copy > p { margin:10px 0; color:var(--lmo-muted); font-size:10px; line-height:1.55; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }\n.lmo-card-metrics { margin-top:auto; padding-top:10px; display:flex; gap:9px; border-top:1px solid var(--lmo-line); align-items:center; }\n.lmo-card-metrics span { color:var(--lmo-muted); font-size:8px; }.lmo-card-metrics b{color:var(--lmo-text);font-size:10px}.lmo-card-metrics em{margin-left:auto;display:flex;align-items:center;gap:3px;color:var(--building-accent);font-size:9px;font-style:normal;font-weight:700}.lmo-card-metrics em .lmo-icon{width:12px;height:12px}\n.lmo-dashboard-row { display:grid; grid-template-columns:1.2fr .8fr; gap:14px; }.lmo-panel{padding:18px;border:1px solid var(--lmo-line);border-radius:17px;background:var(--lmo-panel)}\n.lmo-panel-title > div{display:flex;align-items:center;gap:10px}.lmo-panel-title .lmo-icon{width:27px;height:27px;padding:6px;border-radius:9px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-panel-title span{display:grid;gap:2px}.lmo-panel-title strong{font-size:12px}.lmo-panel-title small{font-size:8px;color:var(--lmo-muted)}\n.lmo-mini-timeline{display:grid;margin-top:15px}.lmo-mini-timeline>div{display:grid;grid-template-columns:10px 1fr auto;gap:9px;padding:8px 0;border-top:1px solid var(--lmo-line)}.lmo-mini-timeline i{width:7px;height:7px;margin-top:4px;border-radius:50%;background:var(--active-accent)}.lmo-mini-timeline span{display:grid;gap:3px}.lmo-mini-timeline strong{font-size:10px}.lmo-mini-timeline small,.lmo-mini-timeline time{color:var(--lmo-muted);font-size:8px}.lmo-world-card>p{margin:14px 0;color:var(--lmo-muted);font-size:10px;line-height:1.65}\n.lmo-tags{display:flex;flex-wrap:wrap;gap:5px}.lmo-tags span{padding:4px 7px;border:1px solid color-mix(in srgb,var(--active-accent) 20%,var(--lmo-line));border-radius:99px;background:color-mix(in srgb,var(--active-accent) 7%,transparent);color:var(--active-accent);font-size:8px}\n.lmo-empty{min-height:130px;padding:22px;display:grid;place-items:center;align-content:center;gap:6px;text-align:center;color:var(--lmo-muted)}.lmo-empty .lmo-icon{width:27px;height:27px;color:var(--active-accent)}.lmo-empty strong{color:var(--lmo-text);font-size:12px}.lmo-empty p{max-width:330px;margin:0;font-size:9px;line-height:1.5}\n.lmo-building-banner{padding:22px 24px;display:flex;align-items:end;justify-content:space-between;gap:20px;border:1px solid color-mix(in srgb,var(--building-accent) 24%,var(--lmo-line));border-radius:19px;background:linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 12%,var(--lmo-panel)),var(--lmo-panel))}.lmo-building-banner span{color:var(--building-accent);font-size:9px;font-weight:700;letter-spacing:.1em}.lmo-building-banner h2{margin:5px 0;font:750 28px/1.15 Georgia,"Songti SC",serif}.lmo-building-banner p{max-width:590px;margin:0;color:var(--lmo-muted);font-size:10px;line-height:1.55}.lmo-banner-actions{display:flex;gap:8px;flex:0 0 auto}\n.lmo-metric-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-metric-strip>div{padding:14px 17px;display:grid;gap:4px;border-right:1px solid var(--lmo-line)}.lmo-metric-strip>div:last-child{border:0}.lmo-metric-strip span{color:var(--lmo-muted);font-size:8px}.lmo-metric-strip strong{font:700 20px/1 Georgia,serif}.lmo-metric-strip small{font:500 9px sans-serif;color:var(--lmo-muted)}\n.lmo-floor-list{display:grid;gap:14px}.lmo-floor{overflow:hidden;border:1px solid var(--lmo-line);border-radius:18px;background:var(--lmo-panel)}.lmo-floor>header{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--lmo-line);background:var(--lmo-panel-soft)}.lmo-floor>header>div{display:flex;align-items:center;gap:11px}.lmo-floor>header>div>span{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:var(--active-accent);color:white;font:700 10px Georgia,serif}.lmo-floor>header div div{display:grid;gap:2px}.lmo-floor>header strong{font-size:11px}.lmo-floor>header small,.lmo-floor>header em{color:var(--lmo-muted);font-size:8px;font-style:normal}\n.lmo-space-grid{padding:13px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.lmo-space-card{grid-column:span 2;min-height:112px;padding:12px;border:1px solid var(--lmo-line);border-radius:13px;background:var(--lmo-surface);text-align:left;cursor:pointer;transition:.17s}.lmo-space-card.size-\u5927\u578B{grid-column:span 3}.lmo-space-card.size-\u8D85\u5927\u578B{grid-column:span 4}.lmo-space-card.size-\u5C0F\u578B,.lmo-space-card.size-\u5FAE\u578B{grid-column:span 1}.lmo-space-card:hover{border-color:var(--active-accent);transform:translateY(-2px)}.lmo-space-card>div{display:flex;justify-content:space-between;gap:6px}.lmo-space-type,.lmo-space-status{font-size:7px;color:var(--lmo-muted)}.lmo-space-status{padding:2px 5px;border-radius:99px;background:var(--lmo-panel-soft)}.lmo-space-status.status-\u7A7A\u7F6E{color:#b98532;background:rgba(246,193,119,.12)}.lmo-space-card>strong{display:block;margin:9px 0 3px;font-size:11px}.lmo-space-card>p{margin:0;color:var(--lmo-muted);font-size:8px}.lmo-space-card footer{margin-top:12px;padding-top:7px;display:flex;justify-content:space-between;gap:5px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:7px}\n.lmo-workflow-steps{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px}.lmo-workflow-steps span{display:flex;align-items:center;gap:6px;color:var(--lmo-muted);font-size:9px}.lmo-workflow-steps b{width:23px;height:23px;display:grid;place-items:center;border:1px solid var(--lmo-line);border-radius:50%;font-size:9px}.lmo-workflow-steps span.done{color:var(--lmo-text)}.lmo-workflow-steps span.done b{background:var(--active-accent);border-color:var(--active-accent);color:white}.lmo-workflow-steps>i{width:45px;height:1px;background:var(--lmo-line)}\n.lmo-workflow-intro{padding:20px 22px;border-radius:18px;border:1px solid color-mix(in srgb,var(--building-accent) 24%,var(--lmo-line));background:linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 10%,var(--lmo-panel)),var(--lmo-panel))}.lmo-text-button{padding:0;border:0;background:transparent;display:flex;align-items:center;gap:4px;color:var(--lmo-muted);font-size:9px;cursor:pointer}.lmo-text-button .lmo-icon{width:14px;height:14px}.lmo-workflow-intro>div:nth-child(2){margin-top:15px}.lmo-workflow-intro h2{margin:7px 0 5px;font:700 24px Georgia,"Songti SC",serif}.lmo-workflow-intro p{margin:0;max-width:650px;color:var(--lmo-muted);font-size:10px;line-height:1.6}.lmo-facts{margin-top:16px!important;display:flex;gap:8px}.lmo-facts span{padding:7px 10px;border-radius:9px;background:color-mix(in srgb,var(--lmo-panel) 72%,transparent);font-size:8px;color:var(--lmo-muted)}.lmo-facts b{color:var(--lmo-text);font-size:10px}\n.lmo-generation-callout{min-height:100px;padding:16px 18px;display:flex;align-items:center;gap:13px;border:1px dashed color-mix(in srgb,var(--active-accent) 36%,var(--lmo-line));border-radius:16px;background:color-mix(in srgb,var(--active-accent) 5%,var(--lmo-panel))}.lmo-generation-callout>.lmo-icon{width:38px;height:38px;padding:9px;border-radius:12px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-generation-callout>div{margin-right:auto}.lmo-generation-callout strong{font-size:12px}.lmo-generation-callout p{margin:4px 0 0;color:var(--lmo-muted);font-size:9px}.lmo-generation-callout.compact{min-height:82px}\n.lmo-option-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.lmo-option-card{position:relative;padding:18px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.18s}.lmo-option-card:hover,.lmo-option-card.selected{border-color:var(--active-accent);transform:translateY(-2px);box-shadow:0 12px 28px rgba(82,47,67,.09)}.lmo-option-card>span{color:var(--active-accent);font-size:8px;font-weight:700;letter-spacing:.1em}.lmo-option-card h3{margin:7px 0;font:700 16px Georgia,"Songti SC",serif}.lmo-option-card>p{min-height:62px;margin:0 0 10px;color:var(--lmo-muted);font-size:9px;line-height:1.55}.lmo-option-card ul{margin:12px 0 0;padding:10px 0 0 15px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:8px;line-height:1.8}.lmo-option-check{position:absolute;right:10px;top:10px;width:20px;height:20px;padding:3px;border-radius:50%;color:white;background:var(--active-accent)}.lmo-option-check:empty{background:transparent;border:1px solid var(--lmo-line)}.lmo-option-check .lmo-icon{width:100%;height:100%}\n.lmo-confirm-bar{position:sticky;bottom:-26px;z-index:2;margin-top:4px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid var(--lmo-line);border-radius:15px;background:color-mix(in srgb,var(--lmo-surface) 92%,transparent);backdrop-filter:blur(16px);box-shadow:0 -8px 28px rgba(82,47,67,.08)}.lmo-confirm-bar>div{display:grid;gap:3px}.lmo-confirm-bar strong{font-size:10px}.lmo-confirm-bar span{color:var(--lmo-muted);font-size:8px}\n.lmo-two-column{display:grid;grid-template-columns:220px minmax(0,1fr);gap:15px;align-items:start}.lmo-selector,.lmo-placement{padding:16px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-selector h2{margin:6px 0 14px;font:700 17px Georgia,"Songti SC",serif}.lmo-compact-list{display:grid;gap:6px;max-height:470px;overflow:auto}.lmo-compact-space{padding:9px 10px;display:grid;gap:3px;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-surface);text-align:left;cursor:pointer}.lmo-compact-space:hover,.lmo-compact-space.selected{border-color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel))}.lmo-compact-space span,.lmo-compact-space small{color:var(--lmo-muted);font-size:7px}.lmo-compact-space strong{font-size:10px}\n.lmo-workspace{min-width:0}.lmo-preview-room{min-height:360px;padding:27px;display:flex;flex-direction:column;align-items:start;border:1px solid var(--lmo-line);border-radius:18px;background:radial-gradient(circle at 90% 10%,color-mix(in srgb,var(--active-accent) 13%,transparent),transparent 35%),var(--lmo-panel)}.lmo-preview-room>span{color:var(--active-accent);font-size:8px;font-weight:700;letter-spacing:.08em}.lmo-preview-room h2{margin:10px 0 7px;font:750 27px Georgia,"Songti SC",serif}.lmo-preview-room>p{max-width:510px;margin:0;color:var(--lmo-muted);font-size:10px;line-height:1.6}.lmo-current-style{min-width:220px;margin:26px 0;padding:14px;display:grid;gap:4px;border:1px solid var(--lmo-line);border-radius:12px;background:var(--lmo-panel-soft)}.lmo-current-style small,.lmo-current-style span{font-size:8px;color:var(--lmo-muted)}.lmo-current-style strong{font-size:12px}\n.lmo-renovation-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.lmo-renovation-card{padding:13px;border:1px solid var(--lmo-line);border-radius:14px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.17s}.lmo-renovation-card:hover,.lmo-renovation-card.selected{border-color:var(--active-accent);transform:translateY(-2px)}.lmo-palette{height:57px;margin:-6px -6px 12px;display:flex;overflow:hidden;border-radius:10px}.lmo-palette i{flex:1;background:var(--swatch)}.lmo-renovation-card>span{color:var(--active-accent);font-size:7px;font-weight:700}.lmo-renovation-card h3{margin:5px 0;font:700 14px Georgia,"Songti SC",serif}.lmo-renovation-card>p{min-height:38px;margin:0 0 9px;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-renovation-card>small{display:block;margin-top:10px;padding-top:8px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:7px}\n.lmo-recruit-layout{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:14px;align-items:start}.lmo-candidate-list{display:grid;gap:9px}.lmo-candidate{position:relative;padding:14px;display:grid;grid-template-columns:48px 1fr;gap:12px;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.17s}.lmo-candidate:hover,.lmo-candidate.selected{border-color:var(--person-accent);transform:translateX(2px);box-shadow:0 10px 25px color-mix(in srgb,var(--person-accent) 10%,transparent)}.lmo-avatar{width:48px;height:48px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(135deg,var(--person-accent),color-mix(in srgb,var(--person-accent) 55%,#c4a7e7));color:white;font:700 18px Georgia,serif;box-shadow:0 8px 18px color-mix(in srgb,var(--person-accent) 22%,transparent)}.lmo-candidate>div:nth-child(2)>span{color:var(--person-accent);font-size:7px;font-weight:700}.lmo-candidate h3{margin:4px 0;font:700 14px Georgia,"Songti SC",serif}.lmo-candidate p{margin:0;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-candidate blockquote{margin:8px 0;padding:7px 9px;border-left:2px solid var(--person-accent);border-radius:0 8px 8px 0;background:var(--lmo-panel-soft);color:var(--lmo-muted);font-size:8px;font-style:italic}.lmo-candidate .lmo-tags span{color:var(--person-accent);border-color:color-mix(in srgb,var(--person-accent) 22%,var(--lmo-line));background:color-mix(in srgb,var(--person-accent) 6%,transparent)}.lmo-placement{position:sticky;top:0}.lmo-placement h3{margin:6px 0;font:700 15px Georgia,"Songti SC",serif}.lmo-placement>p{margin:0 0 13px;color:var(--lmo-muted);font-size:8px;line-height:1.5}\n.lmo-event-timeline{display:grid;gap:9px}.lmo-event-timeline article{padding:15px 17px;display:grid;grid-template-columns:38px 1fr auto;gap:13px;align-items:start;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel)}.lmo-event-mark{width:38px;height:38px;padding:9px;border-radius:12px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-event-mark .lmo-icon{width:100%;height:100%}.lmo-event-timeline article>div:nth-child(2){display:grid;gap:3px}.lmo-event-timeline span,.lmo-event-timeline small{color:var(--lmo-muted);font-size:8px}.lmo-event-timeline h3{margin:1px 0;font-size:11px}.lmo-event-timeline p{margin:0;color:var(--lmo-muted);font-size:9px}.lmo-event-timeline em{padding:4px 7px;border-radius:99px;background:rgba(70,169,142,.1);color:var(--lmo-positive);font-size:8px;font-style:normal}\n.lmo-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.lmo-mode-card{padding:20px;display:grid;gap:8px;border:1px solid var(--lmo-line);border-radius:18px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.18s}.lmo-mode-card:hover:not(:disabled),.lmo-mode-card.selected{border-color:var(--active-accent);transform:translateY(-2px);box-shadow:0 12px 30px rgba(82,47,67,.09)}.lmo-mode-card:disabled{opacity:.48;cursor:not-allowed}.lmo-mode-card>div{position:relative;width:42px;height:42px;padding:10px;border-radius:13px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-mode-card>div>.lmo-icon{width:100%;height:100%}.lmo-mode-card .lmo-option-check{right:-7px;top:-7px;width:18px;height:18px;padding:3px}.lmo-mode-card strong{font:700 17px Georgia,"Songti SC",serif}.lmo-mode-card p{margin:0;color:var(--lmo-muted);font-size:9px;line-height:1.6}.lmo-mode-card>small{color:var(--active-accent);font-size:8px}.lmo-safety-line{padding:13px 15px;display:flex;align-items:center;gap:11px;border:1px solid color-mix(in srgb,var(--lmo-positive) 28%,var(--lmo-line));border-radius:14px;background:color-mix(in srgb,var(--lmo-positive) 7%,var(--lmo-panel))}.lmo-safety-line>.lmo-icon{color:var(--lmo-positive)}.lmo-safety-line>span{display:grid;gap:2px}.lmo-safety-line strong{font-size:10px}.lmo-safety-line small{color:var(--lmo-muted);font-size:8px}.lmo-task-list{display:grid;gap:7px}.lmo-task-row{min-width:0;padding:10px 11px;display:grid;grid-template-columns:68px minmax(0,1fr) minmax(80px,145px) auto;gap:10px;align-items:center;border:1px solid var(--lmo-line);border-radius:11px;background:var(--lmo-surface)}.lmo-task-state{padding:4px 6px;border-radius:99px;background:var(--lmo-panel-soft);color:var(--lmo-muted);font-size:8px;text-align:center}.lmo-task-state.status-ready,.lmo-task-state.status-confirmed{color:var(--lmo-positive);background:color-mix(in srgb,var(--lmo-positive) 10%,transparent)}.lmo-task-state.status-failed,.lmo-task-state.status-cancelled{color:var(--lmo-danger);background:color-mix(in srgb,var(--lmo-danger) 9%,transparent)}.lmo-task-row>div{display:grid;gap:3px}.lmo-task-row strong{font-size:10px}.lmo-task-row small{overflow:hidden;color:var(--lmo-muted);font-size:8px;text-overflow:ellipsis;white-space:nowrap}.lmo-task-row code{overflow:hidden;color:var(--lmo-muted);font:7px ui-monospace,SFMono-Regular,Menlo,monospace;text-overflow:ellipsis}.lmo-task-actions{display:flex;gap:5px}.lmo-task-actions button{padding:4px 7px;border:1px solid var(--lmo-line);border-radius:7px;background:var(--lmo-panel);font-size:8px;cursor:pointer}.lmo-task-actions button:hover{border-color:var(--active-accent);color:var(--active-accent)}\n.lmo-link-channels{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.lmo-link-channels>div{padding:12px 14px;display:grid;grid-template-columns:1fr auto;align-items:center;border:1px solid var(--lmo-line);border-radius:13px;background:var(--lmo-panel)}.lmo-link-channels span{color:var(--active-accent);font-size:9px;font-weight:700}.lmo-link-channels strong{grid-row:span 2;font:750 22px Georgia,serif}.lmo-link-channels small{color:var(--lmo-muted);font-size:7px}.lmo-link-list{display:grid;gap:6px}.lmo-link-list>div{padding:9px 10px;display:grid;grid-template-columns:48px minmax(0,1fr) auto auto;gap:8px;align-items:center;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-surface)}.lmo-link-list>div>span{padding:4px 5px;border-radius:99px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 8%,transparent);font-size:8px;text-align:center}.lmo-link-list p{margin:0;display:grid;gap:2px}.lmo-link-list strong{font-size:9px}.lmo-link-list small{overflow:hidden;color:var(--lmo-muted);font-size:8px;text-overflow:ellipsis;white-space:nowrap}.lmo-link-list button{padding:4px 6px;border:1px solid var(--lmo-line);border-radius:7px;background:var(--lmo-panel);font-size:8px;cursor:pointer}.lmo-link-list button:hover{border-color:var(--active-accent);color:var(--active-accent)}\n.lmo-floor.visibility-outline,.lmo-space-card.visibility-outline{border-style:dashed;background:repeating-linear-gradient(135deg,var(--lmo-panel),var(--lmo-panel) 8px,var(--lmo-panel-soft) 8px,var(--lmo-panel-soft) 16px)}.lmo-floor.visibility-partial,.lmo-space-card.visibility-partial{border-color:color-mix(in srgb,var(--active-accent) 24%,var(--lmo-line))}.lmo-space-card.visibility-outline{filter:saturate(.45)}\n.lmo-resident-strip{display:flex;gap:8px;overflow:auto}.lmo-resident-strip>div{min-width:215px;padding:9px 10px;display:grid;grid-template-columns:38px minmax(0,1fr);gap:8px;align-items:center;border:1px solid var(--lmo-line);border-radius:12px;background:var(--lmo-surface)}.lmo-resident-strip>div>span{grid-row:span 2;width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,var(--person-accent),color-mix(in srgb,var(--person-accent) 55%,#c4a7e7));color:white;font:700 15px Georgia,serif}.lmo-resident-strip p{margin:0;display:grid;gap:2px}.lmo-resident-strip strong{font-size:10px}.lmo-resident-strip small{color:var(--lmo-muted);font-size:7px}.lmo-resident-strip code{grid-column:2;color:var(--lmo-muted);font:6px ui-monospace,SFMono-Regular,Menlo,monospace}\n.lmo-twin-metrics{display:flex;gap:8px}.lmo-twin-metrics span{padding:8px 11px;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-panel);color:var(--lmo-muted);font-size:8px}.lmo-twin-metrics b{margin-right:4px;color:var(--lmo-text);font-size:12px}.lmo-twin-floors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.lmo-twin-floors>article{overflow:hidden;border:1px solid var(--lmo-line);border-radius:17px;background:var(--lmo-panel)}.lmo-twin-floors>article>header{padding:11px 13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--lmo-line);background:var(--lmo-panel-soft)}.lmo-twin-floors header>div{display:grid;gap:2px}.lmo-twin-floors header strong{font-size:10px}.lmo-twin-floors header small{color:var(--lmo-muted);font-size:7px}.lmo-twin-floors header>span{color:var(--active-accent);font:700 16px Georgia,serif}.lmo-twin-map{position:relative;height:260px;margin:12px;border:1px solid color-mix(in srgb,var(--twin-accent) 26%,var(--lmo-line));border-radius:12px;overflow:hidden;background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--twin-accent) 6%,transparent),transparent 65%),var(--lmo-panel-soft)}.lmo-twin-map>button{position:absolute;padding:7px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;overflow:hidden;border:2px solid var(--lmo-panel);outline:1px solid color-mix(in srgb,var(--twin-accent) 24%,var(--lmo-line));background:color-mix(in srgb,var(--twin-accent) 12%,var(--lmo-panel));text-align:left;cursor:pointer;transition:.16s}.lmo-twin-map>button:hover{z-index:2;background:color-mix(in srgb,var(--twin-accent) 24%,var(--lmo-panel));box-shadow:0 6px 18px rgba(0,0,0,.12)}.lmo-twin-map strong{max-width:100%;overflow:hidden;font-size:9px;text-overflow:ellipsis;white-space:nowrap}.lmo-twin-map small,.lmo-twin-map em{max-width:100%;overflow:hidden;color:var(--lmo-muted);font-size:6px;font-style:normal;text-overflow:ellipsis;white-space:nowrap}.lmo-twin-map>button.visibility-outline{border-style:dashed;filter:saturate(.35)}\n.lmo-link-channels button{grid-column:1/-1;margin-top:8px;padding:5px 7px;border:1px solid color-mix(in srgb,var(--active-accent) 25%,var(--lmo-line));border-radius:8px;background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel));color:var(--active-accent);font-size:7px;cursor:pointer}.lmo-link-channels button:hover{background:color-mix(in srgb,var(--active-accent) 14%,var(--lmo-panel))}\n@keyframes lmo-fade-in{from{opacity:0}to{opacity:1}}@keyframes lmo-rise{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}@keyframes lmo-content-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}@keyframes lmo-spin{to{transform:rotate(360deg)}}\n@media(max-width:820px){.lmo-backdrop{padding:9px}.lmo-shell{width:100%;height:96vh;grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);border-radius:20px}.lmo-sidebar{padding:12px 14px;display:grid;grid-template-columns:auto 1fr;border-right:0;border-bottom:1px solid var(--lmo-line);gap:12px}.lmo-brand{padding:0}.lmo-sidebar nav{display:flex;overflow:auto;gap:4px}.lmo-nav-item{width:auto;min-height:38px;padding:0 10px;white-space:nowrap}.lmo-sidebar-summary,.lmo-mode{display:none}.lmo-main{grid-template-rows:62px minmax(0,1fr)}.lmo-header{padding:0 16px}.lmo-header h1{font-size:16px}.lmo-scroll{padding:16px 14px 34px}.lmo-building-grid,.lmo-dashboard-row{grid-template-columns:1fr}.lmo-building-card{grid-template-columns:110px 1fr}.lmo-section-heading>p{display:none}.lmo-two-column,.lmo-recruit-layout{grid-template-columns:1fr}.lmo-selector,.lmo-placement{position:static}.lmo-compact-list{grid-template-columns:repeat(2,1fr);max-height:220px}.lmo-option-grid,.lmo-renovation-plans{grid-template-columns:1fr}.lmo-space-grid{grid-template-columns:repeat(2,1fr)}.lmo-space-card,.lmo-space-card.size-\u5927\u578B,.lmo-space-card.size-\u8D85\u5927\u578B,.lmo-space-card.size-\u5C0F\u578B,.lmo-space-card.size-\u5FAE\u578B{grid-column:span 1}.lmo-hero{grid-template-columns:1fr;min-height:190px}.lmo-hero-orbit{display:none}.lmo-building-banner{align-items:start;flex-direction:column}.lmo-banner-actions{width:100%}.lmo-banner-actions button{flex:1}.lmo-metric-strip{grid-template-columns:repeat(2,1fr)}.lmo-metric-strip>div:nth-child(2){border-right:0}.lmo-metric-strip>div:nth-child(-n+2){border-bottom:1px solid var(--lmo-line)}.lmo-generation-callout{align-items:start;flex-wrap:wrap}.lmo-generation-callout button{width:100%}.lmo-confirm-bar{bottom:-16px}.lmo-workflow-steps{gap:5px}.lmo-workflow-steps>i{width:16px}.lmo-workflow-steps span{font-size:8px}}\n@media(max-width:820px){.lmo-mode-grid,.lmo-twin-floors{grid-template-columns:1fr}.lmo-link-channels{grid-template-columns:repeat(2,1fr)}.lmo-task-row{grid-template-columns:62px minmax(0,1fr) auto}.lmo-task-row>code{display:none}.lmo-twin-map{height:230px}}\n@media(max-width:520px){.lmo-brand div:last-child{display:none}.lmo-nav-item>span:last-child{display:none}.lmo-nav-item{padding:0 9px}.lmo-header-actions .lmo-status-dot{display:none}.lmo-building-card{grid-template-columns:90px 1fr}.lmo-building-visual{min-height:165px}.lmo-card-metrics span:nth-child(3){display:none}.lmo-facts{display:grid;grid-template-columns:1fr 1fr}.lmo-confirm-bar{align-items:stretch;flex-direction:column}.lmo-confirm-bar button{width:100%}.lmo-candidate{grid-template-columns:40px 1fr}.lmo-avatar{width:40px;height:40px}.lmo-event-timeline article{grid-template-columns:34px 1fr}.lmo-event-timeline article>em{display:none}}\n@media(max-width:520px){.lmo-banner-actions{flex-wrap:wrap}.lmo-banner-actions button{min-width:45%}.lmo-link-list>div{grid-template-columns:45px minmax(0,1fr)}.lmo-link-list button{grid-row:2}.lmo-link-list button:nth-last-child(2){grid-column:1}.lmo-link-list button:last-child{grid-column:2}.lmo-task-row{grid-template-columns:56px minmax(0,1fr)}.lmo-task-actions{grid-column:2}}\n@media(prefers-reduced-motion:reduce){.lmo-backdrop,.lmo-shell,.lmo-view,.lmo-hero-orbit::before,.lmo-hero-orbit::after{animation:none!important}.lmo-backdrop *{scroll-behavior:auto!important;transition:none!important}}\n';
   }
 });
 
@@ -20289,6 +21271,11 @@ __export(landlord_console_exports, {
 function activate3(context) {
   const store = context.services.require("landlord.store");
   const tasks = context.services.require("landlord.tasks");
+  const events = context.services.require("landlord.events");
+  const perception = context.services.require("landlord.perception");
+  const identities = context.services.require("landlord.identities");
+  const layouts = context.services.require("building.layout");
+  const bridges = context.services.require("landlord.bridges");
   const compiler = context.services.require("building.compiler");
   const style = context.document.createElement("style");
   style.id = styleId2;
@@ -20298,6 +21285,11 @@ function activate3(context) {
     document: context.document,
     store,
     tasks,
+    events,
+    perception,
+    identities,
+    layouts,
+    bridges,
     compiler,
     logger: context.logger
   });
@@ -21015,7 +22007,7 @@ var modules = [
     afterLoad: null,
     cleanup: [],
     requires: ["landlord.schema"],
-    provides: ["landlord.store", "landlord.tasks", "building.compiler"],
+    provides: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.perception", "landlord.identities", "landlord.bridges", "building.compiler", "building.layout"],
     legacyRequires: [],
     load: () => Promise.resolve().then(() => (init_landlord_core(), landlord_core_exports))
   },
@@ -21025,10 +22017,10 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    requires: ["landlord.store", "landlord.tasks", "building.compiler", "ui.floatingMenu"],
+    requires: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.perception", "landlord.identities", "landlord.bridges", "building.compiler", "building.layout", "ui.floatingMenu"],
     provides: ["landlord.console"],
     legacyRequires: ["FloatingMenuManager"],
     load: () => Promise.resolve().then(() => (init_landlord_console(), landlord_console_exports))
   }
 ];
-await startLandlordRuntime({ version: "0.2.0-preview.3", modules });
+await startLandlordRuntime({ version: "0.3.0-preview.1", modules });

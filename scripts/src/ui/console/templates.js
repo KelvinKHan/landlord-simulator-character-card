@@ -5,6 +5,7 @@ const icons = Object.freeze({
   renovate: '<svg viewBox="0 0 24 24"><path d="m14 6 4 4M4 20l4.5-1 10-10a2.8 2.8 0 0 0-4-4l-10 10zM13 6l4 4M5 15l4 4"/></svg>',
   recruit: '<svg viewBox="0 0 24 24"><path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M16 11h6"/></svg>',
   event: '<svg viewBox="0 0 24 24"><path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M18 12h3M6 21h12M8 17a6 6 0 1 1 8 0l-1 1H9z"/></svg>',
+  tasks: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9h6M9 13h6M9 17h3M8 2v3M16 2v3"/></svg>',
   close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
   arrow: '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
   sparkle: '<svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
@@ -42,14 +43,23 @@ function navItem(section, current, label, iconName) {
   return `<button class="lmo-nav-item ${section === current ? 'active' : ''}" data-action="navigate" data-section="${section}">${icon(iconName)}<span>${label}</span></button>`;
 }
 
-function renderSidebar(ui, portfolio) {
+function taskModeCopy(state) {
+  return state.运行模式 === '真实'
+    ? { title: 'AI 生成模式', detail: '生成后仍需确认写入', verb: '生成 AI' }
+    : { title: '本地模拟模式', detail: '不会调用真实 AI', verb: '生成本地' };
+}
+
+function renderSidebar(state, ui, portfolio) {
+  const mode = taskModeCopy(state);
   return `<aside class="lmo-sidebar">
     <div class="lmo-brand"><div class="lmo-brand-mark">L</div><div><strong>Landlord</strong><span>房东经营中枢</span></div></div>
     <nav>
       ${navItem('portfolio', ui.section, '资产总览', 'buildings')}
       ${navItem('building', ui.section, '当前建筑', 'home')}
+      ${navItem('twin', ui.section, '数字孪生', 'room')}
       ${navItem('renovation', ui.section, '装修中心', 'renovate')}
       ${navItem('recruitment', ui.section, '招募中心', 'recruit')}
+      ${navItem('tasks', ui.section, '任务中心', 'tasks')}
       ${navItem('events', ui.section, '动态记录', 'event')}
     </nav>
     <div class="lmo-sidebar-summary">
@@ -57,7 +67,7 @@ function renderSidebar(ui, portfolio) {
       <div><i style="width:${Math.min(100, 28 + portfolio.owned.length * 18)}%"></i></div>
       <p>${portfolio.available.length} 个接管机会正在等待</p>
     </div>
-    <div class="lmo-mode"><span class="lmo-pulse"></span><div><strong>本地模拟模式</strong><small>不会调用真实 AI</small></div></div>
+    <div class="lmo-mode ${state.运行模式 === '真实' ? 'ai' : ''}"><span class="lmo-pulse"></span><div><strong>${mode.title}</strong><small>${mode.detail}</small></div></div>
   </aside>`;
 }
 
@@ -72,8 +82,10 @@ function renderHeader(current, ui) {
 function sectionTitle(section, current) {
   if (section === 'portfolio') return '我的建筑版图';
   if (section === 'renovation') return '装修具现化中心';
+  if (section === 'twin') return '建筑数字孪生';
   if (section === 'recruitment') return '跨世界招募中心';
   if (section === 'takeover') return '建筑接管提案';
+  if (section === 'tasks') return '统一任务中心';
   if (section === 'events') return '建筑动态记录';
   return current.name;
 }
@@ -112,18 +124,27 @@ function renderPortfolio(state, portfolio) {
 
 function spaceCard(space) {
   const sizeClass = `size-${escapeHtml(space.size)}`;
-  return `<button class="lmo-space-card ${sizeClass}" data-action="select-space" data-space-id="${escapeHtml(space.id)}">
+  return `<button class="lmo-space-card ${sizeClass} visibility-${escapeHtml(space.visibility)}" data-action="select-space" data-space-id="${escapeHtml(space.id)}">
     <div><span class="lmo-space-type">${escapeHtml(space.type)}</span><span class="lmo-space-status status-${escapeHtml(space.status)}">${escapeHtml(space.status)}</span></div>
     <strong>${escapeHtml(space.name)}</strong><p>${escapeHtml(space.purpose)}</p>
-    <footer><span>${space.occupants.length ? `${space.occupants.length} 人正在使用` : '等待人物进入'}</span><span>${escapeHtml(space.renovation?.风格 ?? '基础装修')}</span></footer>
+    <footer><span>${space.occupants.length ? `${space.occupants.length} 人正在使用` : `感知 ${space.awareness}%`}</span><span>${escapeHtml(space.renovation?.风格 ?? '待探索')}</span></footer>
   </button>`;
 }
 
-function renderBuilding(building) {
+function renderBuilding(building, identityCenter) {
   return `<section class="lmo-view">
-    <div class="lmo-building-banner" style="--building-accent:${safeColor(building.theme?.主色)}"><div><span>${escapeHtml(building.type)} · ${escapeHtml(building.worldview)}</span><h2>${escapeHtml(building.name)}</h2><p>${escapeHtml(building.description)}</p></div><div class="lmo-banner-actions"><button class="lmo-secondary" data-action="navigate" data-section="renovation">${icon('renovate')} 开始装修</button><button class="lmo-primary" data-action="navigate" data-section="recruitment">${icon('recruit')} 招募人物</button></div></div>
+    <div class="lmo-building-banner" style="--building-accent:${safeColor(building.theme?.主色)}"><div><span>${escapeHtml(building.type)} · ${escapeHtml(building.worldview)}</span><h2>${escapeHtml(building.name)}</h2><p>${escapeHtml(building.description)}</p></div><div class="lmo-banner-actions"><button class="lmo-secondary" data-action="explore-next">${icon('sparkle')} 探索下一处</button><button class="lmo-secondary" data-action="navigate" data-section="renovation">${icon('renovate')} 开始装修</button><button class="lmo-primary" data-action="navigate" data-section="recruitment">${icon('recruit')} 招募人物</button></div></div>
     <div class="lmo-metric-strip"><div><span>可见楼层</span><strong>${building.metrics.floors}</strong></div><div><span>当前空间</span><strong>${building.metrics.spaces}</strong></div><div><span>已安置人物</span><strong>${building.metrics.people}</strong></div><div><span>活跃度</span><strong>${building.summary.活跃度 ?? 0}<small>%</small></strong></div></div>
-    <div class="lmo-floor-list">${building.floors.map(floor => `<article class="lmo-floor"><header><div><span>${String(floor.order).padStart(2, '0')}</span><div><strong>${escapeHtml(floor.name)}</strong><small>${escapeHtml(floor.description)}</small></div></div><em>感知 ${floor.awareness}%</em></header><div class="lmo-space-grid">${floor.spaces.length ? floor.spaces.map(spaceCard).join('') : emptyState('这一层仍是未知', '随着接管和探索，新的空间会逐步显现。')}</div></article>`).join('')}</div>
+    ${identityCenter.residents.length ? `<article class="lmo-panel"><div class="lmo-panel-title"><div>${icon('person')}<span><strong>建筑成员</strong><small>跨界面共用同一份视觉身份和位置</small></span></div></div><div class="lmo-resident-strip">${identityCenter.residents.map(person => `<div style="--person-accent:${safeColor(person.color)}"><span>${escapeHtml(person.initial)}</span><p><strong>${escapeHtml(person.name)}</strong><small>${escapeHtml(person.role)} · ${escapeHtml(person.spaceName)}</small></p><code>${escapeHtml(person.contactId)}</code></div>`).join('')}</div></article>` : ''}
+    <div class="lmo-floor-list">${building.floors.map(floor => `<article class="lmo-floor visibility-${escapeHtml(floor.visibility)}"><header><div><span>${String(floor.order).padStart(2, '0')}</span><div><strong>${escapeHtml(floor.name)}</strong><small>${escapeHtml(floor.description)}</small></div></div><em>感知 ${floor.awareness}% · ${escapeHtml(floor.visibility)}</em></header><div class="lmo-space-grid">${floor.spaces.length ? floor.spaces.map(spaceCard).join('') : emptyState('这一层仍是未知', '随着接管和探索，新的空间会逐步显现。')}</div></article>`).join('')}</div>
+  </section>`;
+}
+
+function renderTwin(twin) {
+  return `<section class="lmo-view lmo-twin-view">
+    <div class="lmo-section-heading"><div><span>BUILDING DIGITAL TWIN</span><h2>${escapeHtml(twin.name)}·可计算空间镜像</h2></div><p>布局由空间尺寸和相邻关系确定性生成，不需要 AI 猜测坐标。</p></div>
+    <div class="lmo-twin-metrics"><span><b>${twin.metrics.floors}</b>可见楼层</span><span><b>${twin.metrics.nodes}</b>空间节点</span><span><b>${twin.metrics.edges}</b>已知连接</span></div>
+    <div class="lmo-twin-floors">${twin.floors.map(floor => `<article><header><div><strong>${escapeHtml(floor.name)}</strong><small>感知 ${floor.awareness}% · ${floor.nodes.length} 个空间</small></div><span>${String(floor.order).padStart(2, '0')}</span></header>${floor.nodes.length ? `<div class="lmo-twin-map" style="--twin-accent:${safeColor(twin.theme?.主色)}">${floor.nodes.map(node => `<button class="visibility-${escapeHtml(node.visibility)}" data-action="select-space" data-space-id="${escapeHtml(node.id)}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%"><strong>${escapeHtml(node.name)}</strong><small>${escapeHtml(node.type)} · ${node.awareness}%</small>${node.occupants?.length ? `<em>${node.occupants.map(person => escapeHtml(person.name)).join(' / ')}</em>` : ''}</button>`).join('')}</div>` : emptyState('暂无可见空间', '继续探索后，空间会进入数字孪生。')}</article>`).join('')}</div>
   </section>`;
 }
 
@@ -131,11 +152,12 @@ function workflowSteps(active) {
   return `<div class="lmo-workflow-steps"><span class="done"><b>1</b>选择目标</span><i></i><span class="${active >= 2 ? 'done' : ''}"><b>2</b>生成预览</span><i></i><span class="${active >= 3 ? 'done' : ''}"><b>3</b>确认写入</span></div>`;
 }
 
-function renderTakeover(building, task, selectedId, busy) {
+function renderTakeover(state, building, task, selectedId, busy) {
+  const mode = taskModeCopy(state);
   const directions = task?.status === 'ready' ? task.preview.directions : [];
   return `<section class="lmo-view lmo-workflow">${workflowSteps(directions.length ? 2 : 1)}
     <div class="lmo-workflow-intro" style="--building-accent:${safeColor(building.theme?.主色)}"><button class="lmo-text-button" data-action="navigate" data-section="portfolio">${icon('back')} 返回资产总览</button><div><span class="lmo-building-type">${escapeHtml(building.type)}</span><h2>${escapeHtml(building.name)}</h2><p>${escapeHtml(building.description)}</p></div><div class="lmo-facts"><span><b>${building.metrics.floors}</b> 层基础格局</span><span><b>${building.metrics.spaces}</b> 个现有空间</span><span><b>${building.awareness}%</b> 已感知</span></div></div>
-    ${!directions.length ? `<div class="lmo-generation-callout">${icon('sparkle')}<div><strong>生成三种接管方向</strong><p>当前只读取本地固定样例，不会访问聊天记录，也不会调用任何真实 AI。</p></div><button class="lmo-primary" data-action="run-takeover" data-building-id="${escapeHtml(building.id)}" ${busy ? 'disabled' : ''}>${busy ? '正在整理…' : '生成本地提案'}</button></div>` : `<div class="lmo-option-grid">${directions.map(direction => `<button class="lmo-option-card ${selectedId === direction.id ? 'selected' : ''}" data-action="choose-option" data-option-id="${escapeHtml(direction.id)}"><div class="lmo-option-check">${selectedId === direction.id ? icon('check') : ''}</div><span>经营方向</span><h3>${escapeHtml(direction.name)}</h3><p>${escapeHtml(direction.description)}</p>${tags(direction.tags)}<ul>${direction.opportunities.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></button>`).join('')}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? '方案已经选定' : '选择一个方向继续'}</strong><span>只有点击确认后，建筑状态才会正式改变。</span></div><button class="lmo-primary" data-action="confirm-takeover" ${selectedId && !busy ? '' : 'disabled'}>确认接管 ${icon('arrow')}</button></div>`}
+    ${!directions.length ? `<div class="lmo-generation-callout">${icon('sparkle')}<div><strong>生成三种接管方向</strong><p>${state.运行模式 === '真实' ? '调用酒馆助手的结构化生成；不读取聊天历史，结果不会自动写入。' : '当前只读取本地固定样例，不会访问聊天记录，也不会调用任何真实 AI。'}</p></div><button class="lmo-primary" data-action="run-takeover" data-building-id="${escapeHtml(building.id)}" ${busy ? 'disabled' : ''}>${busy ? '正在整理…' : `${mode.verb}提案`}</button></div>` : `<div class="lmo-option-grid">${directions.map(direction => `<button class="lmo-option-card ${selectedId === direction.id ? 'selected' : ''}" data-action="choose-option" data-option-id="${escapeHtml(direction.id)}"><div class="lmo-option-check">${selectedId === direction.id ? icon('check') : ''}</div><span>经营方向</span><h3>${escapeHtml(direction.name)}</h3><p>${escapeHtml(direction.description)}</p>${tags(direction.tags)}<ul>${direction.opportunities.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></button>`).join('')}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? '方案已经选定' : '选择一个方向继续'}</strong><span>只有点击确认后，建筑状态才会正式改变。</span></div><button class="lmo-primary" data-action="confirm-takeover" ${selectedId && !busy ? '' : 'disabled'}>确认接管 ${icon('arrow')}</button></div>`}
   </section>`;
 }
 
@@ -143,39 +165,71 @@ function ownedSpaceOptions(building, selectedSpaceId, action = 'choose-workflow-
   return building.floors.flatMap(floor => floor.spaces).map(space => `<button class="lmo-compact-space ${selectedSpaceId === space.id ? 'selected' : ''}" data-action="${action}" data-space-id="${escapeHtml(space.id)}"><span>${escapeHtml(space.type)}</span><strong>${escapeHtml(space.name)}</strong><small>${escapeHtml(space.status)} · ${escapeHtml(space.size)}</small></button>`).join('');
 }
 
-function renderRenovation(building, task, selectedSpaceId, selectedId, busy) {
+function renderRenovation(state, building, task, selectedSpaceId, selectedId, busy) {
   const plans = task?.status === 'ready' ? task.preview.plans : [];
   const space = building.floors.flatMap(floor => floor.spaces).find(item => item.id === selectedSpaceId);
-  return `<section class="lmo-view lmo-workflow">${workflowSteps(plans.length ? 2 : selectedSpaceId ? 1 : 0)}
+  const markup = `<section class="lmo-view lmo-workflow">${workflowSteps(plans.length ? 2 : selectedSpaceId ? 1 : 0)}
     <div class="lmo-two-column"><aside class="lmo-selector"><span class="lmo-kicker">选择装修目标</span><h2>${escapeHtml(building.name)}</h2><div class="lmo-compact-list">${ownedSpaceOptions(building, selectedSpaceId)}</div></aside>
     <div class="lmo-workspace">${!space ? emptyState('先选择一个空间', '可以从一个房间开始，不需要一次装修整栋建筑。') : !plans.length ? `<div class="lmo-preview-room"><span>${escapeHtml(space.type)} · ${escapeHtml(space.size)}</span><h2>${escapeHtml(space.name)}</h2><p>${escapeHtml(space.description)}</p><div class="lmo-current-style"><small>当前装修</small><strong>${escapeHtml(space.renovation?.风格)}</strong><span>${escapeHtml(space.renovation?.氛围)}</span></div><button class="lmo-primary" data-action="run-renovation" ${busy ? 'disabled' : ''}>${icon('sparkle')} ${busy ? '正在整理…' : '生成三个本地方案'}</button></div>` : `<div class="lmo-renovation-plans">${plans.map(plan => `<button class="lmo-renovation-card ${selectedId === plan.id ? 'selected' : ''}" data-action="choose-option" data-option-id="${escapeHtml(plan.id)}"><div class="lmo-palette">${Object.values(plan.palette).map(color => `<i style="--swatch:${safeColor(color, '#E2E8F0')}"></i>`).join('')}</div><span>${escapeHtml(plan.style)}</span><h3>${escapeHtml(plan.name)}</h3><p>${escapeHtml(plan.tagline)}</p>${tags(plan.impacts)}<small>${escapeHtml(plan.lighting)}</small></button>`).join('')}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? '装修效果可以具现化' : '挑选最喜欢的方案'}</strong><span>确认后会改变空间描述、配色、材质和事件记录。</span></div><button class="lmo-primary" data-action="confirm-renovation" ${selectedId && !busy ? '' : 'disabled'}>应用装修 ${icon('arrow')}</button></div>`}</div></div>
   </section>`;
+  return state.运行模式 === '真实' ? markup.replace('生成三个本地方案', '生成三个 AI 方案') : markup;
 }
 
-function renderRecruitment(building, task, selectedSpaceId, selectedId, busy) {
+function renderRecruitment(state, building, task, selectedSpaceId, selectedId, busy) {
+  const mode = taskModeCopy(state);
   const candidates = task?.status === 'ready' ? task.preview.candidates : [];
   return `<section class="lmo-view lmo-workflow">${workflowSteps(candidates.length ? 2 : 1)}
-    <div class="lmo-generation-callout compact">${icon('recruit')}<div><strong>为「${escapeHtml(building.name)}」寻找新成员</strong><p>候选人来自本地样例，确认前不会出现在人物列表或建筑里。</p></div>${!candidates.length ? `<button class="lmo-primary" data-action="run-recruitment" ${busy ? 'disabled' : ''}>${busy ? '正在整理…' : '生成本地候选人'}</button>` : ''}</div>
+    <div class="lmo-generation-callout compact">${icon('recruit')}<div><strong>为「${escapeHtml(building.name)}」寻找新成员</strong><p>候选人只是预览，确认前不会出现在人物列表或建筑里。</p></div>${!candidates.length ? `<button class="lmo-primary" data-action="run-recruitment" ${busy ? 'disabled' : ''}>${busy ? '正在整理…' : `${mode.verb}候选人`}</button>` : ''}</div>
     ${candidates.length ? `<div class="lmo-recruit-layout"><div class="lmo-candidate-list">${candidates.map(candidate => `<button class="lmo-candidate ${selectedId === candidate.id ? 'selected' : ''}" data-action="choose-option" data-option-id="${escapeHtml(candidate.id)}" style="--person-accent:${safeColor(candidate.visualIdentity.主色)}"><div class="lmo-avatar">${escapeHtml(candidate.name.slice(0, 1))}</div><div><span>${escapeHtml(candidate.origin)} · ${escapeHtml(candidate.profession)}</span><h3>${escapeHtml(candidate.name)}</h3><p>${escapeHtml(candidate.personality)}</p><blockquote>“${escapeHtml(candidate.quote)}”</blockquote>${tags(candidate.tags)}</div><i class="lmo-option-check">${selectedId === candidate.id ? icon('check') : ''}</i></button>`).join('')}</div><aside class="lmo-placement"><span class="lmo-kicker">安排位置</span><h3>让人物真正进入建筑</h3><p>选择一个空间后，人物档案、门牌和建筑占用记录会同时创建。</p><div class="lmo-compact-list">${ownedSpaceOptions(building, selectedSpaceId, 'choose-recruit-space')}</div></aside></div><div class="lmo-confirm-bar"><div><strong>${selectedId && selectedSpaceId ? '人物与位置已经确定' : '请选择人物和安置位置'}</strong><span>这一步会写入人物、空间和事件三处状态。</span></div><button class="lmo-primary" data-action="confirm-recruitment" ${selectedId && selectedSpaceId && !busy ? '' : 'disabled'}>确认加入 ${icon('arrow')}</button></div>` : emptyState('候选名单尚未生成', '点击上方按钮，用本地模拟数据预览完整流程。')}
   </section>`;
 }
 
-function renderEvents(state, portfolio) {
-  const events = Object.entries(state.事件列表 ?? {}).reverse();
-  return `<section class="lmo-view"><div class="lmo-section-heading"><div><span>BUILDING MEMORY</span><h2>真正发生过的变化</h2></div><p>这里只有确认写入过的操作，不展示临时候选和取消的方案。</p></div>${events.length ? `<div class="lmo-event-timeline">${events.map(([id, event]) => { const building = portfolio.buildings.find(item => item.id === event.建筑ID); return `<article><div class="lmo-event-mark">${icon(event.类型 === '人物加入' ? 'person' : event.类型 === '装修完成' ? 'renovate' : 'buildings')}</div><div><span>${escapeHtml(event.类型)} · ${escapeHtml(building?.name ?? '未知建筑')}</span><h3>${escapeHtml(event.标题)}</h3><p>${escapeHtml(event.摘要)}</p><small>${escapeHtml(event.发生时间)} · ${escapeHtml(id)}</small></div><em>${escapeHtml(event.状态)}</em></article>`; }).join('')}</div>` : emptyState('还没有经营记录', '完成第一次接管、装修或招募后，建筑记忆会出现在这里。')}</section>`;
+const taskStatusLabels = Object.freeze({
+  created: '已创建', queued: '排队中', running: '执行中', retrying: '重试中',
+  'waiting-retry': '等待重试', ready: '待确认', applying: '写入中', confirmed: '已确认',
+  failed: '失败', cancelled: '已取消',
+});
+
+const taskKindLabels = Object.freeze({ takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募' });
+
+function renderTasks(taskCenter) {
+  const ai = taskCenter.capabilities.find(item => item.mode === 'ai');
+  const recent = taskCenter.tasks.slice(-12).reverse();
+  return `<section class="lmo-view lmo-task-center">
+    <div class="lmo-section-heading"><div><span>GENERATION ORCHESTRATOR</span><h2>一个入口，两种生成方式</h2></div><p>任务中心统一负责排队、超时、重试、取消和预览确认。</p></div>
+    <div class="lmo-mode-grid">
+      <button class="lmo-mode-card ${taskCenter.mode === 'local' ? 'selected' : ''}" data-action="set-task-mode" data-mode="local"><div>${icon('tasks')}<span class="lmo-option-check">${taskCenter.mode === 'local' ? icon('check') : ''}</span></div><strong>本地模拟</strong><p>使用内置样例验证整套流程，永远不调用 AI。</p><small>快速 · 可重现 · 适合测试</small></button>
+      <button class="lmo-mode-card ${taskCenter.mode === 'ai' ? 'selected' : ''}" data-action="set-task-mode" data-mode="ai" ${ai?.available ? '' : 'disabled'}><div>${icon('sparkle')}<span class="lmo-option-check">${taskCenter.mode === 'ai' ? icon('check') : ''}</span></div><strong>AI 结构化生成</strong><p>通过酒馆助手生成候选方案，并先做格式校验。</p><small>${ai?.available ? '已检测到生成能力 · 不自动写入' : '当前环境未提供生成能力'}</small></button>
+    </div>
+    <div class="lmo-safety-line">${icon('check')}<span><strong>切换模式不会发起生成</strong><small>只有在接管、装修或招募页面主动点击后，才会创建任务。</small></span></div>
+    <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon('tasks')}<span><strong>任务排队</strong><small>最近 ${recent.length} 条任务</small></span></div></div>
+      ${recent.length ? `<div class="lmo-task-list">${recent.map(task => `<div class="lmo-task-row"><span class="lmo-task-state status-${escapeHtml(task.status)}">${escapeHtml(taskStatusLabels[task.status] ?? task.status)}</span><div><strong>${escapeHtml(taskKindLabels[task.kind] ?? task.kind)}</strong><small>${task.mode === 'ai' ? 'AI 生成' : '本地模拟'} · 第 ${task.attempt}/${task.maxAttempts} 次${task.error ? ` · ${escapeHtml(task.error)}` : ''}</small></div><code>${escapeHtml(task.id)}</code><span class="lmo-task-actions">${['queued','running','retrying','waiting-retry','ready'].includes(task.status) ? `<button data-action="cancel-task" data-task-id="${escapeHtml(task.id)}">取消</button>` : ''}${['failed','cancelled'].includes(task.status) ? `<button data-action="retry-task" data-task-id="${escapeHtml(task.id)}">重试</button>` : ''}</span></div>`).join('')}</div>` : emptyState('队列还是空的', '从接管、装修或招募中心发起的任务会在这里留下全过程状态。')}
+    </article>
+  </section>`;
 }
 
-export function renderConsole({ state, portfolio, current, ui, task }) {
+function renderEvents(state, portfolio, linkCenter) {
+  const events = Object.entries(state.事件列表 ?? {}).reverse();
+  const channels = ['正文', '微信', '新闻', '建筑'];
+  return `<section class="lmo-view"><div class="lmo-section-heading"><div><span>BUILDING MEMORY</span><h2>真正发生过的变化</h2></div><p>这里只有确认写入过的操作，不展示临时候选和取消的方案。</p></div>
+    <div class="lmo-link-channels">${channels.map(channel => `<div><span>${escapeHtml(channel)}</span><strong>${linkCenter.counts[channel] ?? 0}</strong><small>待分发联动</small>${linkCenter.capabilities[channel] && linkCenter.counts[channel] ? `<button data-action="dispatch-next-link" data-channel="${escapeHtml(channel)}">投递下一条</button>` : ''}</div>`).join('')}</div>
+    <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon('sparkle')}<span><strong>跨系统联动队列</strong><small>正文、微信、新闻和建筑使用同一个事件源</small></span></div></div>${linkCenter.pending.length ? `<div class="lmo-link-list">${linkCenter.pending.map(item => `<div><span>${escapeHtml(item.频道)}</span><p><strong>${escapeHtml(item.标题)}</strong><small>${escapeHtml(item.摘要)}</small></p><button data-action="consume-link" data-link-id="${escapeHtml(item.id)}">已读</button><button data-action="ignore-link" data-link-id="${escapeHtml(item.id)}">忽略</button></div>`).join('')}</div>` : emptyState('联动队列已清空', '新的经营变化会自动投递到四个频道。')}</article>
+    ${events.length ? `<div class="lmo-event-timeline">${events.map(([id, event]) => { const building = portfolio.buildings.find(item => item.id === event.建筑ID); return `<article><div class="lmo-event-mark">${icon(event.类型 === '人物加入' ? 'person' : event.类型 === '装修完成' ? 'renovate' : 'buildings')}</div><div><span>${escapeHtml(event.类型)} · ${escapeHtml(building?.name ?? '未知建筑')}</span><h3>${escapeHtml(event.标题)}</h3><p>${escapeHtml(event.摘要)}</p><small>${escapeHtml(event.发生时间)} · ${escapeHtml(id)}</small></div><em>${escapeHtml(event.状态)}</em></article>`; }).join('')}</div>` : emptyState('还没有经营记录', '完成第一次接管、装修或招募后，建筑记忆会出现在这里。')}</section>`;
+}
+
+export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, twin }) {
   let content;
   if (ui.section === 'portfolio') content = renderPortfolio(state, portfolio);
-  else if (ui.section === 'building') content = renderBuilding(current);
-  else if (ui.section === 'takeover') content = renderTakeover(ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
-  else if (ui.section === 'renovation') content = renderRenovation(current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
-  else if (ui.section === 'recruitment') content = renderRecruitment(current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
-  else content = renderEvents(state, portfolio);
+  else if (ui.section === 'building') content = renderBuilding(current, identityCenter);
+  else if (ui.section === 'twin') content = renderTwin(twin);
+  else if (ui.section === 'takeover') content = renderTakeover(state, ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
+  else if (ui.section === 'renovation') content = renderRenovation(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
+  else if (ui.section === 'recruitment') content = renderRecruitment(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
+  else if (ui.section === 'tasks') content = renderTasks(taskCenter);
+  else content = renderEvents(state, portfolio, linkCenter);
 
   const displayBuilding = ui.section === 'takeover' ? ui.targetBuilding : current;
   return `<div class="lmo-backdrop" data-action="close-backdrop"><div class="lmo-shell" role="dialog" aria-modal="true" aria-label="房东经营中枢" style="--active-accent:${safeColor(displayBuilding.theme?.主色)}">
-    ${renderSidebar(ui, portfolio)}<main class="lmo-main">${renderHeader(displayBuilding, ui)}<div class="lmo-scroll">${ui.notice ? `<div class="lmo-notice ${ui.notice.type}">${escapeHtml(ui.notice.text)}</div>` : ''}${content}</div></main>
+    ${renderSidebar(state, ui, portfolio)}<main class="lmo-main">${renderHeader(displayBuilding, ui)}<div class="lmo-scroll">${ui.notice ? `<div class="lmo-notice ${ui.notice.type}">${escapeHtml(ui.notice.text)}</div>` : ''}${content}</div></main>
   </div></div>`;
 }

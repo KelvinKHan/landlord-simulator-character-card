@@ -6,6 +6,15 @@ function defaultIdFactory(prefix) {
   return `${prefix}_${Date.now().toString(36)}_${random}`;
 }
 
+function awarenessTier(value) {
+  const awareness = Math.max(0, Math.min(100, Number(value) || 0));
+  if (awareness === 0) return '未发现';
+  if (awareness < 25) return '轮廓';
+  if (awareness < 60) return '初步了解';
+  if (awareness < 90) return '已显露';
+  return '完全掌握';
+}
+
 export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
   if (!mvu || typeof mvu.transaction !== 'function') throw new TypeError('房东状态服务需要 MVU 事务服务');
   if (!schema || typeof schema.parseState !== 'function') throw new TypeError('房东状态服务需要 Schema 解析器');
@@ -43,6 +52,29 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
     return event;
   }
 
+  function appendDomainEvent(state, event) {
+    const eventId = idFactory('event');
+    state.事件列表[eventId] = event;
+    const personId = Object.keys(event.参与者 ?? {})[0] ?? '';
+    for (const channel of ['正文', '微信', '新闻', '建筑']) {
+      const deliveryId = idFactory('link');
+      state.联动队列[deliveryId] = {
+        事件ID: eventId,
+        频道: channel,
+        标题: event.标题,
+        摘要: event.摘要,
+        建筑ID: event.建筑ID,
+        空间ID: event.空间ID,
+        人物ID: personId,
+        来源类型: event.类型,
+        状态: '待分发',
+        创建时间: event.发生时间,
+        上下文: {},
+      };
+    }
+    return eventId;
+  }
+
   return Object.freeze({
     getState,
 
@@ -56,6 +88,55 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
       return commit('切换当前建筑', state => {
         if (!state.建筑列表[buildingId]) throw new Error(`建筑不存在：${buildingId}`);
         state.当前建筑ID = buildingId;
+      });
+    },
+
+    async setRunMode(mode) {
+      if (!['模拟', '真实'].includes(mode)) throw new Error(`不支持的运行模式：${mode}`);
+      return commit('切换经营生成模式', state => {
+        state.运行模式 = mode;
+      });
+    },
+
+    async increaseAwareness({ buildingId, floorId = null, spaceId = null, personId = null, amount = 10 }) {
+      const step = Number(amount);
+      if (!Number.isFinite(step) || step <= 0) throw new Error('感知提升必须大于 0');
+      return commit('探索与逐步感知', state => {
+        const building = state.建筑列表[buildingId];
+        if (!building) throw new Error(`建筑不存在：${buildingId}`);
+        let target = building;
+        let targetName = building.名称;
+        if (floorId) {
+          target = building.楼层列表[floorId];
+          if (!target) throw new Error(`楼层不存在：${floorId}`);
+          targetName = target.名称;
+        }
+        if (spaceId) {
+          target = building.空间列表[spaceId];
+          if (!target) throw new Error(`空间不存在：${spaceId}`);
+          targetName = target.名称;
+        }
+        if (personId) {
+          target = state.人物列表[personId];
+          if (!target) throw new Error(`人物不存在：${personId}`);
+          if (target.所在建筑ID !== buildingId) throw new Error('人物不在指定建筑中');
+          targetName = target.姓名;
+        }
+        const beforeTier = awarenessTier(target.感知度);
+        target.感知度 = Math.min(100, Number(target.感知度 ?? 0) + step);
+        const afterTier = awarenessTier(target.感知度);
+        if (beforeTier !== afterTier) {
+          appendDomainEvent(state, {
+            标题: `对「${targetName}」的了解加深`,
+            类型: '探索发现',
+            建筑ID: buildingId,
+            空间ID: spaceId ?? '',
+            状态: '已完成',
+            摘要: `${targetName}从「${beforeTier}」进入「${afterTier}」阶段。`,
+            发生时间: '刚刚',
+            参与者: personId ? { [personId]: '被了解' } : {},
+          });
+        }
       });
     },
 
@@ -74,8 +155,7 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
           building.主题 = { ...building.主题, ...(direction.theme ?? {}) };
         }
         state.当前建筑ID = buildingId;
-        const eventId = idFactory('event');
-        state.事件列表[eventId] = {
+        appendDomainEvent(state, {
           标题: `正式接管「${building.名称}」`,
           类型: '建筑接管',
           建筑ID: buildingId,
@@ -84,7 +164,7 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
           摘要: direction?.summary ?? '新的建筑已经加入房东经营版图。',
           发生时间: '刚刚',
           参与者: {},
-        };
+        });
       });
     },
 
@@ -106,8 +186,7 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
         space.状态 = '正常';
         space.描述 = plan.resultDescription ?? space.描述;
         building.经营摘要.今日亮点 = `${space.名称}完成了「${plan.name}」改造`;
-        const eventId = idFactory('event');
-        state.事件列表[eventId] = {
+        appendDomainEvent(state, {
           标题: `${space.名称}焕然一新`,
           类型: '装修完成',
           建筑ID: buildingId,
@@ -116,7 +195,7 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
           摘要: plan.resultDescription,
           发生时间: '刚刚',
           参与者: {},
-        };
+        });
       });
     },
 
@@ -145,8 +224,7 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
         };
         space.占用者[personId] = candidate.role;
         building.经营摘要.活跃度 = Math.min(100, building.经营摘要.活跃度 + 8);
-        const eventId = idFactory('event');
-        state.事件列表[eventId] = {
+        appendDomainEvent(state, {
           标题: `${candidate.name}加入了${building.名称}`,
           类型: '人物加入',
           建筑ID: buildingId,
@@ -155,7 +233,16 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
           摘要: `${candidate.name}已经被安排到${space.名称}。`,
           发生时间: '刚刚',
           参与者: { [personId]: '新成员' },
-        };
+        });
+      });
+    },
+
+    async setDeliveryStatus(deliveryId, status) {
+      if (!['待分发', '已读取', '已忽略'].includes(status)) throw new Error(`不支持的联动状态：${status}`);
+      return commit('更新联动队列', state => {
+        const delivery = state.联动队列[deliveryId];
+        if (!delivery) throw new Error(`联动项不存在：${deliveryId}`);
+        delivery.状态 = status;
       });
     },
 

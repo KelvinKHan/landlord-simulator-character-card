@@ -4,6 +4,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compilePortfolio } from '../scripts/src/buildings/compiler.js';
+import { createBuildingLayout } from '../scripts/src/buildings/layout-engine.js';
 import { createDefaultLandlordState } from '../scripts/src/model/default-state.js';
 import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js';
 import { renderConsole } from '../scripts/src/ui/console/templates.js';
@@ -20,6 +21,24 @@ const ownerRoom = current.floors.flatMap(floor => floor.spaces).find(space => sp
 const takeoverPreview = await managementMockRecipes.takeover({ building: hospital });
 const renovationPreview = await managementMockRecipes.renovation({ building: current, space: ownerRoom });
 const recruitmentPreview = await managementMockRecipes.recruitment({ building: current });
+const taskCenter = {
+  mode: 'local',
+  capabilities: [{ mode: 'local', available: true }, { mode: 'ai', available: false }],
+  tasks: [
+    { id: 'preview_task_takeover', kind: 'takeover', mode: 'local', status: 'confirmed', attempt: 1, maxAttempts: 2, error: null },
+    { id: 'preview_task_renovation', kind: 'renovation', mode: 'local', status: 'ready', attempt: 1, maxAttempts: 2, error: null },
+  ],
+};
+const linkCenter = {
+  counts: { 正文: 1, 微信: 1, 新闻: 1, 建筑: 1 },
+  capabilities: { 正文: true, 微信: true, 新闻: true, 建筑: true },
+  pending: [
+    { id: 'preview_link_story', 频道: '正文', 标题: '总部客厅完成改造', 摘要: '新的空间变化等待在正文中显露。' },
+    { id: 'preview_link_wechat', 频道: '微信', 标题: '新成员加入', 摘要: '联系人和建筑位置已经同步。' },
+  ],
+};
+const identityCenter = { residents: [] };
+const twin = createBuildingLayout(current);
 
 const pages = {
   portfolio: { ui: { section: 'portfolio' }, task: null },
@@ -42,12 +61,15 @@ const pages = {
     },
     task: { status: 'ready', preview: recruitmentPreview },
   },
+  tasks: { ui: { section: 'tasks' }, task: null },
+  events: { ui: { section: 'events' }, task: null },
+  twin: { ui: { section: 'twin' }, task: null },
 };
 
 await fs.mkdir(outputDirectory, { recursive: true });
 
 for (const [name, page] of Object.entries(pages)) {
-  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task });
+  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, twin });
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),

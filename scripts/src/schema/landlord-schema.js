@@ -177,6 +177,26 @@ export const Schema = z.object({
             .prefault({}),
         )
         .prefault({}),
+      联动队列: z
+        .record(
+          z.string().describe('联动项ID'),
+          z
+            .object({
+              事件ID: z.string().prefault(''),
+              频道: z.enum(['正文', '微信', '新闻', '建筑']).prefault('建筑'),
+              标题: z.string().prefault('未命名联动'),
+              摘要: z.string().prefault('暂无摘要'),
+              建筑ID: z.string().prefault('building_headquarters'),
+              空间ID: z.string().prefault(''),
+              人物ID: z.string().prefault(''),
+              来源类型: z.string().prefault('日常'),
+              状态: z.enum(['待分发', '已读取', '已忽略']).prefault('待分发'),
+              创建时间: z.string().prefault('刚刚'),
+              上下文: z.record(z.string(), z.string()).prefault({}),
+            })
+            .prefault({}),
+        )
+        .prefault({}),
     })
     .prefault({}),
 });

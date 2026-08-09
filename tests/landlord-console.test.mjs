@@ -3,9 +3,14 @@ import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import { z } from 'zod';
 import { compileBuilding, compilePortfolio } from '../scripts/src/buildings/compiler.js';
+import { createBuildingLayoutService } from '../scripts/src/buildings/layout-engine.js';
+import { createBuildingEventBus } from '../scripts/src/events/building-event-bus.js';
 import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js';
 import { createLandlordStore } from '../scripts/src/services/landlord-store.js';
 import { createMockTaskService } from '../scripts/src/services/mock-task-service.js';
+import { createPerceptionService } from '../scripts/src/services/perception-service.js';
+import { createTenantIdentityService } from '../scripts/src/services/tenant-identity-service.js';
+import { createRecipeTaskProvider, createTaskCenter } from '../scripts/src/services/task-center.js';
 import { createLandlordConsole } from '../scripts/src/ui/console/controller.js';
 
 globalThis.z = z;
@@ -67,10 +72,17 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
   const schema = { parseState: value => Schema.parse({ 房东系统: value }).房东系统 };
   const store = createLandlordStore({ mvu: createMemoryMvu(), schema, idFactory: createIds() });
   const tasks = createMockTaskService({ recipes: managementMockRecipes, idFactory: createIds() });
+  const events = createBuildingEventBus({ store });
+  const perception = createPerceptionService({ store });
+  const identities = createTenantIdentityService({ store });
   const controller = createLandlordConsole({
     document: dom.window.document,
     store,
     tasks,
+    events,
+    perception,
+    identities,
+    layouts: createBuildingLayoutService(),
     compiler: { compileBuilding, compilePortfolio },
     logger: { error: () => {} },
   });
@@ -114,10 +126,64 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     click(dom.window.document, '[data-action="confirm-recruitment"]');
     await waitFor(() => assert.equal(store.getState().人物列表.person_mock_医院_linxia.姓名, '林夏'));
     assert.match(dom.window.document.body.textContent, /林夏已经正式加入白塔治愈生活馆/);
+
+    click(dom.window.document, '[data-action="navigate"][data-section="tasks"]');
+    assert.match(dom.window.document.body.textContent, /统一任务中心/);
+    assert.match(dom.window.document.body.textContent, /切换模式不会发起生成/);
+    assert.equal(dom.window.document.querySelector('[data-action="set-task-mode"][data-mode="ai"]').disabled, true);
+    assert.equal(dom.window.document.querySelectorAll('.lmo-task-row').length, 3);
+
+    click(dom.window.document, '[data-action="navigate"][data-section="events"]');
+    assert.match(dom.window.document.body.textContent, /跨系统联动队列/);
+    assert.equal(events.list({ status: '待分发' }).length, 12);
+    click(dom.window.document, '[data-action="consume-link"]');
+    await waitFor(() => assert.equal(events.list({ status: '已读取' }).length, 1));
+
+    click(dom.window.document, '[data-action="navigate"][data-section="building"]');
+    assert.match(dom.window.document.body.textContent, /landlord_wechat_/);
+    click(dom.window.document, '[data-action="navigate"][data-section="twin"]');
+    assert.match(dom.window.document.body.textContent, /可计算空间镜像/);
+    assert.ok(dom.window.document.querySelectorAll('.lmo-twin-map [data-space-id]').length >= 3);
   } finally {
     controller.dispose();
+    events.dispose();
     dom.window.close();
     delete globalThis.generate;
     delete globalThis.generateRaw;
+  }
+});
+
+test('任务中心只切换 AI 模式时不会隐式发起生成', async () => {
+  const dom = new JSDOM('<!doctype html><html><head></head><body></body></html>', { pretendToBeVisual: true });
+  const schema = { parseState: value => Schema.parse({ 房东系统: value }).房东系统 };
+  const store = createLandlordStore({ mvu: createMemoryMvu(), schema, idFactory: createIds() });
+  let aiCalls = 0;
+  const tasks = createTaskCenter({
+    providers: {
+      local: createRecipeTaskProvider({ recipes: managementMockRecipes }),
+      ai: { id: 'fake-ai', available: () => true, supports: () => true, run: async () => { aiCalls += 1; throw new Error('不应生成'); } },
+    },
+  });
+  const controller = createLandlordConsole({
+    document: dom.window.document,
+    store,
+    tasks,
+    compiler: { compileBuilding, compilePortfolio },
+    logger: { error() {} },
+  });
+  try {
+    await controller.open();
+    click(dom.window.document, '[data-action="navigate"][data-section="tasks"]');
+    const aiButton = dom.window.document.querySelector('[data-action="set-task-mode"][data-mode="ai"]');
+    assert.equal(aiButton.disabled, false);
+    aiButton.click();
+    await waitFor(() => assert.equal(store.getState().运行模式, '真实'));
+    assert.equal(tasks.mode, 'ai');
+    assert.equal(aiCalls, 0);
+    assert.match(dom.window.document.body.textContent, /AI 生成模式/);
+  } finally {
+    controller.dispose();
+    tasks.dispose();
+    dom.window.close();
   }
 });

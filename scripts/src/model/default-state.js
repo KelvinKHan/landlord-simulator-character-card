@@ -223,6 +223,7 @@ export function createDefaultLandlordState() {
     },
     人物列表: {},
     事件列表: {},
+    联动队列: {},
   };
 }
 

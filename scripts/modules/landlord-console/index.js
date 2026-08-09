@@ -8,6 +8,11 @@ const buttonIcon = `<svg viewBox="0 0 24 24" width="27" height="27" fill="none" 
 export function activate(context) {
   const store = context.services.require('landlord.store');
   const tasks = context.services.require('landlord.tasks');
+  const events = context.services.require('landlord.events');
+  const perception = context.services.require('landlord.perception');
+  const identities = context.services.require('landlord.identities');
+  const layouts = context.services.require('building.layout');
+  const bridges = context.services.require('landlord.bridges');
   const compiler = context.services.require('building.compiler');
   const style = context.document.createElement('style');
   style.id = styleId;
@@ -18,6 +23,11 @@ export function activate(context) {
     document: context.document,
     store,
     tasks,
+    events,
+    perception,
+    identities,
+    layouts,
+    bridges,
     compiler,
     logger: context.logger,
   });
