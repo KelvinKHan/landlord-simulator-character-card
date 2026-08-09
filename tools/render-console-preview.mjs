@@ -101,6 +101,7 @@ const pages = {
   building: { ui: { section: 'building' }, task: null },
   pulse: { ui: { section: 'pulse', selectedPulseSceneId: pulse.scenes[0]?.id }, task: null },
   tenants: { ui: { section: 'tenants', selectedReactionId: tenantLife.residents[0]?.id, selectedRelationshipSparkId: relationshipCenter.sparks[0]?.id }, task: null },
+  social: { ui: { section: 'tenants', selectedReactionId: null, selectedRelationshipSparkId: null }, task: null, scrollTop: 520 },
   takeover: {
     ui: { section: 'takeover', targetBuilding: hospital, selectedOptionId: 'multiverse-medical', busy: false },
     task: { status: 'ready', preview: takeoverPreview },
@@ -134,7 +135,7 @@ for (const [name, page] of Object.entries(pages)) {
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),
-    `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>房东经营中枢 · ${name}</title><style>html,body{margin:0;min-height:100%;background:#171521}${styles}</style></head><body><div id="landlord-console-root">${html}</div></body></html>`,
+    `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>房东经营中枢 · ${name}</title><style>html,body{margin:0;min-height:100%;background:#171521}${styles}</style></head><body><div id="landlord-console-root">${html}</div>${page.scrollTop ? `<script>setTimeout(()=>document.querySelector('.lmo-scroll').scrollTop=${page.scrollTop},120)</script>` : ''}</body></html>`,
     'utf8',
   );
 }

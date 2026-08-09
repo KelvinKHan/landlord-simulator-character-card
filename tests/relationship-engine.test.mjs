@@ -75,6 +75,11 @@ test('只有真正同处一个空间的人物组合才会产生关系火花', ()
   assert.match(center.sparks[0].summary, /客厅/);
   assert.ok(center.sparks[0].reasons.some(reason => reason.includes('不同世界')));
   assert.equal(center.sparks[0].recorded, false);
+  assert.equal(center.network.nodes.length, 2);
+  assert.equal(center.network.edges.length, 1);
+  assert.equal(center.network.edges[0].type, 'potential');
+  assert.equal(center.network.metrics.crossWorld, 1);
+  assert.ok(center.network.nodes.every(node => node.x >= 42 && node.x <= 678 && node.y >= 48 && node.y <= 272));
   assert.deepEqual(state, before, '关系推演必须是无副作用的只读计算');
 
   delete state.建筑列表.building_headquarters.空间列表.living_room.占用者.person_herbalist;
@@ -98,7 +103,11 @@ test('确认关系火花会双向写入关系并生成三个联动草稿', async
     Object.values(state.联动队列).filter(item => item.来源类型 === '关系火花').map(item => item.频道).sort(),
     ['建筑', '微信', '正文'],
   );
-  assert.equal(compileRelationshipSparks(state, 'building_headquarters').sparks[0].recorded, true);
+  const confirmedCenter = compileRelationshipSparks(state, 'building_headquarters');
+  assert.equal(confirmedCenter.sparks[0].recorded, true);
+  assert.equal(confirmedCenter.network.edges.length, 1);
+  assert.equal(confirmedCenter.network.edges[0].type, 'confirmed');
+  assert.equal(confirmedCenter.network.edges[0].label, spark.label);
   await assert.rejects(() => store.confirmRelationshipSpark(spark), /已经记录过/);
 });
 
@@ -113,4 +122,24 @@ test('人物离开相遇空间后旧关系火花不能覆盖新状态', async ()
   });
   await assert.rejects(() => store.confirmRelationshipSpark(spark), /离开相遇空间/);
   assert.deepEqual(store.getState().人物列表.person_photo.关系, {});
+});
+
+test('已确认关系在人物分开活动后保留并重排为空间群落', async () => {
+  const store = createStore(createPairState());
+  const spark = compileRelationshipSparks(store.getState(), 'building_headquarters').sparks[0];
+  await store.confirmRelationshipSpark(spark);
+  await store.movePerson({
+    personId: 'person_herbalist',
+    buildingId: 'building_headquarters',
+    spaceId: 'garden',
+    activity: '照看花园',
+  });
+
+  const center = compileRelationshipSparks(store.getState(), 'building_headquarters');
+  assert.equal(center.sparks.length, 0);
+  assert.equal(center.network.clusters.length, 2);
+  assert.equal(center.network.edges.length, 1);
+  assert.equal(center.network.edges[0].type, 'confirmed');
+  assert.equal(center.network.edges[0].label, spark.label);
+  assert.notEqual(center.network.nodes[0].spaceId, center.network.nodes[1].spaceId);
 });
