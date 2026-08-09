@@ -53,11 +53,11 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
     return event;
   }
 
-  function appendDomainEvent(state, event) {
+  function appendDomainEvent(state, event, { channels = ['正文', '微信', '新闻', '建筑'] } = {}) {
     const eventId = idFactory('event');
     state.事件列表[eventId] = event;
     const personId = Object.keys(event.参与者 ?? {})[0] ?? '';
-    for (const channel of ['正文', '微信', '新闻', '建筑']) {
+    for (const channel of channels) {
       const deliveryId = idFactory('link');
       state.联动队列[deliveryId] = {
         事件ID: eventId,
@@ -74,6 +74,12 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
       };
     }
     return eventId;
+  }
+
+  function revealManagedSpace(building, space) {
+    space.感知度 = 100;
+    const floor = building.楼层列表?.[space.楼层ID];
+    if (floor) floor.感知度 = 100;
   }
 
   return Object.freeze({
@@ -184,6 +190,7 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
           氛围: plan.atmosphere,
           完成度: 100,
         };
+        revealManagedSpace(building, space);
         space.状态 = '正常';
         space.描述 = plan.resultDescription ?? space.描述;
         building.经营摘要.今日亮点 = `${space.名称}完成了「${plan.name}」改造`;
@@ -223,6 +230,7 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
           视觉身份: cloneLandlordState(candidate.visualIdentity),
           关系: {},
         };
+        revealManagedSpace(building, space);
         space.占用者[personId] = candidate.role;
         building.经营摘要.活跃度 = Math.min(100, building.经营摘要.活跃度 + 8);
         appendDomainEvent(state, {
@@ -235,6 +243,40 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
           发生时间: '刚刚',
           参与者: { [personId]: '新成员' },
         });
+      });
+    },
+
+    async movePerson({ personId, buildingId, spaceId, activity = '移动中', expectedFrom = null }) {
+      return commit('确认人物空间同步', state => {
+        const person = state.人物列表[personId];
+        if (!person) throw new Error(`人物不存在：${personId}`);
+        if (expectedFrom && (person.所在建筑ID !== expectedFrom.buildingId || person.所在空间ID !== expectedFrom.spaceId)) {
+          throw new Error(`${person.姓名}的位置已经被其他剧情更新，不能覆盖`);
+        }
+        const building = state.建筑列表[buildingId];
+        const destination = building?.空间列表?.[spaceId];
+        if (!destination) throw new Error(`移动目标不存在：${buildingId}/${spaceId}`);
+        if (!['总部', '已接管'].includes(building.接管状态)) throw new Error('不能把人物移动到尚未接管的建筑');
+        const sourceBuilding = state.建筑列表[person.所在建筑ID];
+        const source = sourceBuilding?.空间列表?.[person.所在空间ID];
+        const role = source?.占用者?.[personId] ?? person.身份类型;
+        if (source?.占用者) delete source.占用者[personId];
+        destination.占用者[personId] = role;
+        const sourceName = source?.名称 ?? '未知位置';
+        person.所在建筑ID = buildingId;
+        person.所在空间ID = spaceId;
+        person.状态 = String(activity || '移动中');
+        revealManagedSpace(building, destination);
+        appendDomainEvent(state, {
+          标题: `${person.姓名}来到${destination.名称}`,
+          类型: '人物移动',
+          建筑ID: buildingId,
+          空间ID: spaceId,
+          状态: '已完成',
+          摘要: `${person.姓名}从${sourceName}来到${destination.名称}，当前正在${person.状态}。`,
+          发生时间: '刚刚',
+          参与者: { [personId]: role },
+        }, { channels: ['正文', '建筑'] });
       });
     },
 

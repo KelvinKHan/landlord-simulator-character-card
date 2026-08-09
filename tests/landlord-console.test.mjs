@@ -9,6 +9,7 @@ import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js
 import { createLandlordStore } from '../scripts/src/services/landlord-store.js';
 import { createMockTaskService } from '../scripts/src/services/mock-task-service.js';
 import { createOperationJournal } from '../scripts/src/services/operation-journal-service.js';
+import { createSpatialSyncService } from '../scripts/src/services/spatial-sync-service.js';
 import { createPerceptionService } from '../scripts/src/services/perception-service.js';
 import { createChannelBridgeService } from '../scripts/src/services/channel-bridge-service.js';
 import { createTenantIdentityService } from '../scripts/src/services/tenant-identity-service.js';
@@ -77,6 +78,7 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
   const events = createBuildingEventBus({ store });
   const historyIds = createIds();
   const history = createOperationJournal({ store, idFactory: () => historyIds('operation') });
+  const spatialSync = createSpatialSyncService({ store, idFactory: () => historyIds('spatial') });
   const perception = createPerceptionService({ store });
   const identities = createTenantIdentityService({ store });
   const dispatchedLinks = [];
@@ -94,6 +96,7 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     tasks,
     events,
     history,
+    spatialSync,
     perception,
     identities,
     bridges,
@@ -126,6 +129,7 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     click(dom.window.document, '[data-action="choose-workflow-space"][data-space-id="hospital_ward"]');
     click(dom.window.document, '[data-action="run-renovation"]');
     await waitFor(() => assert.match(dom.window.document.body.textContent, /万界拼贴/));
+    assert.equal(dom.window.document.querySelectorAll('.lmo-renovation-card[data-renovation-signature]').length, 3);
     click(dom.window.document, '[data-action="choose-option"][data-option-id="world-collision"]');
     click(dom.window.document, '[data-action="confirm-renovation"]');
     await waitFor(() =>
@@ -182,6 +186,9 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     assert.equal(dom.window.document.querySelectorAll('.lmo-twin-map').length, 1);
     assert.ok(dom.window.document.querySelectorAll('.lmo-twin-map [data-action="inspect-twin-space"]').length >= 1);
     assert.ok(dom.window.document.querySelector('.lmo-twin-inspector [data-action="select-space"]'));
+    const renovatedTwinRoom = dom.window.document.querySelector('[data-space-id="hospital_ward"][data-renovation-signature]');
+    assert.ok(renovatedTwinRoom);
+    assert.match(renovatedTwinRoom.className, /material-arcane/);
 
     const rooms = [...dom.window.document.querySelectorAll('[data-action="inspect-twin-space"]')];
     const inspectedName = rooms.at(-1).querySelector('strong').textContent;
@@ -194,10 +201,24 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     floorButtons.at(-1).click();
     assert.equal(dom.window.document.querySelectorAll('[data-action="focus-twin-floor"][aria-pressed="true"]').length, 1);
     assert.equal(dom.window.document.querySelectorAll('.lmo-twin-map').length, 1);
+
+    click(dom.window.document, '[data-action="navigate"][data-section="spatial"]');
+    assert.match(dom.window.document.body.textContent, /让人物位置先通过建筑结构校验/);
+    click(dom.window.document, '[data-action="choose-spatial-person"][data-person-id="person_mock_医院_linxia"]');
+    const destination = [...dom.window.document.querySelectorAll('[data-action="choose-spatial-space"]')]
+      .find(element => element.dataset.spaceId !== 'hospital_ward');
+    assert.ok(destination);
+    destination.click();
+    click(dom.window.document, '[data-action="propose-spatial-move"]');
+    assert.match(dom.window.document.body.textContent, /空间同步提案/);
+    click(dom.window.document, '[data-action="confirm-spatial-proposal"]');
+    await waitFor(() => assert.equal(store.getState().人物列表.person_mock_医院_linxia.所在空间ID, destination.dataset.spaceId));
+    assert.match(dom.window.document.body.textContent, /人物位置与建筑占用记录已经同步/);
   } finally {
     controller.dispose();
     events.dispose();
     history.dispose();
+    spatialSync.dispose();
     dom.window.close();
     delete globalThis.generate;
     delete globalThis.generateRaw;

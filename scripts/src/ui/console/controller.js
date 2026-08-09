@@ -4,7 +4,7 @@ function owned(building) {
   return building && ['总部', '已接管'].includes(building.status);
 }
 
-export function createLandlordConsole({ document, store, tasks, events = null, history = null, perception = null, identities = null, layouts = null, bridges = null, compiler, logger }) {
+export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, perception = null, identities = null, layouts = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -15,6 +15,8 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     focusedFloorId: null,
     twinSpaceId: null,
     previewLinkIds: [],
+    selectedMovePersonId: null,
+    selectedMoveSpaceId: null,
     selectedOptionId: null,
     taskId: null,
     busy: false,
@@ -45,7 +47,17 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     const historyCenter = history
       ? { ...history.summary(), entries: history.list({ limit: 20 }) }
       : { busy: false, count: 0, appliedCount: 0, canUndo: false, canRedo: false, undoLabel: '', redoLabel: '', blockedUndo: false, entries: [] };
-    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, historyCenter, twin };
+    const spatialCenter = {
+      people: Object.entries(state.人物列表 ?? {}).map(([id, person]) => {
+        const building = portfolio.buildings.find(item => item.id === person.所在建筑ID);
+        const space = building?.floors.flatMap(floor => floor.spaces).find(item => item.id === person.所在空间ID);
+        return { id, name: person.姓名, status: person.状态, buildingName: building?.name ?? person.所在建筑ID, spaceName: space?.name ?? person.所在空间ID, color: person.视觉身份?.主色 };
+      }),
+      spaces: current.floors.flatMap(floor => floor.spaces).map(space => ({ ...space, floorName: current.floors.find(floor => floor.spaces.some(item => item.id === space.id))?.name ?? '' })),
+      proposals: spatialSync?.list({ limit: 20 }) ?? [],
+      counts: spatialSync?.counts() ?? { 待确认: 0, 冲突: 0, 已应用: 0, 已忽略: 0, 写入中: 0 },
+    };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, twin };
   }
 
   function resetWorkflow({ keepSpace = false } = {}) {
@@ -147,6 +159,46 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
         resetTwin();
         setNotice(`${action === 'undo-operation' ? '已撤销' : '已重做'}：${entry.label}`, 'success');
       });
+    }
+    if (action === 'choose-spatial-person') {
+      ui.selectedMovePersonId = button.dataset.personId;
+      return render();
+    }
+    if (action === 'choose-spatial-space') {
+      ui.selectedMoveSpaceId = button.dataset.spaceId;
+      return render();
+    }
+    if (action === 'propose-spatial-move') {
+      if (!spatialSync) throw new Error('空间同步服务尚未加载');
+      if (!ui.selectedMovePersonId || !ui.selectedMoveSpaceId) throw new Error('请选择人物和目标空间');
+      const activity = root.querySelector('#lmo-spatial-activity')?.value?.trim() || '适应新环境';
+      spatialSync.propose([{
+        personId: ui.selectedMovePersonId,
+        buildingId: data.current.id,
+        spaceId: ui.selectedMoveSpaceId,
+        activity,
+      }], { source: 'manual-preview' });
+      setNotice('移动意图已经过建筑结构校验，请检查路线后确认。', 'success');
+      return render();
+    }
+    if (action === 'confirm-spatial-proposal') {
+      if (!spatialSync) throw new Error('空间同步服务尚未加载');
+      const proposal = spatialSync.get(button.dataset.proposalId);
+      if (!proposal) throw new Error('空间同步提案不存在');
+      return withBusy(async () => {
+        await recordOperation(
+          'movement',
+          `移动${proposal.route.personName ?? '人物'}到${proposal.route.destinationName ?? '目标空间'}`,
+          () => spatialSync.confirm(proposal.id),
+        );
+        setNotice('人物位置与建筑占用记录已经同步。', 'success');
+      });
+    }
+    if (action === 'ignore-spatial-proposal') {
+      if (!spatialSync) throw new Error('空间同步服务尚未加载');
+      spatialSync.ignore(button.dataset.proposalId);
+      setNotice('该移动意图已忽略，没有改动人物位置。', 'info');
+      return render();
     }
     if (action === 'explore-next') {
       if (!perception) throw new Error('逐步感知服务尚未加载');
@@ -356,6 +408,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
   const unsubscribeStore = store.subscribe(() => render());
   const unsubscribeTasks = tasks.subscribe(() => render());
   const unsubscribeHistory = history?.subscribe(() => render()) ?? (() => {});
+  const unsubscribeSpatial = spatialSync?.subscribe(() => render()) ?? (() => {});
 
   return Object.freeze({
     open,
@@ -367,6 +420,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       unsubscribeStore();
       unsubscribeTasks();
       unsubscribeHistory();
+      unsubscribeSpatial();
       document.removeEventListener('keydown', onKeyDown);
       root.removeEventListener('click', onClick);
       root.remove();

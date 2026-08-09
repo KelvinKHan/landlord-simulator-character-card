@@ -1858,14 +1858,14 @@ function drawRelationGraph(character, relationEntries, targetDoc) {
     const midY = (centerY + node.y) / 2;
     const angle = Math.atan2(node.y - centerY, node.x - centerX);
     const distance = Math.sqrt(Math.pow(node.x - centerX, 2) + Math.pow(node.y - centerY, 2));
-    const text = node.relation;
-    const metrics = ctx.measureText(text);
+    const text2 = node.relation;
+    const metrics = ctx.measureText(text2);
     const textWidth = metrics.width;
     const textHeight = 16;
     ctx.fillStyle = isDarkTheme ? "rgba(0, 0, 0, 0.7)" : "rgba(255, 255, 255, 0.9)";
     ctx.fillRect(midX - textWidth / 2 - 4, midY - textHeight / 2, textWidth + 8, textHeight);
     ctx.fillStyle = lineColor;
-    ctx.fillText(text, midX, midY);
+    ctx.fillText(text2, midX, midY);
   });
   nodes.forEach((node) => {
     ctx.beginPath();
@@ -3963,12 +3963,12 @@ var init__4 = __esm({
             for (var i = ctx.chat.length - 1; i >= 0 && (aiMessages.length < 3 || userMessages.length < 3); i--) {
               var msg = ctx.chat[i];
               if (msg && msg.mes) {
-                var text = msg.mes.replace(/<[^>]*>/g, "").replace(/\{\{[^}]*\}\}/g, "").replace(/\[\[[^\]]*\]\]/g, "").trim();
-                if (text) {
+                var text2 = msg.mes.replace(/<[^>]*>/g, "").replace(/\{\{[^}]*\}\}/g, "").replace(/\[\[[^\]]*\]\]/g, "").trim();
+                if (text2) {
                   if (msg.is_user === true && userMessages.length < 3) {
-                    userMessages.unshift("\u73A9\u5BB6\uFF1A" + text);
+                    userMessages.unshift("\u73A9\u5BB6\uFF1A" + text2);
                   } else if (msg.is_user !== true && aiMessages.length < 3) {
-                    aiMessages.unshift("AI\uFF1A" + text);
+                    aiMessages.unshift("AI\uFF1A" + text2);
                   }
                 }
               }
@@ -5308,8 +5308,8 @@ ${tenantName}\u76EE\u524D[\u63CF\u8FF0\u5F53\u524D\u7684\u76EE\u6807\u3001\u613F
             var messages = ctx.chat.slice(-depth);
             return messages.map(function(msg, index) {
               var speaker = msg.is_user ? "\u73A9\u5BB6" : "AI";
-              var text = (msg.mes || "").replace(/<[^>]*>/g, "").replace(/\{\{[^}]*\}\}/g, "").substring(0, 500);
-              return "[\u7B2C" + (ctx.chat.length - depth + index + 1) + "\u697C] " + speaker + "\uFF1A" + text;
+              var text2 = (msg.mes || "").replace(/<[^>]*>/g, "").replace(/\{\{[^}]*\}\}/g, "").substring(0, 500);
+              return "[\u7B2C" + (ctx.chat.length - depth + index + 1) + "\u697C] " + speaker + "\uFF1A" + text2;
             }).join("\n\n");
           } catch (e) {
             console.error("[\u79DF\u5BA2\u5206\u6790] \u83B7\u53D6\u5BF9\u8BDD\u5931\u8D25:", e);
@@ -5462,9 +5462,9 @@ ${tenantName}\u76EE\u524D[\u63CF\u8FF0\u5F53\u524D\u7684\u76EE\u6807\u3001\u613F
           return result || "";
         },
         // ============ 解析分析结果 ============
-        parseAnalysisResult: function(text) {
+        parseAnalysisResult: function(text2) {
           try {
-            var jsonMatch = text.match(/\{[\s\S]*\}/);
+            var jsonMatch = text2.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
               return JSON.parse(jsonMatch[0]);
             }
@@ -5914,9 +5914,9 @@ var init__8 = __esm({
           self.element.querySelector(".queue-widget-toggle").textContent = self.isMinimized ? "+" : "\u2212";
         },
         // HTML转义
-        escapeHtml: function(text) {
+        escapeHtml: function(text2) {
           var div = document.createElement("div");
-          div.textContent = text;
+          div.textContent = text2;
           return div.innerHTML;
         }
       };
@@ -6083,16 +6083,16 @@ var init__9 = __esm({
         },
         // ==================== 联动上下文获取（重构版） ====================
         // 调用ST正则引擎过滤文本（应用勾选了"仅Prompt"的正则）
-        applyRegexFilter: function(text) {
+        applyRegexFilter: function(text2) {
           try {
             const getRegexedString = window.parent.getRegexedString;
             if (typeof getRegexedString === "function") {
-              return getRegexedString(text, 2, { isPrompt: true });
+              return getRegexedString(text2, 2, { isPrompt: true });
             }
-            return text.replace(/<UpdateVariable>[\s\S]*?<\/UpdateVariable>/g, "").replace(/<Analysis>[\s\S]*?<\/Analysis>/g, "").replace(/<JSONPatch>[\s\S]*?<\/JSONPatch>/g, "").trim();
+            return text2.replace(/<UpdateVariable>[\s\S]*?<\/UpdateVariable>/g, "").replace(/<Analysis>[\s\S]*?<\/Analysis>/g, "").replace(/<JSONPatch>[\s\S]*?<\/JSONPatch>/g, "").trim();
           } catch (e) {
             console.warn("[ChatCore] \u6B63\u5219\u8FC7\u6EE4\u5931\u8D25:", e);
-            return text;
+            return text2;
           }
         },
         // 获取增强上下文（正文剧情 + 跨聊天记录）
@@ -6235,39 +6235,39 @@ ${cleanContent}
         },
         // 格式化租客信息为文本
         formatTenantInfo: function(tenantName, info) {
-          let text = `\u3010${tenantName}\u3011
+          let text2 = `\u3010${tenantName}\u3011
 `;
           if (info.mvuData) {
             const d = info.mvuData;
-            text += `\u5E74\u9F84: ${d.\u5E74\u9F84 || "\u672A\u77E5"}
+            text2 += `\u5E74\u9F84: ${d.\u5E74\u9F84 || "\u672A\u77E5"}
 `;
-            text += `\u804C\u4E1A: ${d.\u804C\u4E1A || "\u672A\u77E5"}
+            text2 += `\u804C\u4E1A: ${d.\u804C\u4E1A || "\u672A\u77E5"}
 `;
-            text += `\u6027\u683C: ${d.\u6027\u683C || "\u672A\u77E5"}
+            text2 += `\u6027\u683C: ${d.\u6027\u683C || "\u672A\u77E5"}
 `;
-            text += `\u72B6\u6001: ${d.\u72B6\u6001 || "\u6B63\u5E38"}
+            text2 += `\u72B6\u6001: ${d.\u72B6\u6001 || "\u6B63\u5E38"}
 `;
-            text += `\u5185\u5FC3: ${d.\u5185\u5FC3 || "\u672A\u77E5"}
+            text2 += `\u5185\u5FC3: ${d.\u5185\u5FC3 || "\u672A\u77E5"}
 `;
             if (d.\u5173\u7CFB) {
               const relations = Object.entries(d.\u5173\u7CFB).map(([k, v]) => `${k}:${v}`).join(", ");
-              text += `\u5173\u7CFB: ${relations}
+              text2 += `\u5173\u7CFB: ${relations}
 `;
             }
           }
           if (info.baseProfile) {
-            text += `
+            text2 += `
 \u672C\u8272\u6863\u6848:
 ${info.baseProfile}
 `;
           }
           if (info.dynamicProfile) {
-            text += `
+            text2 += `
 \u5F53\u524D\u72B6\u6001:
 ${info.dynamicProfile}
 `;
           }
-          return text;
+          return text2;
         },
         // ==================== 提示词构建 ====================
         // 构建群聊提示词（增强版：包含正文上下文和私聊摘要）
@@ -8165,9 +8165,9 @@ var init_APP = __esm({
             </div>
         `;
       }
-      function escapeHtml2(text) {
+      function escapeHtml2(text2) {
         const div = document.createElement("div");
-        div.textContent = text;
+        div.textContent = text2;
         return div.innerHTML;
       }
       let currentIframeDoc = null;
@@ -8608,10 +8608,10 @@ var init_APP = __esm({
           const file = e.target.files[0];
           if (!file) return;
           try {
-            const text = await file.text();
+            const text2 = await file.text();
             const ChatDB = window.parent.ChatDB;
             const merge = confirm("\u662F\u5426\u5408\u5E76\u6570\u636E\uFF1F\n\u786E\u5B9A\uFF1A\u5408\u5E76\u5230\u73B0\u6709\u6570\u636E\n\u53D6\u6D88\uFF1A\u8986\u76D6\u73B0\u6709\u6570\u636E");
-            const result = await ChatDB.importData(text, { merge });
+            const result = await ChatDB.importData(text2, { merge });
             alert(`\u5BFC\u5165\u6210\u529F\uFF01
 \u4F1A\u8BDD: ${result.conversations}
 \u6D88\u606F: ${result.messages}`);
@@ -10305,10 +10305,10 @@ var init__11 = __esm({
 ${escapeHtml2(content)}`;
         }).join("\n\n");
       }
-      function escapeHtml2(text) {
-        if (!text) return "";
+      function escapeHtml2(text2) {
+        if (!text2) return "";
         const div = document.createElement("div");
-        div.textContent = text;
+        div.textContent = text2;
         return div.innerHTML;
       }
       function bindEvents() {
@@ -11053,12 +11053,12 @@ var init__13 = __esm({
                   matches.push(match);
                 }
                 re.lastIndex = 0;
-                var text = line.replace(re, "").trim();
-                if (matches.length && text) {
+                var text2 = line.replace(re, "").trim();
+                if (matches.length && text2) {
                   matches.forEach(function(m) {
                     lyrics.push({
                       time: parseInt(m[1]) * 60 + parseInt(m[2]) + parseInt(m[3]) / 1e3,
-                      text
+                      text: text2
                     });
                   });
                 }
@@ -15970,11 +15970,11 @@ async function wsRecruitCharacter(item, targetRoomName) {
   wsFillInputBox(message);
   return true;
 }
-function wsFillInputBox(text) {
+function wsFillInputBox(text2) {
   var textarea = window.parent.document.getElementById("send_textarea");
   if (textarea) {
     var existing = textarea.value.trim();
-    textarea.value = existing ? existing + "\n" + text : text;
+    textarea.value = existing ? existing + "\n" + text2 : text2;
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
     textarea.focus();
     wsToastOk("\u5DF2\u586B\u5165\u8F93\u5165\u6846\uFF0C\u8BF7\u68C0\u67E5\u540E\u53D1\u9001");
@@ -17791,12 +17791,12 @@ function initializeWsPanel(targetDoc) {
     const action = btn.getAttribute("data-action");
     if (action === "import-text") {
       const textarea = importPanel.querySelector("#ws-import-textarea");
-      const text = textarea ? textarea.value.trim() : "";
-      if (!text) {
+      const text2 = textarea ? textarea.value.trim() : "";
+      if (!text2) {
         wsToast("\u8BF7\u8F93\u5165\u5185\u5BB9");
         return;
       }
-      const result2 = await wsImportAll(text);
+      const result2 = await wsImportAll(text2);
       if (result2) {
         const total = Object.values(result2).reduce(function(a, b) {
           return a + b;
@@ -17814,8 +17814,8 @@ function initializeWsPanel(targetDoc) {
       input.onchange = async function() {
         const file = input.files[0];
         if (!file) return;
-        const text = await file.text();
-        const result2 = await wsImportAll(text);
+        const text2 = await file.text();
+        const result2 = await wsImportAll(text2);
         if (result2) {
           const total = Object.values(result2).reduce(function(a, b) {
             return a + b;
@@ -19343,6 +19343,115 @@ var init_compiler = __esm({
   }
 });
 
+// scripts/src/renovation/visual-engine.js
+function text(value) {
+  return String(value ?? "").trim();
+}
+function record(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+function normalizeHex(value, fallback) {
+  const source = text(value);
+  const short = /^#([0-9a-f]{3})$/i.exec(source);
+  if (short) return `#${[...short[1]].map((character) => character.repeat(2)).join("")}`.toUpperCase();
+  return /^#[0-9a-f]{6}$/i.test(source) ? source.toUpperCase() : fallback;
+}
+function channels(color) {
+  return [1, 3, 5].map((index) => Number.parseInt(color.slice(index, index + 2), 16));
+}
+function mix(left, right, ratio = 0.5) {
+  const a = channels(left);
+  const b = channels(right);
+  return `#${a.map((value, index) => Math.round(value + (b[index] - value) * ratio).toString(16).padStart(2, "0")).join("")}`.toUpperCase();
+}
+function contrast(color) {
+  const [red, green, blue] = channels(color);
+  return red * 0.299 + green * 0.587 + blue * 0.114 > 156 ? "#283044" : "#FFFDFD";
+}
+function hash(value) {
+  let result = 2166136261;
+  for (const character of value) {
+    result ^= character.codePointAt(0);
+    result = Math.imul(result, 16777619);
+  }
+  return (result >>> 0).toString(36).padStart(7, "0");
+}
+function classifyMaterial(style, materials) {
+  const source = `${style} ${Object.keys(materials).join(" ")} ${Object.values(materials).join(" ")}`;
+  return materialRules.find(([, pattern]) => pattern.test(source))?.[0] ?? "soft";
+}
+function classifyLighting(lighting) {
+  if (/霓虹|情景|变化|光带|发光|赛博/i.test(lighting)) return "dynamic";
+  if (/暖|2700|黄昏|烛/i.test(lighting)) return "warm";
+  if (/冷|天光|未来|月光|白光/i.test(lighting)) return "cool";
+  return "natural";
+}
+function compileFurniture(furniture) {
+  return Object.entries(furniture).slice(0, 5).map(([id, label]) => {
+    const source = `${id} ${label}`;
+    const rule = furnitureRules.find(([, pattern]) => pattern.test(source)) ?? ["feature", /.*/, "\u666F"];
+    return Object.freeze({ id, label: text(label) || id, category: rule[0], marker: rule[2] });
+  });
+}
+function createRenovationVisual(renovation = {}, { fallbackAccent = "#FF9EAA" } = {}) {
+  const palette = record(renovation.\u914D\u8272 ?? renovation.palette);
+  const materials = record(renovation.\u6750\u8D28 ?? renovation.materials);
+  const furniture = record(renovation.\u5BB6\u5177 ?? renovation.furniture);
+  const style = text(renovation.\u98CE\u683C ?? renovation.style) || "\u57FA\u7840\u88C5\u4FEE";
+  const lighting = text(renovation.\u7167\u660E ?? renovation.lighting) || "\u81EA\u7136\u67D4\u5149";
+  const atmosphere = text(renovation.\u6C1B\u56F4 ?? renovation.atmosphere) || "\u8212\u9002";
+  const colors = Object.entries(palette).map(([name, value]) => Object.freeze({ name, value: normalizeHex(value, "") })).filter((item) => item.value);
+  const accent = colors.find((item) => /点缀|高光|光色|accent/i.test(item.name))?.value ?? normalizeHex(fallbackAccent, "#FF9EAA");
+  const base = colors.find((item) => /主色|base|primary/i.test(item.name))?.value ?? mix(accent, "#FFFDFD", 0.82);
+  const secondary = colors.find((item) => item.value !== base && item.value !== accent)?.value ?? mix(base, accent, 0.35);
+  const material = classifyMaterial(style, materials);
+  const lightingMode = classifyLighting(lighting);
+  const furnitureTokens = compileFurniture(furniture);
+  const signatureSource = JSON.stringify({ style, colors, materials, furniture, lighting, atmosphere });
+  return Object.freeze({
+    signature: `renovation_${hash(signatureSource)}`,
+    style,
+    atmosphere,
+    lighting,
+    material,
+    lightingMode,
+    colors: Object.freeze(colors.length ? colors : [Object.freeze({ name: "\u4E3B\u8272", value: base }), Object.freeze({ name: "\u70B9\u7F00", value: accent })]),
+    furniture: Object.freeze(furnitureTokens),
+    renovated: style !== "\u57FA\u7840\u88C5\u4FEE" || Object.keys(materials).length > 0 || furnitureTokens.length > 0,
+    css: Object.freeze({
+      base,
+      accent,
+      secondary,
+      glow: mix(accent, "#FFFFFF", lightingMode === "dynamic" ? 0.18 : 0.48),
+      text: contrast(base)
+    })
+  });
+}
+function createRenovationVisualService() {
+  return Object.freeze({ compile: createRenovationVisual });
+}
+var materialRules, furnitureRules;
+var init_visual_engine = __esm({
+  "scripts/src/renovation/visual-engine.js"() {
+    materialRules = Object.freeze([
+      ["arcane", /魔法|符文|星图|发光|能量|传送|万界|异界/i],
+      ["glass", /玻璃|水晶|晶体|透明|镜面/i],
+      ["metal", /金属|合金|不锈钢|机械|工业/i],
+      ["stone", /石材|大理石|水泥|地坪|岩石|瓷砖/i],
+      ["wood", /木|竹|藤|原木/i],
+      ["fabric", /织物|布艺|软装|绒|地毯/i],
+      ["organic", /植物|草木|自然|绿植|苔藓/i]
+    ]);
+    furnitureRules = Object.freeze([
+      ["seat", /沙发|座|椅|休息|床/i, "\u5EA7"],
+      ["table", /桌|台|吧台|工作台/i, "\u53F0"],
+      ["display", /展示|收藏|陈列|信息/i, "\u5C55"],
+      ["storage", /柜|收纳|储物|墙/i, "\u67DC"],
+      ["light", /灯|照明|光/i, "\u5149"]
+    ]);
+  }
+});
+
 // scripts/src/buildings/layout-engine.js
 function round(value) {
   return Math.round(value * 1e3) / 1e3;
@@ -19429,6 +19538,7 @@ function createBuildingLayout(building) {
       description: space.description,
       facilityCount: space.facilityCount,
       renovation: space.renovation,
+      visual: createRenovationVisual(space.renovation, { fallbackAccent: building.theme?.\u4E3B\u8272 }),
       occupants: space.occupants,
       adjacentSpaceIds: space.adjacentSpaceIds,
       weight: Math.max(1, Number(space.weight) || 1)
@@ -19463,6 +19573,92 @@ function createBuildingLayoutService() {
 }
 var init_layout_engine = __esm({
   "scripts/src/buildings/layout-engine.js"() {
+    init_visual_engine();
+  }
+});
+
+// scripts/src/spatial/route-engine.js
+function freezeRoute(value) {
+  return Object.freeze({ ...value, path: Object.freeze(value.path ?? []) });
+}
+function owned(building) {
+  return building && ["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.\u63A5\u7BA1\u72B6\u6001);
+}
+function buildGraph(building) {
+  const graph = new Map(Object.keys(building.\u7A7A\u95F4\u5217\u8868 ?? {}).map((id) => [id, /* @__PURE__ */ new Set()]));
+  for (const [spaceId, space] of Object.entries(building.\u7A7A\u95F4\u5217\u8868 ?? {})) {
+    for (const adjacentId of Object.keys(space.\u76F8\u90BB\u7A7A\u95F4 ?? {})) {
+      if (!graph.has(adjacentId) || adjacentId === spaceId) continue;
+      graph.get(spaceId).add(adjacentId);
+      graph.get(adjacentId).add(spaceId);
+    }
+  }
+  return graph;
+}
+function findPath(graph, from, to) {
+  const queue = [[from]];
+  const visited = /* @__PURE__ */ new Set([from]);
+  while (queue.length) {
+    const path = queue.shift();
+    const current = path.at(-1);
+    if (current === to) return path;
+    for (const next of graph.get(current) ?? []) {
+      if (visited.has(next)) continue;
+      visited.add(next);
+      queue.push([...path, next]);
+    }
+  }
+  return null;
+}
+function planSpatialMove(state, { personId, buildingId, spaceId }) {
+  const person = state?.\u4EBA\u7269\u5217\u8868?.[personId];
+  if (!person) return freezeRoute({ ok: false, code: "PERSON_NOT_FOUND", reason: `\u4EBA\u7269\u4E0D\u5B58\u5728\uFF1A${personId}`, path: [] });
+  const destinationBuilding = state.\u5EFA\u7B51\u5217\u8868?.[buildingId];
+  if (!destinationBuilding) return freezeRoute({ ok: false, code: "BUILDING_NOT_FOUND", reason: `\u76EE\u6807\u5EFA\u7B51\u4E0D\u5B58\u5728\uFF1A${buildingId}`, path: [] });
+  if (!owned(destinationBuilding)) return freezeRoute({ ok: false, code: "BUILDING_NOT_OWNED", reason: `\u5C1A\u672A\u63A5\u7BA1\u300C${destinationBuilding.\u540D\u79F0}\u300D`, path: [] });
+  const destination = destinationBuilding.\u7A7A\u95F4\u5217\u8868?.[spaceId];
+  if (!destination) return freezeRoute({ ok: false, code: "SPACE_NOT_FOUND", reason: `\u76EE\u6807\u7A7A\u95F4\u4E0D\u5B58\u5728\uFF1A${spaceId}`, path: [] });
+  const destinationFloor = destinationBuilding.\u697C\u5C42\u5217\u8868?.[destination.\u697C\u5C42ID];
+  const effectiveAwareness = Math.min(
+    Number(destinationBuilding.\u611F\u77E5\u5EA6 ?? 0),
+    Number(destinationFloor?.\u611F\u77E5\u5EA6 ?? 0),
+    Number(destination.\u611F\u77E5\u5EA6 ?? 0)
+  );
+  if (effectiveAwareness <= 0) return freezeRoute({ ok: false, code: "SPACE_HIDDEN", reason: `\u76EE\u6807\u7A7A\u95F4\u300C${destination.\u540D\u79F0}\u300D\u5C1A\u672A\u88AB\u53D1\u73B0`, path: [] });
+  const fromBuildingId = person.\u6240\u5728\u5EFA\u7B51ID;
+  const fromSpaceId = person.\u6240\u5728\u7A7A\u95F4ID;
+  const sourceBuilding = state.\u5EFA\u7B51\u5217\u8868?.[fromBuildingId];
+  const source = sourceBuilding?.\u7A7A\u95F4\u5217\u8868?.[fromSpaceId];
+  if (!sourceBuilding || !source) return freezeRoute({ ok: false, code: "SOURCE_UNKNOWN", reason: `${person.\u59D3\u540D}\u5F53\u524D\u6240\u5728\u7A7A\u95F4\u65E0\u6CD5\u786E\u8BA4`, path: [] });
+  const base = {
+    ok: true,
+    personId,
+    personName: person.\u59D3\u540D,
+    fromBuildingId,
+    fromSpaceId,
+    fromName: source.\u540D\u79F0,
+    buildingId,
+    spaceId,
+    destinationName: destination.\u540D\u79F0
+  };
+  if (fromBuildingId !== buildingId) {
+    return freezeRoute({ ...base, code: "CROSS_BUILDING", kind: "\u8DE8\u5EFA\u7B51\u4EA4\u901A", path: [fromSpaceId, spaceId], reason: `\u4ECE\u300C${sourceBuilding.\u540D\u79F0}\u300D\u524D\u5F80\u300C${destinationBuilding.\u540D\u79F0}\u300D` });
+  }
+  if (fromSpaceId === spaceId) {
+    return freezeRoute({ ...base, code: "SAME_SPACE", kind: "\u539F\u5730\u72B6\u6001\u66F4\u65B0", path: [spaceId], reason: `\u4ECD\u5728\u300C${destination.\u540D\u79F0}\u300D` });
+  }
+  if (source.\u697C\u5C42ID !== destination.\u697C\u5C42ID) {
+    return freezeRoute({ ...base, code: "CROSS_FLOOR", kind: "\u8DE8\u697C\u5C42\u901A\u884C", path: [fromSpaceId, spaceId], reason: `\u4ECE${sourceBuilding.\u697C\u5C42\u5217\u8868[source.\u697C\u5C42ID]?.\u540D\u79F0 ?? "\u5F53\u524D\u697C\u5C42"}\u524D\u5F80${destinationFloor?.\u540D\u79F0 ?? "\u76EE\u6807\u697C\u5C42"}` });
+  }
+  const path = findPath(buildGraph(destinationBuilding), fromSpaceId, spaceId);
+  if (!path) return freezeRoute({ ...base, ok: false, code: "ROUTE_UNKNOWN", reason: `\u300C${source.\u540D\u79F0}\u300D\u4E0E\u300C${destination.\u540D\u79F0}\u300D\u4E4B\u95F4\u7684\u901A\u8DEF\u5C1A\u672A\u786E\u8BA4`, path: [] });
+  return freezeRoute({ ...base, code: "CONNECTED", kind: "\u5EFA\u7B51\u5185\u79FB\u52A8", path, reason: `\u7ECF\u8FC7 ${path.length - 1} \u6BB5\u5DF2\u77E5\u8FDE\u63A5` });
+}
+function createSpatialRouteService() {
+  return Object.freeze({ plan: planSpatialMove });
+}
+var init_route_engine = __esm({
+  "scripts/src/spatial/route-engine.js"() {
   }
 });
 
@@ -19475,11 +19671,11 @@ function createBuildingEventBus({ store }) {
   if (!store || typeof store.getState !== "function") throw new TypeError("\u5EFA\u7B51\u4E8B\u4EF6\u603B\u7EBF\u9700\u8981\u72B6\u6001\u670D\u52A1");
   const listeners = /* @__PURE__ */ new Set();
   function list({ channel = null, status = null, limit = Infinity } = {}) {
-    if (channel && !channels.includes(channel)) throw new Error(`\u672A\u77E5\u8054\u52A8\u9891\u9053\uFF1A${channel}`);
+    if (channel && !channels2.includes(channel)) throw new Error(`\u672A\u77E5\u8054\u52A8\u9891\u9053\uFF1A${channel}`);
     return Object.entries(store.getState().\u8054\u52A8\u961F\u5217 ?? {}).map(([id, item]) => Object.freeze({ id, ...clone3(item) })).filter((item) => !channel || item.\u9891\u9053 === channel).filter((item) => !status || item.\u72B6\u6001 === status).slice(-Math.max(0, Number(limit) || 0));
   }
   function counts() {
-    const result = Object.fromEntries(channels.map((channel) => [channel, 0]));
+    const result = Object.fromEntries(channels2.map((channel) => [channel, 0]));
     for (const item of list({ status: "\u5F85\u5206\u53D1" })) result[item.\u9891\u9053] += 1;
     return Object.freeze(result);
   }
@@ -19497,7 +19693,7 @@ function createBuildingEventBus({ store }) {
     for (const listener of listeners) listener(snapshot);
   });
   return Object.freeze({
-    channels,
+    channels: channels2,
     list,
     counts,
     buildContext,
@@ -19520,10 +19716,10 @@ function createBuildingEventBus({ store }) {
     }
   });
 }
-var channels;
+var channels2;
 var init_building_event_bus = __esm({
   "scripts/src/events/building-event-bus.js"() {
-    channels = Object.freeze(["\u6B63\u6587", "\u5FAE\u4FE1", "\u65B0\u95FB", "\u5EFA\u7B51"]);
+    channels2 = Object.freeze(["\u6B63\u6587", "\u5FAE\u4FE1", "\u65B0\u95FB", "\u5EFA\u7B51"]);
   }
 });
 
@@ -20155,11 +20351,11 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
     for (const listener of listeners) listener(event);
     return event;
   }
-  function appendDomainEvent(state, event) {
+  function appendDomainEvent(state, event, { channels: channels3 = ["\u6B63\u6587", "\u5FAE\u4FE1", "\u65B0\u95FB", "\u5EFA\u7B51"] } = {}) {
     const eventId = idFactory("event");
     state.\u4E8B\u4EF6\u5217\u8868[eventId] = event;
     const personId = Object.keys(event.\u53C2\u4E0E\u8005 ?? {})[0] ?? "";
-    for (const channel of ["\u6B63\u6587", "\u5FAE\u4FE1", "\u65B0\u95FB", "\u5EFA\u7B51"]) {
+    for (const channel of channels3) {
       const deliveryId = idFactory("link");
       state.\u8054\u52A8\u961F\u5217[deliveryId] = {
         \u4E8B\u4EF6ID: eventId,
@@ -20176,6 +20372,11 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
       };
     }
     return eventId;
+  }
+  function revealManagedSpace(building, space) {
+    space.\u611F\u77E5\u5EA6 = 100;
+    const floor = building.\u697C\u5C42\u5217\u8868?.[space.\u697C\u5C42ID];
+    if (floor) floor.\u611F\u77E5\u5EA6 = 100;
   }
   return Object.freeze({
     getState,
@@ -20279,6 +20480,7 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
           \u6C1B\u56F4: plan.atmosphere,
           \u5B8C\u6210\u5EA6: 100
         };
+        revealManagedSpace(building, space);
         space.\u72B6\u6001 = "\u6B63\u5E38";
         space.\u63CF\u8FF0 = plan.resultDescription ?? space.\u63CF\u8FF0;
         building.\u7ECF\u8425\u6458\u8981.\u4ECA\u65E5\u4EAE\u70B9 = `${space.\u540D\u79F0}\u5B8C\u6210\u4E86\u300C${plan.name}\u300D\u6539\u9020`;
@@ -20317,6 +20519,7 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
           \u89C6\u89C9\u8EAB\u4EFD: cloneLandlordState(candidate.visualIdentity),
           \u5173\u7CFB: {}
         };
+        revealManagedSpace(building, space);
         space.\u5360\u7528\u8005[personId] = candidate.role;
         building.\u7ECF\u8425\u6458\u8981.\u6D3B\u8DC3\u5EA6 = Math.min(100, building.\u7ECF\u8425\u6458\u8981.\u6D3B\u8DC3\u5EA6 + 8);
         appendDomainEvent(state, {
@@ -20329,6 +20532,39 @@ function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory }) {
           \u53D1\u751F\u65F6\u95F4: "\u521A\u521A",
           \u53C2\u4E0E\u8005: { [personId]: "\u65B0\u6210\u5458" }
         });
+      });
+    },
+    async movePerson({ personId, buildingId, spaceId, activity = "\u79FB\u52A8\u4E2D", expectedFrom = null }) {
+      return commit("\u786E\u8BA4\u4EBA\u7269\u7A7A\u95F4\u540C\u6B65", (state) => {
+        const person = state.\u4EBA\u7269\u5217\u8868[personId];
+        if (!person) throw new Error(`\u4EBA\u7269\u4E0D\u5B58\u5728\uFF1A${personId}`);
+        if (expectedFrom && (person.\u6240\u5728\u5EFA\u7B51ID !== expectedFrom.buildingId || person.\u6240\u5728\u7A7A\u95F4ID !== expectedFrom.spaceId)) {
+          throw new Error(`${person.\u59D3\u540D}\u7684\u4F4D\u7F6E\u5DF2\u7ECF\u88AB\u5176\u4ED6\u5267\u60C5\u66F4\u65B0\uFF0C\u4E0D\u80FD\u8986\u76D6`);
+        }
+        const building = state.\u5EFA\u7B51\u5217\u8868[buildingId];
+        const destination = building?.\u7A7A\u95F4\u5217\u8868?.[spaceId];
+        if (!destination) throw new Error(`\u79FB\u52A8\u76EE\u6807\u4E0D\u5B58\u5728\uFF1A${buildingId}/${spaceId}`);
+        if (!["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.\u63A5\u7BA1\u72B6\u6001)) throw new Error("\u4E0D\u80FD\u628A\u4EBA\u7269\u79FB\u52A8\u5230\u5C1A\u672A\u63A5\u7BA1\u7684\u5EFA\u7B51");
+        const sourceBuilding = state.\u5EFA\u7B51\u5217\u8868[person.\u6240\u5728\u5EFA\u7B51ID];
+        const source = sourceBuilding?.\u7A7A\u95F4\u5217\u8868?.[person.\u6240\u5728\u7A7A\u95F4ID];
+        const role = source?.\u5360\u7528\u8005?.[personId] ?? person.\u8EAB\u4EFD\u7C7B\u578B;
+        if (source?.\u5360\u7528\u8005) delete source.\u5360\u7528\u8005[personId];
+        destination.\u5360\u7528\u8005[personId] = role;
+        const sourceName = source?.\u540D\u79F0 ?? "\u672A\u77E5\u4F4D\u7F6E";
+        person.\u6240\u5728\u5EFA\u7B51ID = buildingId;
+        person.\u6240\u5728\u7A7A\u95F4ID = spaceId;
+        person.\u72B6\u6001 = String(activity || "\u79FB\u52A8\u4E2D");
+        revealManagedSpace(building, destination);
+        appendDomainEvent(state, {
+          \u6807\u9898: `${person.\u59D3\u540D}\u6765\u5230${destination.\u540D\u79F0}`,
+          \u7C7B\u578B: "\u4EBA\u7269\u79FB\u52A8",
+          \u5EFA\u7B51ID: buildingId,
+          \u7A7A\u95F4ID: spaceId,
+          \u72B6\u6001: "\u5DF2\u5B8C\u6210",
+          \u6458\u8981: `${person.\u59D3\u540D}\u4ECE${sourceName}\u6765\u5230${destination.\u540D\u79F0}\uFF0C\u5F53\u524D\u6B63\u5728${person.\u72B6\u6001}\u3002`,
+          \u53D1\u751F\u65F6\u95F4: "\u521A\u521A",
+          \u53C2\u4E0E\u8005: { [personId]: role }
+        }, { channels: ["\u6B63\u6587", "\u5EFA\u7B51"] });
       });
     },
     async setDeliveryStatus(deliveryId, status) {
@@ -20480,6 +20716,121 @@ var init_operation_journal_service = __esm({
   }
 });
 
+// scripts/src/services/spatial-sync-service.js
+function clone6(value) {
+  if (typeof structuredClone === "function") return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+}
+function defaultIdFactory3() {
+  return `spatial_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+function publicProposal(proposal) {
+  return Object.freeze(clone6(proposal));
+}
+function createSpatialSyncService({ store, idFactory = defaultIdFactory3, clock = () => Date.now() }) {
+  if (!store?.getState || !store?.movePerson) throw new TypeError("\u7A7A\u95F4\u540C\u6B65\u9700\u8981\u652F\u6301\u4EBA\u7269\u79FB\u52A8\u7684\u623F\u4E1C\u72B6\u6001\u670D\u52A1");
+  const proposals = /* @__PURE__ */ new Map();
+  const listeners = /* @__PURE__ */ new Set();
+  function publish(proposal) {
+    const snapshot = publicProposal(proposal);
+    for (const listener of listeners) listener(snapshot);
+    return snapshot;
+  }
+  function get(proposalId) {
+    const proposal = proposals.get(proposalId);
+    return proposal ? publicProposal(proposal) : null;
+  }
+  function propose(intents, { source = "manual" } = {}) {
+    if (!Array.isArray(intents) || intents.length === 0) throw new Error("\u7A7A\u95F4\u540C\u6B65\u81F3\u5C11\u9700\u8981\u4E00\u6761\u79FB\u52A8\u610F\u56FE");
+    return Object.freeze(intents.slice(0, 20).map((intent) => {
+      const route = planSpatialMove(store.getState(), intent);
+      const now = clock();
+      const proposal = {
+        id: idFactory(),
+        source,
+        personId: intent.personId,
+        buildingId: intent.buildingId,
+        spaceId: intent.spaceId,
+        activity: String(intent.activity ?? "\u79FB\u52A8\u4E2D"),
+        status: route.ok ? "\u5F85\u786E\u8BA4" : "\u51B2\u7A81",
+        reason: route.reason,
+        route,
+        createdAt: now,
+        updatedAt: now
+      };
+      proposals.set(proposal.id, proposal);
+      return publish(proposal);
+    }));
+  }
+  async function confirm2(proposalId) {
+    const proposal = proposals.get(proposalId);
+    if (!proposal) throw new Error(`\u7A7A\u95F4\u540C\u6B65\u63D0\u6848\u4E0D\u5B58\u5728\uFF1A${proposalId}`);
+    if (proposal.status !== "\u5F85\u786E\u8BA4") throw new Error(`\u7A7A\u95F4\u540C\u6B65\u63D0\u6848\u5F53\u524D\u4E0D\u53EF\u786E\u8BA4\uFF1A${proposal.status}`);
+    proposal.status = "\u5199\u5165\u4E2D";
+    proposal.updatedAt = clock();
+    publish(proposal);
+    try {
+      await store.movePerson({
+        personId: proposal.personId,
+        buildingId: proposal.buildingId,
+        spaceId: proposal.spaceId,
+        activity: proposal.activity,
+        expectedFrom: {
+          buildingId: proposal.route.fromBuildingId,
+          spaceId: proposal.route.fromSpaceId
+        }
+      });
+      proposal.status = "\u5DF2\u5E94\u7528";
+      proposal.updatedAt = clock();
+      return publish(proposal);
+    } catch (error) {
+      proposal.status = "\u51B2\u7A81";
+      proposal.reason = error instanceof Error ? error.message : String(error);
+      proposal.updatedAt = clock();
+      publish(proposal);
+      throw error;
+    }
+  }
+  function ignore(proposalId) {
+    const proposal = proposals.get(proposalId);
+    if (!proposal) throw new Error(`\u7A7A\u95F4\u540C\u6B65\u63D0\u6848\u4E0D\u5B58\u5728\uFF1A${proposalId}`);
+    if (["\u5DF2\u5E94\u7528", "\u5DF2\u5FFD\u7565"].includes(proposal.status)) return publicProposal(proposal);
+    proposal.status = "\u5DF2\u5FFD\u7565";
+    proposal.updatedAt = clock();
+    return publish(proposal);
+  }
+  return Object.freeze({
+    propose,
+    confirm: confirm2,
+    ignore,
+    get,
+    list({ status = null, limit = 30 } = {}) {
+      const count = Math.max(0, Number(limit) || 0);
+      if (count === 0) return Object.freeze([]);
+      return Object.freeze([...proposals.values()].filter((proposal) => !status || proposal.status === status).slice(-count).map(publicProposal).reverse());
+    },
+    counts() {
+      const result = { \u5F85\u786E\u8BA4: 0, \u51B2\u7A81: 0, \u5DF2\u5E94\u7528: 0, \u5DF2\u5FFD\u7565: 0, \u5199\u5165\u4E2D: 0 };
+      for (const proposal of proposals.values()) result[proposal.status] = (result[proposal.status] ?? 0) + 1;
+      return Object.freeze(result);
+    },
+    subscribe(listener) {
+      if (typeof listener !== "function") throw new TypeError("\u7A7A\u95F4\u540C\u6B65\u8BA2\u9605\u8005\u5FC5\u987B\u662F\u51FD\u6570");
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    dispose() {
+      listeners.clear();
+      proposals.clear();
+    }
+  });
+}
+var init_spatial_sync_service = __esm({
+  "scripts/src/services/spatial-sync-service.js"() {
+    init_route_engine();
+  }
+});
+
 // scripts/src/services/perception-service.js
 function clamp(value) {
   return Math.max(0, Math.min(100, Number(value) || 0));
@@ -20520,12 +20871,12 @@ var init_perception_service = __esm({
 
 // scripts/src/services/tenant-identity-service.js
 function stableHash(value) {
-  let hash = 2166136261;
+  let hash2 = 2166136261;
   for (const char of String(value)) {
-    hash ^= char.codePointAt(0);
-    hash = Math.imul(hash, 16777619);
+    hash2 ^= char.codePointAt(0);
+    hash2 = Math.imul(hash2, 16777619);
   }
-  return (hash >>> 0).toString(36);
+  return (hash2 >>> 0).toString(36);
 }
 function safeColor(value) {
   return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : "#FF9EAA";
@@ -20580,7 +20931,7 @@ var init_tenant_identity_service = __esm({
 });
 
 // scripts/src/services/channel-bridge-service.js
-function clone6(value) {
+function clone7(value) {
   if (typeof structuredClone === "function") return structuredClone(value);
   return JSON.parse(JSON.stringify(value));
 }
@@ -20631,7 +20982,7 @@ function createLegacyChannelPorts({ getLegacy, logger = console }) {
       const newsSystem = phone?.newsSystem;
       if (!newsSystem?.newsData || !phone?.emit) throw new Error("\u65B0\u95FB\u7CFB\u7EDF\u5C1A\u672A\u5C31\u7EEA");
       const existing = Array.isArray(newsSystem.newsData.headlines) ? newsSystem.newsData.headlines : [];
-      newsSystem.newsData.headlines = [clone6(draft.headline), ...existing].slice(0, 20);
+      newsSystem.newsData.headlines = [clone7(draft.headline), ...existing].slice(0, 20);
       newsSystem.newsData.lastUpdate = /* @__PURE__ */ new Date();
       newsSystem.saveNewsToVariable?.();
       phone.emit("news-updated", newsSystem.newsData);
@@ -20670,7 +21021,7 @@ function createChannelBridgeService({ events, identities, ports }) {
     const method = { \u6B63\u6587: "story", \u5FAE\u4FE1: "wechat", \u65B0\u95FB: "news", \u5EFA\u7B51: "building" }[prepared.channel];
     const result = await ports[method](prepared);
     await events.consume(deliveryId);
-    return Object.freeze({ draft: prepared, result: clone6(result) });
+    return Object.freeze({ draft: prepared, result: clone7(result) });
   }
   async function dispatchMany(deliveryIds, { confirmed = false } = {}) {
     if (!confirmed) throw new Error("\u6279\u91CF\u6295\u9012\u8054\u52A8\u8349\u7A3F\u5FC5\u987B\u7531\u73A9\u5BB6\u663E\u5F0F\u786E\u8BA4");
@@ -20713,18 +21064,18 @@ var init_channel_bridge_service = __esm({
 });
 
 // scripts/src/services/task-center.js
-function clone7(value) {
+function clone8(value) {
   if (typeof structuredClone === "function") return structuredClone(value);
   return JSON.parse(JSON.stringify(value));
 }
-function defaultIdFactory3(kind) {
+function defaultIdFactory4(kind) {
   return `${kind}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 function errorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
 function publicTask(task) {
-  return Object.freeze(clone7(task));
+  return Object.freeze(clone8(task));
 }
 function createDeferred() {
   let resolve;
@@ -20747,8 +21098,8 @@ function createRecipeTaskProvider({ id = "local", recipes, source = "local-mock"
     async run(kind, input, context) {
       const recipe = recipes[kind];
       if (typeof recipe !== "function") throw new Error(`\u4EFB\u52A1\u63D0\u4F9B\u5668 ${id} \u4E0D\u652F\u6301\uFF1A${kind}`);
-      const preview = await recipe(clone7(input), context);
-      return { source, ...clone7(preview) };
+      const preview = await recipe(clone8(input), context);
+      return { source, ...clone8(preview) };
     }
   });
 }
@@ -20758,7 +21109,7 @@ function createTaskCenter({
   concurrency = 1,
   timeoutMs = 45e3,
   maxAttempts = 2,
-  idFactory = defaultIdFactory3,
+  idFactory = defaultIdFactory4,
   clock = () => Date.now()
 }) {
   if (!providers || typeof providers !== "object") throw new TypeError("\u4EFB\u52A1\u4E2D\u5FC3\u9700\u8981\u81F3\u5C11\u4E00\u4E2A\u63D0\u4F9B\u5668");
@@ -20818,11 +21169,11 @@ function createTaskCenter({
     }) : null;
     try {
       const request = Promise.resolve(
-        provider.run(task.kind, clone7(task.input), {
+        provider.run(task.kind, clone8(task.input), {
           signal: controller.signal,
           attempt: task.attempt,
           taskId: task.id,
-          metadata: clone7(task.metadata)
+          metadata: clone8(task.metadata)
         })
       );
       return await (timeout ? Promise.race([request, timeout]) : request);
@@ -20850,7 +21201,7 @@ function createTaskCenter({
       try {
         const preview = await invokeProvider(task, provider);
         if (task.status === "cancelled") break;
-        task.preview = clone7(preview);
+        task.preview = clone8(preview);
         task.status = "ready";
         publish(task);
         settle(task);
@@ -20901,8 +21252,8 @@ function createTaskCenter({
       kind,
       mode,
       status: "created",
-      input: clone7(input),
-      metadata: clone7(options.metadata ?? {}),
+      input: clone8(input),
+      metadata: clone8(options.metadata ?? {}),
       preview: null,
       error: null,
       attempt: 0,
@@ -20968,7 +21319,7 @@ function createTaskCenter({
       task.status = "applying";
       publish(task);
       try {
-        await apply(clone7(task.preview), publicTask(task));
+        await apply(clone8(task.preview), publicTask(task));
         task.status = "confirmed";
         task.error = null;
       } catch (error) {
@@ -21036,6 +21387,9 @@ function activate2(context) {
   const perception = createPerceptionService({ store });
   const identities = createTenantIdentityService({ store });
   const layouts = createBuildingLayoutService();
+  const renovationVisuals = createRenovationVisualService();
+  const routes = createSpatialRouteService();
+  const spatialSync = createSpatialSyncService({ store });
   const bridges = createChannelBridgeService({
     events,
     identities,
@@ -21048,21 +21402,28 @@ function activate2(context) {
   context.services.register("landlord.perception", perception);
   context.services.register("landlord.identities", identities);
   context.services.register("building.layout", layouts);
+  context.services.register("building.renovationVisual", renovationVisuals);
+  context.services.register("building.routes", routes);
+  context.services.register("landlord.spatialSync", spatialSync);
   context.services.register("landlord.bridges", bridges);
   context.services.register("building.compiler", compiler);
   context.lifecycle.onDispose(() => tasks.dispose());
   context.lifecycle.onDispose(() => events.dispose());
   context.lifecycle.onDispose(() => history.dispose());
+  context.lifecycle.onDispose(() => spatialSync.dispose());
 }
 var init_landlord_core = __esm({
   "scripts/modules/landlord-core/index.js"() {
     init_management_ai_provider();
     init_compiler();
     init_layout_engine();
+    init_visual_engine();
+    init_route_engine();
     init_building_event_bus();
     init_management_recipes();
     init_landlord_store();
     init_operation_journal_service();
+    init_spatial_sync_service();
     init_perception_service();
     init_tenant_identity_service();
     init_channel_bridge_service();
@@ -21083,8 +21444,15 @@ function safeColor2(value, fallback = "#FF9EAA") {
 function tags(values = []) {
   return `<div class="lmo-tags">${values.map((value) => `<span>${escapeHtml(value)}</span>`).join("")}</div>`;
 }
-function emptyState(title, text) {
-  return `<div class="lmo-empty">${icon("sparkle")}<strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></div>`;
+function emptyState(title, text2) {
+  return `<div class="lmo-empty">${icon("sparkle")}<strong>${escapeHtml(title)}</strong><p>${escapeHtml(text2)}</p></div>`;
+}
+function renovationVisualStyle(visual) {
+  return `--room-base:${safeColor2(visual.css.base)};--room-accent:${safeColor2(visual.css.accent)};--room-secondary:${safeColor2(visual.css.secondary)};--room-glow:${safeColor2(visual.css.glow)};--room-text:${safeColor2(visual.css.text, "#283044")}`;
+}
+function renderRenovationVisual(visual, { compact = false } = {}) {
+  const furniture = visual.furniture.length ? visual.furniture.map((item) => `<i title="${escapeHtml(item.label)}">${escapeHtml(item.marker)}</i>`).join("") : '<i class="empty">\u7A7A</i>';
+  return `<div class="lmo-renovation-visual material-${escapeHtml(visual.material)} lighting-${escapeHtml(visual.lightingMode)} ${compact ? "compact" : ""}" style="${renovationVisualStyle(visual)}"><span class="lmo-visual-light"></span><div class="lmo-visual-room"><em>${escapeHtml(visual.style)}</em><div>${furniture}</div></div><footer>${visual.colors.slice(0, 4).map((color) => `<i style="--swatch:${safeColor2(color.value)}" title="${escapeHtml(color.name)}"></i>`).join("")}<span>${escapeHtml(visual.atmosphere)}</span></footer></div>`;
 }
 function navItem(section, current, label, iconName) {
   return `<button class="lmo-nav-item ${section === current ? "active" : ""}" data-action="navigate" data-section="${section}">${icon(iconName)}<span>${label}</span></button>`;
@@ -21104,6 +21472,7 @@ function renderSidebar(state, ui, portfolio) {
       ${navItem("recruitment", ui.section, "\u62DB\u52DF\u4E2D\u5FC3", "recruit")}
       ${navItem("tasks", ui.section, "\u4EFB\u52A1\u4E2D\u5FC3", "tasks")}
       ${navItem("history", ui.section, "\u7ECF\u8425\u56DE\u6EAF", "history")}
+      ${navItem("spatial", ui.section, "\u7A7A\u95F4\u540C\u6B65", "route")}
       ${navItem("events", ui.section, "\u52A8\u6001\u8BB0\u5F55", "event")}
     </nav>
     <div class="lmo-sidebar-summary">
@@ -21129,17 +21498,18 @@ function sectionTitle(section, current) {
   if (section === "takeover") return "\u5EFA\u7B51\u63A5\u7BA1\u63D0\u6848";
   if (section === "tasks") return "\u7EDF\u4E00\u4EFB\u52A1\u4E2D\u5FC3";
   if (section === "history") return "\u7ECF\u8425\u65F6\u5149\u56DE\u6EAF";
+  if (section === "spatial") return "\u53D9\u4E8B\u2014\u7A7A\u95F4\u540C\u6B65";
   if (section === "events") return "\u5EFA\u7B51\u52A8\u6001\u8BB0\u5F55";
   return current.name;
 }
 function buildingCard(building, action) {
   const accent = safeColor2(building.theme?.\u4E3B\u8272);
-  const owned = ["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.status);
+  const owned2 = ["\u603B\u90E8", "\u5DF2\u63A5\u7BA1"].includes(building.status);
   return `<button class="lmo-building-card" data-action="${action}" data-building-id="${escapeHtml(building.id)}" style="--building-accent:${accent}">
     <div class="lmo-building-visual"><span class="lmo-building-type">${escapeHtml(building.type)}</span><span class="lmo-building-glyph">${icon(building.isHeadquarters ? "home" : "buildings")}</span><i></i><i></i><i></i></div>
-    <div class="lmo-building-copy"><div class="lmo-card-title"><div><strong>${escapeHtml(building.name)}</strong><span>${escapeHtml(building.worldview)}</span></div><span class="lmo-badge ${owned ? "owned" : ""}">${escapeHtml(building.status)}</span></div>
+    <div class="lmo-building-copy"><div class="lmo-card-title"><div><strong>${escapeHtml(building.name)}</strong><span>${escapeHtml(building.worldview)}</span></div><span class="lmo-badge ${owned2 ? "owned" : ""}">${escapeHtml(building.status)}</span></div>
     <p>${escapeHtml(building.description)}</p>
-    <div class="lmo-card-metrics"><span><b>${building.metrics.floors}</b> \u5C42</span><span><b>${building.metrics.spaces}</b> \u7A7A\u95F4</span><span><b>${building.summary.\u6D3B\u8DC3\u5EA6 ?? 0}</b> \u6D3B\u8DC3</span><em>${owned ? "\u8FDB\u5165\u7BA1\u7406" : "\u67E5\u770B\u63D0\u6848"} ${icon("arrow")}</em></div></div>
+    <div class="lmo-card-metrics"><span><b>${building.metrics.floors}</b> \u5C42</span><span><b>${building.metrics.spaces}</b> \u7A7A\u95F4</span><span><b>${building.summary.\u6D3B\u8DC3\u5EA6 ?? 0}</b> \u6D3B\u8DC3</span><em>${owned2 ? "\u8FDB\u5165\u7BA1\u7406" : "\u67E5\u770B\u63D0\u6848"} ${icon("arrow")}</em></div></div>
   </button>`;
 }
 function renderPortfolio(state, portfolio) {
@@ -21193,7 +21563,7 @@ function renderTwinMap(floor, selectedId, accent) {
       node.id === selected?.id ? "selected" : "",
       connected.has(node.id) && node.id !== selected?.id ? "connected" : ""
     ].filter(Boolean).join(" ");
-    return `<button class="${classes}" data-action="inspect-twin-space" data-floor-id="${escapeHtml(floor.id)}" data-space-id="${escapeHtml(node.id)}" aria-pressed="${node.id === selected?.id}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%"><strong>${escapeHtml(node.name)}</strong><small>${escapeHtml(node.type)} \xB7 ${node.awareness}%</small>${node.occupants?.length ? `<em>${node.occupants.map((person) => escapeHtml(person.name)).join(" / ")}</em>` : ""}</button>`;
+    return `<button class="${classes} material-${escapeHtml(node.visual.material)} lighting-${escapeHtml(node.visual.lightingMode)}" data-action="inspect-twin-space" data-floor-id="${escapeHtml(floor.id)}" data-space-id="${escapeHtml(node.id)}" aria-pressed="${node.id === selected?.id}" data-renovation-signature="${escapeHtml(node.visual.signature)}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%;${renovationVisualStyle(node.visual)}"><strong>${escapeHtml(node.name)}</strong><small>${escapeHtml(node.type)} \xB7 ${node.awareness}%</small>${node.occupants?.length ? `<em>${node.occupants.map((person) => escapeHtml(person.name)).join(" / ")}</em>` : ""}${node.visual.furniture.length ? `<span class="lmo-twin-furniture">${node.visual.furniture.slice(0, 4).map((item) => `<i title="${escapeHtml(item.label)}">${escapeHtml(item.marker)}</i>`).join("")}</span>` : ""}</button>`;
   }).join("");
   return `<div class="lmo-twin-map" style="--twin-accent:${safeColor2(accent)}"><svg class="lmo-twin-edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="\u5DF2\u77E5\u7A7A\u95F4\u76F8\u90BB\u5173\u7CFB">${lines}</svg>${nodes}</div>`;
 }
@@ -21207,6 +21577,7 @@ function renderTwinInspector(node, floor) {
   const occupants = node.occupants?.length ? node.occupants.map((person) => `<span style="--person-accent:${safeColor2(person.color)}"><i>${escapeHtml(person.name.slice(0, 1))}</i>${escapeHtml(person.name)}</span>`).join("") : "<small>\u5F53\u524D\u65E0\u4EBA\u4F7F\u7528</small>";
   return `<aside class="lmo-twin-inspector">
     <div class="lmo-twin-inspector-head"><span>${escapeHtml(node.type)} \xB7 ${escapeHtml(node.size)}</span><strong>${escapeHtml(node.name)}</strong><p>${escapeHtml(node.description)}</p></div>
+    ${renderRenovationVisual(node.visual, { compact: true })}
     <div class="lmo-twin-data-grid"><span><small>\u7A7A\u95F4\u72B6\u6001</small><b>${escapeHtml(node.status)}</b></span><span><small>\u611F\u77E5\u7A0B\u5EA6</small><b>${node.awareness}%</b></span><span><small>\u5DF2\u77E5\u8BBE\u65BD</small><b>${node.facilityCount ?? 0}</b></span><span><small>\u88C5\u4FEE\u98CE\u683C</small><b>${escapeHtml(node.renovation?.\u98CE\u683C ?? "\u5C1A\u672A\u5177\u73B0")}</b></span></div>
     <div class="lmo-twin-inspector-block"><small>\u5F53\u524D\u7528\u9014</small><p>${escapeHtml(node.purpose)}</p></div>
     <div class="lmo-twin-inspector-block"><small>\u6B63\u5728\u8FD9\u91CC\u7684\u4EBA</small><div class="lmo-twin-people">${occupants}</div></div>
@@ -21242,13 +21613,17 @@ function ownedSpaceOptions(building, selectedSpaceId, action = "choose-workflow-
   return building.floors.flatMap((floor) => floor.spaces).map((space) => `<button class="lmo-compact-space ${selectedSpaceId === space.id ? "selected" : ""}" data-action="${action}" data-space-id="${escapeHtml(space.id)}"><span>${escapeHtml(space.type)}</span><strong>${escapeHtml(space.name)}</strong><small>${escapeHtml(space.status)} \xB7 ${escapeHtml(space.size)}</small></button>`).join("");
 }
 function renderRenovation(state, building, task, selectedSpaceId, selectedId, busy) {
+  const mode = taskModeCopy(state);
   const plans = task?.status === "ready" ? task.preview.plans : [];
   const space = building.floors.flatMap((floor) => floor.spaces).find((item) => item.id === selectedSpaceId);
   const markup = `<section class="lmo-view lmo-workflow">${workflowSteps(plans.length ? 2 : selectedSpaceId ? 1 : 0)}
     <div class="lmo-two-column"><aside class="lmo-selector"><span class="lmo-kicker">\u9009\u62E9\u88C5\u4FEE\u76EE\u6807</span><h2>${escapeHtml(building.name)}</h2><div class="lmo-compact-list">${ownedSpaceOptions(building, selectedSpaceId)}</div></aside>
-    <div class="lmo-workspace">${!space ? emptyState("\u5148\u9009\u62E9\u4E00\u4E2A\u7A7A\u95F4", "\u53EF\u4EE5\u4ECE\u4E00\u4E2A\u623F\u95F4\u5F00\u59CB\uFF0C\u4E0D\u9700\u8981\u4E00\u6B21\u88C5\u4FEE\u6574\u680B\u5EFA\u7B51\u3002") : !plans.length ? `<div class="lmo-preview-room"><span>${escapeHtml(space.type)} \xB7 ${escapeHtml(space.size)}</span><h2>${escapeHtml(space.name)}</h2><p>${escapeHtml(space.description)}</p><div class="lmo-current-style"><small>\u5F53\u524D\u88C5\u4FEE</small><strong>${escapeHtml(space.renovation?.\u98CE\u683C)}</strong><span>${escapeHtml(space.renovation?.\u6C1B\u56F4)}</span></div><button class="lmo-primary" data-action="run-renovation" ${busy ? "disabled" : ""}>${icon("sparkle")} ${busy ? "\u6B63\u5728\u6574\u7406\u2026" : "\u751F\u6210\u4E09\u4E2A\u672C\u5730\u65B9\u6848"}</button></div>` : `<div class="lmo-renovation-plans">${plans.map((plan) => `<button class="lmo-renovation-card ${selectedId === plan.id ? "selected" : ""}" data-action="choose-option" data-option-id="${escapeHtml(plan.id)}"><div class="lmo-palette">${Object.values(plan.palette).map((color) => `<i style="--swatch:${safeColor2(color, "#E2E8F0")}"></i>`).join("")}</div><span>${escapeHtml(plan.style)}</span><h3>${escapeHtml(plan.name)}</h3><p>${escapeHtml(plan.tagline)}</p>${tags(plan.impacts)}<small>${escapeHtml(plan.lighting)}</small></button>`).join("")}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? "\u88C5\u4FEE\u6548\u679C\u53EF\u4EE5\u5177\u73B0\u5316" : "\u6311\u9009\u6700\u559C\u6B22\u7684\u65B9\u6848"}</strong><span>\u786E\u8BA4\u540E\u4F1A\u6539\u53D8\u7A7A\u95F4\u63CF\u8FF0\u3001\u914D\u8272\u3001\u6750\u8D28\u548C\u4E8B\u4EF6\u8BB0\u5F55\u3002</span></div><button class="lmo-primary" data-action="confirm-renovation" ${selectedId && !busy ? "" : "disabled"}>\u5E94\u7528\u88C5\u4FEE ${icon("arrow")}</button></div>`}</div></div>
+    <div class="lmo-workspace">${!space ? emptyState("\u5148\u9009\u62E9\u4E00\u4E2A\u7A7A\u95F4", "\u53EF\u4EE5\u4ECE\u4E00\u4E2A\u623F\u95F4\u5F00\u59CB\uFF0C\u4E0D\u9700\u8981\u4E00\u6B21\u88C5\u4FEE\u6574\u680B\u5EFA\u7B51\u3002") : !plans.length ? `<div class="lmo-preview-room"><span>${escapeHtml(space.type)} \xB7 ${escapeHtml(space.size)}</span><h2>${escapeHtml(space.name)}</h2><p>${escapeHtml(space.description)}</p><div class="lmo-current-style"><small>\u5F53\u524D\u88C5\u4FEE</small><strong>${escapeHtml(space.renovation?.\u98CE\u683C)}</strong><span>${escapeHtml(space.renovation?.\u6C1B\u56F4)}</span></div><button class="lmo-primary" data-action="run-renovation" ${busy ? "disabled" : ""}>${icon("sparkle")} ${busy ? "\u6B63\u5728\u6574\u7406\u2026" : `${mode.verb}\u65B9\u6848`}</button></div>` : `<div class="lmo-renovation-plans">${plans.map((plan) => {
+    const visual = createRenovationVisual(plan, { fallbackAccent: building.theme?.\u4E3B\u8272 });
+    return `<button class="lmo-renovation-card ${selectedId === plan.id ? "selected" : ""}" data-action="choose-option" data-option-id="${escapeHtml(plan.id)}" data-renovation-signature="${escapeHtml(visual.signature)}">${renderRenovationVisual(visual, { compact: true })}<span>${escapeHtml(plan.style)}</span><h3>${escapeHtml(plan.name)}</h3><p>${escapeHtml(plan.tagline)}</p>${tags(plan.impacts)}<small>${escapeHtml(plan.lighting)}</small></button>`;
+  }).join("")}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? "\u88C5\u4FEE\u6548\u679C\u53EF\u4EE5\u5177\u73B0\u5316" : "\u6311\u9009\u6700\u559C\u6B22\u7684\u65B9\u6848"}</strong><span>\u786E\u8BA4\u540E\u4F1A\u6539\u53D8\u7A7A\u95F4\u63CF\u8FF0\u3001\u914D\u8272\u3001\u6750\u8D28\u548C\u4E8B\u4EF6\u8BB0\u5F55\u3002</span></div><button class="lmo-primary" data-action="confirm-renovation" ${selectedId && !busy ? "" : "disabled"}>\u5E94\u7528\u88C5\u4FEE ${icon("arrow")}</button></div>`}</div></div>
   </section>`;
-  return state.\u8FD0\u884C\u6A21\u5F0F === "\u771F\u5B9E" ? markup.replace("\u751F\u6210\u4E09\u4E2A\u672C\u5730\u65B9\u6848", "\u751F\u6210\u4E09\u4E2A AI \u65B9\u6848") : markup;
+  return markup;
 }
 function renderRecruitment(state, building, task, selectedSpaceId, selectedId, busy) {
   const mode = taskModeCopy(state);
@@ -21288,15 +21663,31 @@ function renderLinkPreview(linkCenter) {
 }
 function renderEvents(state, portfolio, linkCenter) {
   const events = Object.entries(state.\u4E8B\u4EF6\u5217\u8868 ?? {}).reverse();
-  const channels2 = ["\u6B63\u6587", "\u5FAE\u4FE1", "\u65B0\u95FB", "\u5EFA\u7B51"];
+  const channels3 = ["\u6B63\u6587", "\u5FAE\u4FE1", "\u65B0\u95FB", "\u5EFA\u7B51"];
   return `<section class="lmo-view"><div class="lmo-section-heading"><div><span>BUILDING MEMORY</span><h2>\u771F\u6B63\u53D1\u751F\u8FC7\u7684\u53D8\u5316</h2></div><p>\u8FD9\u91CC\u53EA\u6709\u786E\u8BA4\u5199\u5165\u8FC7\u7684\u64CD\u4F5C\uFF0C\u4E0D\u5C55\u793A\u4E34\u65F6\u5019\u9009\u548C\u53D6\u6D88\u7684\u65B9\u6848\u3002</p></div>
-    <div class="lmo-link-channels">${channels2.map((channel) => `<div class="${linkCenter.capabilities[channel] ? "" : "unavailable"}"><span>${escapeHtml(channel)}</span><strong>${linkCenter.counts[channel] ?? 0}</strong><small>${linkCenter.capabilities[channel] ? "\u5F85\u5206\u53D1\u8054\u52A8" : "\u9891\u9053\u672A\u5C31\u7EEA"}</small>${linkCenter.counts[channel] ? `<button data-action="preview-channel-links" data-channel="${escapeHtml(channel)}">\u9884\u89C8\u672C\u6279\u6B21</button>` : ""}</div>`).join("")}</div>
+    <div class="lmo-link-channels">${channels3.map((channel) => `<div class="${linkCenter.capabilities[channel] ? "" : "unavailable"}"><span>${escapeHtml(channel)}</span><strong>${linkCenter.counts[channel] ?? 0}</strong><small>${linkCenter.capabilities[channel] ? "\u5F85\u5206\u53D1\u8054\u52A8" : "\u9891\u9053\u672A\u5C31\u7EEA"}</small>${linkCenter.counts[channel] ? `<button data-action="preview-channel-links" data-channel="${escapeHtml(channel)}">\u9884\u89C8\u672C\u6279\u6B21</button>` : ""}</div>`).join("")}</div>
     ${renderLinkPreview(linkCenter)}
     <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon("sparkle")}<span><strong>\u8DE8\u7CFB\u7EDF\u8054\u52A8\u961F\u5217</strong><small>\u6B63\u6587\u3001\u5FAE\u4FE1\u3001\u65B0\u95FB\u548C\u5EFA\u7B51\u4F7F\u7528\u540C\u4E00\u4E2A\u4E8B\u4EF6\u6E90</small></span></div></div>${linkCenter.pending.length ? `<div class="lmo-link-list">${linkCenter.pending.map((item) => `<div><span>${escapeHtml(item.\u9891\u9053)}</span><p><strong>${escapeHtml(item.\u6807\u9898)}</strong><small>${escapeHtml(item.\u6458\u8981)}</small></p><button data-action="preview-link" data-link-id="${escapeHtml(item.id)}">\u9884\u89C8</button><button data-action="consume-link" data-link-id="${escapeHtml(item.id)}">\u5DF2\u8BFB</button><button data-action="ignore-link" data-link-id="${escapeHtml(item.id)}">\u5FFD\u7565</button></div>`).join("")}</div>` : emptyState("\u8054\u52A8\u961F\u5217\u5DF2\u6E05\u7A7A", "\u65B0\u7684\u7ECF\u8425\u53D8\u5316\u4F1A\u81EA\u52A8\u6295\u9012\u5230\u56DB\u4E2A\u9891\u9053\u3002")}</article>
     ${events.length ? `<div class="lmo-event-timeline">${events.map(([id, event]) => {
     const building = portfolio.buildings.find((item) => item.id === event.\u5EFA\u7B51ID);
     return `<article><div class="lmo-event-mark">${icon(event.\u7C7B\u578B === "\u4EBA\u7269\u52A0\u5165" ? "person" : event.\u7C7B\u578B === "\u88C5\u4FEE\u5B8C\u6210" ? "renovate" : "buildings")}</div><div><span>${escapeHtml(event.\u7C7B\u578B)} \xB7 ${escapeHtml(building?.name ?? "\u672A\u77E5\u5EFA\u7B51")}</span><h3>${escapeHtml(event.\u6807\u9898)}</h3><p>${escapeHtml(event.\u6458\u8981)}</p><small>${escapeHtml(event.\u53D1\u751F\u65F6\u95F4)} \xB7 ${escapeHtml(id)}</small></div><em>${escapeHtml(event.\u72B6\u6001)}</em></article>`;
   }).join("")}</div>` : emptyState("\u8FD8\u6CA1\u6709\u7ECF\u8425\u8BB0\u5F55", "\u5B8C\u6210\u7B2C\u4E00\u6B21\u63A5\u7BA1\u3001\u88C5\u4FEE\u6216\u62DB\u52DF\u540E\uFF0C\u5EFA\u7B51\u8BB0\u5FC6\u4F1A\u51FA\u73B0\u5728\u8FD9\u91CC\u3002")}</section>`;
+}
+function renderSpatial(spatialCenter, current, ui) {
+  const selectedPerson = spatialCenter.people.find((person) => person.id === ui.selectedMovePersonId);
+  const selectedSpace = spatialCenter.spaces.find((space) => space.id === ui.selectedMoveSpaceId);
+  return `<section class="lmo-view lmo-spatial-view">
+    <div class="lmo-section-heading"><div><span>NARRATIVE \xB7 SPACE SYNC</span><h2>\u8BA9\u4EBA\u7269\u4F4D\u7F6E\u5148\u901A\u8FC7\u5EFA\u7B51\u7ED3\u6784\u6821\u9A8C</h2></div><p>\u73B0\u5728\u53EF\u624B\u52A8\u9A8C\u8BC1\u5B8C\u6574\u6D41\u7A0B\uFF1B\u4EE5\u540E AI \u53EA\u8D1F\u8D23\u628A\u6B63\u6587\u63D0\u53D6\u6210\u540C\u4E00\u79CD\u79FB\u52A8\u610F\u56FE\u3002</p></div>
+    <div class="lmo-spatial-metrics"><span><b>${spatialCenter.counts.\u5F85\u786E\u8BA4 ?? 0}</b>\u5F85\u786E\u8BA4</span><span><b>${spatialCenter.counts.\u51B2\u7A81 ?? 0}</b>\u7ED3\u6784\u51B2\u7A81</span><span><b>${spatialCenter.counts.\u5DF2\u5E94\u7528 ?? 0}</b>\u5DF2\u540C\u6B65</span></div>
+    <article class="lmo-spatial-planner">
+      <div class="lmo-spatial-column"><span class="lmo-kicker">1 \xB7 \u9009\u62E9\u4EBA\u7269</span>${spatialCenter.people.length ? `<div class="lmo-spatial-people">${spatialCenter.people.map((person) => `<button class="${person.id === ui.selectedMovePersonId ? "selected" : ""}" data-action="choose-spatial-person" data-person-id="${escapeHtml(person.id)}" style="--person-accent:${safeColor2(person.color)}"><i>${escapeHtml(person.name.slice(0, 1))}</i><p><strong>${escapeHtml(person.name)}</strong><small>${escapeHtml(person.buildingName)} \xB7 ${escapeHtml(person.spaceName)}</small></p></button>`).join("")}</div>` : emptyState("\u8FD8\u6CA1\u6709\u53EF\u79FB\u52A8\u7684\u4EBA\u7269", "\u5148\u4ECE\u62DB\u52DF\u4E2D\u5FC3\u8BA9\u4E00\u4F4D\u4EBA\u7269\u8FDB\u5165\u5EFA\u7B51\u3002")}</div>
+      <div class="lmo-spatial-arrow">${icon("arrow")}</div>
+      <div class="lmo-spatial-column"><span class="lmo-kicker">2 \xB7 \u9009\u62E9\u76EE\u6807</span><div class="lmo-spatial-spaces">${spatialCenter.spaces.map((space) => `<button class="${space.id === ui.selectedMoveSpaceId ? "selected" : ""}" data-action="choose-spatial-space" data-space-id="${escapeHtml(space.id)}"><span>${escapeHtml(space.floorName)}</span><strong>${escapeHtml(space.name)}</strong><small>${escapeHtml(space.type)} \xB7 ${escapeHtml(space.status)}</small></button>`).join("")}</div></div>
+      <div class="lmo-spatial-arrow">${icon("arrow")}</div>
+      <div class="lmo-spatial-submit"><span class="lmo-kicker">3 \xB7 \u63CF\u8FF0\u5F53\u524D\u52A8\u4F5C</span><div><small>\u79FB\u52A8\u9884\u89C8</small><strong>${escapeHtml(selectedPerson?.name ?? "\u5F85\u9009\u4EBA\u7269")} \u2192 ${escapeHtml(selectedSpace?.name ?? "\u5F85\u9009\u7A7A\u95F4")}</strong></div><label for="lmo-spatial-activity">\u5230\u8FBE\u540E\u6B63\u5728\u505A\u4EC0\u4E48</label><input id="lmo-spatial-activity" value="\u9002\u5E94\u65B0\u73AF\u5883" maxlength="40"><button class="lmo-primary" data-action="propose-spatial-move" ${selectedPerson && selectedSpace ? "" : "disabled"}>${icon("route")} \u6821\u9A8C\u79FB\u52A8\u610F\u56FE</button><p>\u8FD9\u4E00\u6B65\u53EA\u521B\u5EFA\u63D0\u6848\uFF0C\u4E0D\u4F1A\u76F4\u63A5\u6539\u52A8\u4EBA\u7269\u4F4D\u7F6E\u3002</p></div>
+    </article>
+    <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon("route")}<span><strong>\u7A7A\u95F4\u540C\u6B65\u63D0\u6848</strong><small>\u7ED3\u6784\u5408\u6CD5\u624D\u5141\u8BB8\u786E\u8BA4\uFF1B\u51B2\u7A81\u4E0D\u4F1A\u5199\u5165 MVU</small></span></div></div>${spatialCenter.proposals.length ? `<div class="lmo-spatial-proposals">${spatialCenter.proposals.map((proposal) => `<div class="status-${escapeHtml(proposal.status)}"><span>${proposal.status === "\u51B2\u7A81" ? "!" : proposal.route.path.length}</span><p><strong>${escapeHtml(proposal.route.personName ?? proposal.personId)} \u2192 ${escapeHtml(proposal.route.destinationName ?? proposal.spaceId)}</strong><small>${escapeHtml(proposal.route.kind ?? "\u65E0\u6CD5\u89C4\u5212")} \xB7 ${escapeHtml(proposal.reason)} \xB7 ${escapeHtml(proposal.activity)}</small></p><em>${escapeHtml(proposal.status)}</em>${proposal.status === "\u5F85\u786E\u8BA4" ? `<button data-action="confirm-spatial-proposal" data-proposal-id="${escapeHtml(proposal.id)}">\u786E\u8BA4\u540C\u6B65</button>` : ""}${["\u5F85\u786E\u8BA4", "\u51B2\u7A81"].includes(proposal.status) ? `<button data-action="ignore-spatial-proposal" data-proposal-id="${escapeHtml(proposal.id)}">\u5FFD\u7565</button>` : ""}</div>`).join("")}</div>` : emptyState("\u8FD8\u6CA1\u6709\u7A7A\u95F4\u540C\u6B65\u63D0\u6848", `\u9009\u62E9\u4EBA\u7269\u548C\u300C${escapeHtml(current.name)}\u300D\u5185\u7684\u76EE\u6807\u7A7A\u95F4\uFF0C\u5148\u7528\u672C\u5730\u89C4\u5219\u9A8C\u8BC1\u3002`)}</article>
+  </section>`;
 }
 function renderOperationTime(value) {
   const date = new Date(value);
@@ -21316,7 +21707,7 @@ function renderHistory(historyCenter) {
     </article>
   </section>`;
 }
-function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, historyCenter, twin }) {
+function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, twin }) {
   let content;
   if (ui.section === "portfolio") content = renderPortfolio(state, portfolio);
   else if (ui.section === "building") content = renderBuilding(current, identityCenter);
@@ -21326,6 +21717,7 @@ function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCe
   else if (ui.section === "recruitment") content = renderRecruitment(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
   else if (ui.section === "tasks") content = renderTasks(taskCenter);
   else if (ui.section === "history") content = renderHistory(historyCenter);
+  else if (ui.section === "spatial") content = renderSpatial(spatialCenter, current, ui);
   else content = renderEvents(state, portfolio, linkCenter);
   const displayBuilding = ui.section === "takeover" ? ui.targetBuilding : current;
   return `<div class="lmo-backdrop" data-action="close-backdrop"><div class="lmo-shell" role="dialog" aria-modal="true" aria-label="\u623F\u4E1C\u7ECF\u8425\u4E2D\u67A2" style="--active-accent:${safeColor2(displayBuilding.theme?.\u4E3B\u8272)}">
@@ -21335,6 +21727,7 @@ function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCe
 var icons, taskStatusLabels, taskKindLabels, operationKindLabels;
 var init_templates = __esm({
   "scripts/src/ui/console/templates.js"() {
+    init_visual_engine();
     icons = Object.freeze({
       home: '<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
       buildings: '<svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M8 7h4M8 11h4M8 15h4M2 21h20M16 9h2a2 2 0 0 1 2 2v10"/></svg>',
@@ -21344,6 +21737,7 @@ var init_templates = __esm({
       event: '<svg viewBox="0 0 24 24"><path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M18 12h3M6 21h12M8 17a6 6 0 1 1 8 0l-1 1H9z"/></svg>',
       tasks: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9h6M9 13h6M9 17h3M8 2v3M16 2v3"/></svg>',
       history: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6M12 7v5l3 2"/></svg>',
+      route: '<svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3v-6a3 3 0 0 1 3-3"/></svg>',
       close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
       arrow: '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
       sparkle: '<svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
@@ -21369,13 +21763,14 @@ var init_templates = __esm({
       renovation: "\u7A7A\u95F4\u88C5\u4FEE",
       recruitment: "\u4EBA\u7269\u62DB\u52DF",
       exploration: "\u63A2\u7D22\u611F\u77E5",
+      movement: "\u4EBA\u7269\u79FB\u52A8",
       management: "\u7ECF\u8425\u64CD\u4F5C"
     });
   }
 });
 
 // scripts/src/ui/console/controller.js
-function createLandlordConsole({ document: document2, store, tasks, events = null, history = null, perception = null, identities = null, layouts = null, bridges = null, compiler, logger }) {
+function createLandlordConsole({ document: document2, store, tasks, events = null, history = null, spatialSync = null, perception = null, identities = null, layouts = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -21386,6 +21781,8 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
     focusedFloorId: null,
     twinSpaceId: null,
     previewLinkIds: [],
+    selectedMovePersonId: null,
+    selectedMoveSpaceId: null,
     selectedOptionId: null,
     taskId: null,
     busy: false,
@@ -21411,7 +21808,17 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
     const identityCenter = { residents: identities?.listForBuilding(current.id) ?? [] };
     const twin = layouts?.compile(current) ?? { buildingId: current.id, name: current.name, theme: current.theme, floors: [], metrics: { floors: 0, nodes: 0, edges: 0 } };
     const historyCenter = history ? { ...history.summary(), entries: history.list({ limit: 20 }) } : { busy: false, count: 0, appliedCount: 0, canUndo: false, canRedo: false, undoLabel: "", redoLabel: "", blockedUndo: false, entries: [] };
-    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, historyCenter, twin };
+    const spatialCenter = {
+      people: Object.entries(state.\u4EBA\u7269\u5217\u8868 ?? {}).map(([id, person]) => {
+        const building = portfolio.buildings.find((item) => item.id === person.\u6240\u5728\u5EFA\u7B51ID);
+        const space = building?.floors.flatMap((floor) => floor.spaces).find((item) => item.id === person.\u6240\u5728\u7A7A\u95F4ID);
+        return { id, name: person.\u59D3\u540D, status: person.\u72B6\u6001, buildingName: building?.name ?? person.\u6240\u5728\u5EFA\u7B51ID, spaceName: space?.name ?? person.\u6240\u5728\u7A7A\u95F4ID, color: person.\u89C6\u89C9\u8EAB\u4EFD?.\u4E3B\u8272 };
+      }),
+      spaces: current.floors.flatMap((floor) => floor.spaces).map((space) => ({ ...space, floorName: current.floors.find((floor) => floor.spaces.some((item) => item.id === space.id))?.name ?? "" })),
+      proposals: spatialSync?.list({ limit: 20 }) ?? [],
+      counts: spatialSync?.counts() ?? { \u5F85\u786E\u8BA4: 0, \u51B2\u7A81: 0, \u5DF2\u5E94\u7528: 0, \u5DF2\u5FFD\u7565: 0, \u5199\u5165\u4E2D: 0 }
+    };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, twin };
   }
   function resetWorkflow({ keepSpace = false } = {}) {
     ui.taskId = null;
@@ -21423,8 +21830,8 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
     ui.focusedFloorId = null;
     ui.twinSpaceId = null;
   }
-  function setNotice(text, type = "info") {
-    ui.notice = { text, type };
+  function setNotice(text2, type = "info") {
+    ui.notice = { text: text2, type };
   }
   function render() {
     if (!visible || disposed) return;
@@ -21504,6 +21911,46 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
         resetTwin();
         setNotice(`${action === "undo-operation" ? "\u5DF2\u64A4\u9500" : "\u5DF2\u91CD\u505A"}\uFF1A${entry.label}`, "success");
       });
+    }
+    if (action === "choose-spatial-person") {
+      ui.selectedMovePersonId = button.dataset.personId;
+      return render();
+    }
+    if (action === "choose-spatial-space") {
+      ui.selectedMoveSpaceId = button.dataset.spaceId;
+      return render();
+    }
+    if (action === "propose-spatial-move") {
+      if (!spatialSync) throw new Error("\u7A7A\u95F4\u540C\u6B65\u670D\u52A1\u5C1A\u672A\u52A0\u8F7D");
+      if (!ui.selectedMovePersonId || !ui.selectedMoveSpaceId) throw new Error("\u8BF7\u9009\u62E9\u4EBA\u7269\u548C\u76EE\u6807\u7A7A\u95F4");
+      const activity = root.querySelector("#lmo-spatial-activity")?.value?.trim() || "\u9002\u5E94\u65B0\u73AF\u5883";
+      spatialSync.propose([{
+        personId: ui.selectedMovePersonId,
+        buildingId: data.current.id,
+        spaceId: ui.selectedMoveSpaceId,
+        activity
+      }], { source: "manual-preview" });
+      setNotice("\u79FB\u52A8\u610F\u56FE\u5DF2\u7ECF\u8FC7\u5EFA\u7B51\u7ED3\u6784\u6821\u9A8C\uFF0C\u8BF7\u68C0\u67E5\u8DEF\u7EBF\u540E\u786E\u8BA4\u3002", "success");
+      return render();
+    }
+    if (action === "confirm-spatial-proposal") {
+      if (!spatialSync) throw new Error("\u7A7A\u95F4\u540C\u6B65\u670D\u52A1\u5C1A\u672A\u52A0\u8F7D");
+      const proposal = spatialSync.get(button.dataset.proposalId);
+      if (!proposal) throw new Error("\u7A7A\u95F4\u540C\u6B65\u63D0\u6848\u4E0D\u5B58\u5728");
+      return withBusy(async () => {
+        await recordOperation(
+          "movement",
+          `\u79FB\u52A8${proposal.route.personName ?? "\u4EBA\u7269"}\u5230${proposal.route.destinationName ?? "\u76EE\u6807\u7A7A\u95F4"}`,
+          () => spatialSync.confirm(proposal.id)
+        );
+        setNotice("\u4EBA\u7269\u4F4D\u7F6E\u4E0E\u5EFA\u7B51\u5360\u7528\u8BB0\u5F55\u5DF2\u7ECF\u540C\u6B65\u3002", "success");
+      });
+    }
+    if (action === "ignore-spatial-proposal") {
+      if (!spatialSync) throw new Error("\u7A7A\u95F4\u540C\u6B65\u670D\u52A1\u5C1A\u672A\u52A0\u8F7D");
+      spatialSync.ignore(button.dataset.proposalId);
+      setNotice("\u8BE5\u79FB\u52A8\u610F\u56FE\u5DF2\u5FFD\u7565\uFF0C\u6CA1\u6709\u6539\u52A8\u4EBA\u7269\u4F4D\u7F6E\u3002", "info");
+      return render();
     }
     if (action === "explore-next") {
       if (!perception) throw new Error("\u9010\u6B65\u611F\u77E5\u670D\u52A1\u5C1A\u672A\u52A0\u8F7D");
@@ -21704,6 +22151,8 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
   const unsubscribeTasks = tasks.subscribe(() => render());
   const unsubscribeHistory = history?.subscribe(() => render()) ?? (() => {
   });
+  const unsubscribeSpatial = spatialSync?.subscribe(() => render()) ?? (() => {
+  });
   return Object.freeze({
     open,
     close,
@@ -21714,6 +22163,7 @@ function createLandlordConsole({ document: document2, store, tasks, events = nul
       unsubscribeStore();
       unsubscribeTasks();
       unsubscribeHistory();
+      unsubscribeSpatial();
       document2.removeEventListener("keydown", onKeyDown);
       root.removeEventListener("click", onClick);
       root.remove();
@@ -21736,7 +22186,7 @@ var init_controller = __esm({
 var styles_default;
 var init_styles = __esm({
   "scripts/modules/landlord-console/styles.css"() {
-    styles_default = '#landlord-console-root { position: relative; z-index: 2147483000; }\n.lmo-backdrop {\n  --lmo-bg: #fffafb; --lmo-surface: rgba(255,255,255,.86); --lmo-panel: #fff; --lmo-panel-soft: #fff5f7;\n  --lmo-text: #283044; --lmo-muted: #778096; --lmo-line: rgba(99,73,85,.12); --lmo-shadow: 0 28px 80px rgba(82,47,67,.22);\n  --lmo-positive: #46a98e; --lmo-danger: #d85a72; --lmo-sidebar: linear-gradient(165deg,#fff 0%,#fff4f7 100%);\n  position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; padding: 24px;\n  background: rgba(38,29,43,.48); backdrop-filter: blur(14px) saturate(1.15); -webkit-backdrop-filter: blur(14px) saturate(1.15);\n  font-family: Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color: var(--lmo-text);\n  animation: lmo-fade-in .2s ease-out;\n}\n.lmo-backdrop[data-theme="dark"] {\n  --lmo-bg: #232136; --lmo-surface: rgba(42,39,63,.9); --lmo-panel: #2a273f; --lmo-panel-soft: #312d49;\n  --lmo-text: #e0def4; --lmo-muted: #9893ad; --lmo-line: rgba(224,222,244,.1); --lmo-shadow: 0 30px 90px rgba(0,0,0,.52);\n  --lmo-positive: #9ccfd8; --lmo-danger: #eb6f92; --lmo-sidebar: linear-gradient(165deg,#2a273f 0%,#232136 100%);\n}\n.lmo-backdrop * { box-sizing: border-box; }\n.lmo-backdrop button { font: inherit; color: inherit; }\n.lmo-backdrop svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }\n.lmo-shell { width: min(1180px,96vw); height: min(880px,92vh); display: grid; grid-template-columns: 224px minmax(0,1fr); overflow: hidden; border: 1px solid rgba(255,255,255,.56); border-radius: 26px; background: var(--lmo-bg); box-shadow: var(--lmo-shadow); animation: lmo-rise .34s cubic-bezier(.2,.8,.2,1); }\n.lmo-icon { display: inline-grid; place-items: center; width: 20px; height: 20px; flex: 0 0 auto; }\n.lmo-sidebar { min-width: 0; padding: 26px 17px 18px; display: flex; flex-direction: column; gap: 26px; border-right: 1px solid var(--lmo-line); background: var(--lmo-sidebar); }\n.lmo-brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; }\n.lmo-brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(135deg,#ff9eaa,#c4a7e7); box-shadow: 0 8px 20px rgba(235,111,146,.25); color: white; font: 800 19px/1 Georgia,serif; }\n.lmo-brand div:last-child { display: grid; gap: 1px; }\n.lmo-brand strong { font: 750 15px/1.2 Georgia,"Songti SC",serif; letter-spacing: .02em; }\n.lmo-brand span { color: var(--lmo-muted); font-size: 10px; letter-spacing: .08em; }\n.lmo-sidebar nav { display: grid; gap: 5px; }\n.lmo-nav-item { border: 0; background: transparent; width: 100%; min-height: 43px; padding: 0 12px; border-radius: 13px; display: flex; align-items: center; gap: 11px; cursor: pointer; color: var(--lmo-muted); font-size: 13px; text-align: left; transition: .18s ease; }\n.lmo-nav-item:hover { background: var(--lmo-panel); color: var(--lmo-text); transform: translateX(2px); }\n.lmo-nav-item.active { color: var(--lmo-text); background: var(--lmo-panel); box-shadow: 0 8px 24px rgba(82,47,67,.08); }\n.lmo-nav-item.active .lmo-icon { color: var(--active-accent); }\n.lmo-sidebar-summary { margin-top: auto; padding: 15px; border: 1px solid var(--lmo-line); border-radius: 16px; background: color-mix(in srgb,var(--lmo-panel) 82%,transparent); }\n.lmo-sidebar-summary > span { color: var(--lmo-muted); font-size: 10px; letter-spacing: .12em; }\n.lmo-sidebar-summary strong { display: block; margin: 7px 0; font-size: 24px; }\n.lmo-sidebar-summary small { color: var(--lmo-muted); font-size: 10px; font-weight: 500; }\n.lmo-sidebar-summary > div { height: 5px; border-radius: 9px; overflow: hidden; background: var(--lmo-line); }\n.lmo-sidebar-summary i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#ff9eaa,#c4a7e7); }\n.lmo-sidebar-summary p { margin: 8px 0 0; color: var(--lmo-muted); font-size: 10px; line-height: 1.5; }\n.lmo-mode { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 12px; background: rgba(70,169,142,.09); }\n.lmo-mode div { display: grid; gap: 1px; }\n.lmo-mode strong { font-size: 10px; color: var(--lmo-positive); }\n.lmo-mode small { font-size: 9px; color: var(--lmo-muted); }\n.lmo-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lmo-positive); box-shadow: 0 0 0 4px color-mix(in srgb,var(--lmo-positive) 18%,transparent); }\n.lmo-mode.ai { background: color-mix(in srgb,#c4a7e7 12%,transparent); }.lmo-mode.ai strong{color:#9b78ce}.lmo-mode.ai .lmo-pulse{background:#c4a7e7;box-shadow:0 0 0 4px color-mix(in srgb,#c4a7e7 18%,transparent)}\n.lmo-main { min-width: 0; display: grid; grid-template-rows: 76px minmax(0,1fr); }\n.lmo-header { padding: 0 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--lmo-line); background: color-mix(in srgb,var(--lmo-surface) 92%,transparent); backdrop-filter: blur(16px); }\n.lmo-header h1 { margin: 3px 0 0; font: 700 20px/1.2 Georgia,"Songti SC",serif; }\n.lmo-eyebrow,.lmo-kicker { display: block; color: var(--active-accent); font-size: 9px; font-weight: 800; letter-spacing: .16em; }\n.lmo-header-actions { display: flex; align-items: center; gap: 12px; }\n.lmo-status-dot { padding: 6px 9px; border-radius: 99px; background: rgba(70,169,142,.1); color: var(--lmo-positive); font-size: 10px; }\n.lmo-icon-button { width: 34px; height: 34px; padding: 7px; border: 1px solid var(--lmo-line); border-radius: 11px; background: var(--lmo-panel); cursor: pointer; transition: .15s; }\n.lmo-icon-button:hover { color: var(--lmo-danger); transform: rotate(4deg); }\n.lmo-scroll { min-height: 0; overflow: auto; padding: 25px 28px 40px; scrollbar-width: thin; scrollbar-color: var(--lmo-line) transparent; }\n.lmo-view { display: grid; gap: 22px; max-width: 970px; margin: 0 auto; animation: lmo-content-in .24s ease-out; }\n.lmo-notice { max-width: 970px; margin: 0 auto 14px; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--lmo-line); background: var(--lmo-panel); font-size: 12px; }\n.lmo-notice.success { border-color: color-mix(in srgb,var(--lmo-positive) 35%,var(--lmo-line)); color: var(--lmo-positive); }\n.lmo-notice.error { border-color: color-mix(in srgb,var(--lmo-danger) 35%,var(--lmo-line)); color: var(--lmo-danger); }\n.lmo-hero { min-height: 210px; padding: 28px 31px; border-radius: 22px; display: grid; grid-template-columns: 1fr 210px; align-items: center; overflow: hidden; position: relative; background: linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 16%,var(--lmo-panel)),var(--lmo-panel)); border: 1px solid color-mix(in srgb,var(--building-accent) 25%,var(--lmo-line)); }\n.lmo-hero::before { content:""; position:absolute; inset:0; opacity:.32; background-image: radial-gradient(var(--building-accent) 1px,transparent 1px); background-size:18px 18px; mask-image:linear-gradient(90deg,transparent,black); pointer-events:none; }\n.lmo-hero > div { position: relative; }\n.lmo-hero h2 { margin: 8px 0 6px; font: 750 clamp(24px,3vw,37px)/1.1 Georgia,"Songti SC",serif; }\n.lmo-hero p { max-width: 540px; margin: 0 0 20px; color: var(--lmo-muted); font-size: 12px; }\n.lmo-primary,.lmo-secondary { min-height: 39px; padding: 0 16px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; font-size: 12px; font-weight: 700; transition: .17s ease; }\n.lmo-primary { color: white !important; background: linear-gradient(135deg,var(--active-accent),color-mix(in srgb,var(--active-accent) 66%,#7c6ce7)); box-shadow: 0 8px 20px color-mix(in srgb,var(--active-accent) 26%,transparent); }\n.lmo-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 26px color-mix(in srgb,var(--active-accent) 32%,transparent); }\n.lmo-primary:disabled { opacity: .42; cursor: not-allowed; box-shadow: none; }\n.lmo-primary .lmo-icon,.lmo-secondary .lmo-icon { width: 16px; height: 16px; }\n.lmo-secondary { border: 1px solid var(--lmo-line); background: var(--lmo-panel); }\n.lmo-secondary:hover { border-color: var(--active-accent); color: var(--active-accent); }\n.lmo-hero-orbit { justify-self: center; width: 132px; height: 132px; border: 1px solid color-mix(in srgb,var(--building-accent) 35%,transparent); border-radius: 50%; display: grid; place-content: center; text-align: center; }\n.lmo-hero-orbit::before,.lmo-hero-orbit::after { content:""; position:absolute; inset:-14px; border:1px dashed color-mix(in srgb,var(--building-accent) 25%,transparent); border-radius:50%; animation:lmo-spin 18s linear infinite; }\n.lmo-hero-orbit::after { inset:18px; animation-direction:reverse; animation-duration:10s; }\n.lmo-hero-orbit span { font: 800 38px/1 Georgia,serif; color: var(--building-accent); }\n.lmo-hero-orbit small { margin-top: 4px; color: var(--lmo-muted); font-size: 10px; }\n.lmo-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-top: 4px; }\n.lmo-section-heading span { color: var(--active-accent); font-size: 9px; font-weight: 800; letter-spacing: .17em; }\n.lmo-section-heading h2 { margin: 4px 0 0; font: 700 20px/1.2 Georgia,"Songti SC",serif; }\n.lmo-section-heading > p { max-width: 390px; margin: 0; color: var(--lmo-muted); font-size: 10px; line-height: 1.6; text-align: right; }\n.lmo-building-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }\n.lmo-building-card { min-width: 0; padding: 0; display: grid; grid-template-columns: 128px 1fr; overflow: hidden; border: 1px solid var(--lmo-line); border-radius: 18px; background: var(--lmo-panel); text-align: left; cursor: pointer; transition: .2s ease; }\n.lmo-building-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb,var(--building-accent) 44%,var(--lmo-line)); box-shadow: 0 15px 35px rgba(82,47,67,.1); }\n.lmo-building-visual { min-height: 172px; position: relative; overflow: hidden; display: grid; place-items: center; background: linear-gradient(145deg,color-mix(in srgb,var(--building-accent) 19%,var(--lmo-panel-soft)),var(--lmo-panel-soft)); }\n.lmo-building-visual::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg,transparent 49%,color-mix(in srgb,var(--building-accent) 15%,transparent) 50%,transparent 51%),linear-gradient(0deg,transparent 49%,color-mix(in srgb,var(--building-accent) 15%,transparent) 50%,transparent 51%); background-size:20px 20px; }\n.lmo-building-type { display: inline-flex; width: fit-content; padding: 4px 8px; border-radius: 99px; color: var(--building-accent); background: color-mix(in srgb,var(--building-accent) 10%,var(--lmo-panel)); font-size: 9px; font-weight: 700; }\n.lmo-building-visual > .lmo-building-type { position:absolute; left:10px; top:10px; }\n.lmo-building-glyph { position:relative; width:56px; height:56px; padding:14px; border-radius:18px; color:white; background:var(--building-accent); box-shadow:0 12px 25px color-mix(in srgb,var(--building-accent) 32%,transparent); transform:rotate(-4deg); }\n.lmo-building-glyph .lmo-icon { width:100%; height:100%; }\n.lmo-building-visual > i { position:absolute; bottom:16px; width:12px; height:20px; border-radius:3px 3px 0 0; background:color-mix(in srgb,var(--building-accent) 25%,var(--lmo-panel)); }\n.lmo-building-visual > i:nth-last-child(3) { left:29px; height:31px; }.lmo-building-visual > i:nth-last-child(2){left:48px;height:22px}.lmo-building-visual > i:last-child{left:67px;height:39px}\n.lmo-building-copy { min-width:0; padding:15px 16px; display:flex; flex-direction:column; }\n.lmo-card-title { display:flex; align-items:start; justify-content:space-between; gap:8px; }\n.lmo-card-title > div { min-width:0; display:grid; gap:3px; }.lmo-card-title strong{font-size:14px}.lmo-card-title span{font-size:9px;color:var(--lmo-muted)}\n.lmo-badge { flex:0 0 auto; padding:4px 7px; border-radius:99px; background:rgba(246,193,119,.13); color:#b98532!important; font-size:9px!important; }.lmo-badge.owned{background:rgba(70,169,142,.12);color:var(--lmo-positive)!important}\n.lmo-building-copy > p { margin:10px 0; color:var(--lmo-muted); font-size:10px; line-height:1.55; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }\n.lmo-card-metrics { margin-top:auto; padding-top:10px; display:flex; gap:9px; border-top:1px solid var(--lmo-line); align-items:center; }\n.lmo-card-metrics span { color:var(--lmo-muted); font-size:8px; }.lmo-card-metrics b{color:var(--lmo-text);font-size:10px}.lmo-card-metrics em{margin-left:auto;display:flex;align-items:center;gap:3px;color:var(--building-accent);font-size:9px;font-style:normal;font-weight:700}.lmo-card-metrics em .lmo-icon{width:12px;height:12px}\n.lmo-dashboard-row { display:grid; grid-template-columns:1.2fr .8fr; gap:14px; }.lmo-panel{padding:18px;border:1px solid var(--lmo-line);border-radius:17px;background:var(--lmo-panel)}\n.lmo-panel-title > div{display:flex;align-items:center;gap:10px}.lmo-panel-title .lmo-icon{width:27px;height:27px;padding:6px;border-radius:9px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-panel-title span{display:grid;gap:2px}.lmo-panel-title strong{font-size:12px}.lmo-panel-title small{font-size:8px;color:var(--lmo-muted)}\n.lmo-mini-timeline{display:grid;margin-top:15px}.lmo-mini-timeline>div{display:grid;grid-template-columns:10px 1fr auto;gap:9px;padding:8px 0;border-top:1px solid var(--lmo-line)}.lmo-mini-timeline i{width:7px;height:7px;margin-top:4px;border-radius:50%;background:var(--active-accent)}.lmo-mini-timeline span{display:grid;gap:3px}.lmo-mini-timeline strong{font-size:10px}.lmo-mini-timeline small,.lmo-mini-timeline time{color:var(--lmo-muted);font-size:8px}.lmo-world-card>p{margin:14px 0;color:var(--lmo-muted);font-size:10px;line-height:1.65}\n.lmo-tags{display:flex;flex-wrap:wrap;gap:5px}.lmo-tags span{padding:4px 7px;border:1px solid color-mix(in srgb,var(--active-accent) 20%,var(--lmo-line));border-radius:99px;background:color-mix(in srgb,var(--active-accent) 7%,transparent);color:var(--active-accent);font-size:8px}\n.lmo-empty{min-height:130px;padding:22px;display:grid;place-items:center;align-content:center;gap:6px;text-align:center;color:var(--lmo-muted)}.lmo-empty .lmo-icon{width:27px;height:27px;color:var(--active-accent)}.lmo-empty strong{color:var(--lmo-text);font-size:12px}.lmo-empty p{max-width:330px;margin:0;font-size:9px;line-height:1.5}\n.lmo-building-banner{padding:22px 24px;display:flex;align-items:end;justify-content:space-between;gap:20px;border:1px solid color-mix(in srgb,var(--building-accent) 24%,var(--lmo-line));border-radius:19px;background:linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 12%,var(--lmo-panel)),var(--lmo-panel))}.lmo-building-banner span{color:var(--building-accent);font-size:9px;font-weight:700;letter-spacing:.1em}.lmo-building-banner h2{margin:5px 0;font:750 28px/1.15 Georgia,"Songti SC",serif}.lmo-building-banner p{max-width:590px;margin:0;color:var(--lmo-muted);font-size:10px;line-height:1.55}.lmo-banner-actions{display:flex;gap:8px;flex:0 0 auto}\n.lmo-metric-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-metric-strip>div{padding:14px 17px;display:grid;gap:4px;border-right:1px solid var(--lmo-line)}.lmo-metric-strip>div:last-child{border:0}.lmo-metric-strip span{color:var(--lmo-muted);font-size:8px}.lmo-metric-strip strong{font:700 20px/1 Georgia,serif}.lmo-metric-strip small{font:500 9px sans-serif;color:var(--lmo-muted)}\n.lmo-floor-list{display:grid;gap:14px}.lmo-floor{overflow:hidden;border:1px solid var(--lmo-line);border-radius:18px;background:var(--lmo-panel)}.lmo-floor>header{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--lmo-line);background:var(--lmo-panel-soft)}.lmo-floor>header>div{display:flex;align-items:center;gap:11px}.lmo-floor>header>div>span{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:var(--active-accent);color:white;font:700 10px Georgia,serif}.lmo-floor>header div div{display:grid;gap:2px}.lmo-floor>header strong{font-size:11px}.lmo-floor>header small,.lmo-floor>header em{color:var(--lmo-muted);font-size:8px;font-style:normal}\n.lmo-space-grid{padding:13px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.lmo-space-card{grid-column:span 2;min-height:112px;padding:12px;border:1px solid var(--lmo-line);border-radius:13px;background:var(--lmo-surface);text-align:left;cursor:pointer;transition:.17s}.lmo-space-card.size-\u5927\u578B{grid-column:span 3}.lmo-space-card.size-\u8D85\u5927\u578B{grid-column:span 4}.lmo-space-card.size-\u5C0F\u578B,.lmo-space-card.size-\u5FAE\u578B{grid-column:span 1}.lmo-space-card:hover{border-color:var(--active-accent);transform:translateY(-2px)}.lmo-space-card>div{display:flex;justify-content:space-between;gap:6px}.lmo-space-type,.lmo-space-status{font-size:7px;color:var(--lmo-muted)}.lmo-space-status{padding:2px 5px;border-radius:99px;background:var(--lmo-panel-soft)}.lmo-space-status.status-\u7A7A\u7F6E{color:#b98532;background:rgba(246,193,119,.12)}.lmo-space-card>strong{display:block;margin:9px 0 3px;font-size:11px}.lmo-space-card>p{margin:0;color:var(--lmo-muted);font-size:8px}.lmo-space-card footer{margin-top:12px;padding-top:7px;display:flex;justify-content:space-between;gap:5px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:7px}\n.lmo-workflow-steps{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px}.lmo-workflow-steps span{display:flex;align-items:center;gap:6px;color:var(--lmo-muted);font-size:9px}.lmo-workflow-steps b{width:23px;height:23px;display:grid;place-items:center;border:1px solid var(--lmo-line);border-radius:50%;font-size:9px}.lmo-workflow-steps span.done{color:var(--lmo-text)}.lmo-workflow-steps span.done b{background:var(--active-accent);border-color:var(--active-accent);color:white}.lmo-workflow-steps>i{width:45px;height:1px;background:var(--lmo-line)}\n.lmo-workflow-intro{padding:20px 22px;border-radius:18px;border:1px solid color-mix(in srgb,var(--building-accent) 24%,var(--lmo-line));background:linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 10%,var(--lmo-panel)),var(--lmo-panel))}.lmo-text-button{padding:0;border:0;background:transparent;display:flex;align-items:center;gap:4px;color:var(--lmo-muted);font-size:9px;cursor:pointer}.lmo-text-button .lmo-icon{width:14px;height:14px}.lmo-workflow-intro>div:nth-child(2){margin-top:15px}.lmo-workflow-intro h2{margin:7px 0 5px;font:700 24px Georgia,"Songti SC",serif}.lmo-workflow-intro p{margin:0;max-width:650px;color:var(--lmo-muted);font-size:10px;line-height:1.6}.lmo-facts{margin-top:16px!important;display:flex;gap:8px}.lmo-facts span{padding:7px 10px;border-radius:9px;background:color-mix(in srgb,var(--lmo-panel) 72%,transparent);font-size:8px;color:var(--lmo-muted)}.lmo-facts b{color:var(--lmo-text);font-size:10px}\n.lmo-generation-callout{min-height:100px;padding:16px 18px;display:flex;align-items:center;gap:13px;border:1px dashed color-mix(in srgb,var(--active-accent) 36%,var(--lmo-line));border-radius:16px;background:color-mix(in srgb,var(--active-accent) 5%,var(--lmo-panel))}.lmo-generation-callout>.lmo-icon{width:38px;height:38px;padding:9px;border-radius:12px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-generation-callout>div{margin-right:auto}.lmo-generation-callout strong{font-size:12px}.lmo-generation-callout p{margin:4px 0 0;color:var(--lmo-muted);font-size:9px}.lmo-generation-callout.compact{min-height:82px}\n.lmo-option-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.lmo-option-card{position:relative;padding:18px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.18s}.lmo-option-card:hover,.lmo-option-card.selected{border-color:var(--active-accent);transform:translateY(-2px);box-shadow:0 12px 28px rgba(82,47,67,.09)}.lmo-option-card>span{color:var(--active-accent);font-size:8px;font-weight:700;letter-spacing:.1em}.lmo-option-card h3{margin:7px 0;font:700 16px Georgia,"Songti SC",serif}.lmo-option-card>p{min-height:62px;margin:0 0 10px;color:var(--lmo-muted);font-size:9px;line-height:1.55}.lmo-option-card ul{margin:12px 0 0;padding:10px 0 0 15px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:8px;line-height:1.8}.lmo-option-check{position:absolute;right:10px;top:10px;width:20px;height:20px;padding:3px;border-radius:50%;color:white;background:var(--active-accent)}.lmo-option-check:empty{background:transparent;border:1px solid var(--lmo-line)}.lmo-option-check .lmo-icon{width:100%;height:100%}\n.lmo-confirm-bar{position:sticky;bottom:-26px;z-index:2;margin-top:4px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid var(--lmo-line);border-radius:15px;background:color-mix(in srgb,var(--lmo-surface) 92%,transparent);backdrop-filter:blur(16px);box-shadow:0 -8px 28px rgba(82,47,67,.08)}.lmo-confirm-bar>div{display:grid;gap:3px}.lmo-confirm-bar strong{font-size:10px}.lmo-confirm-bar span{color:var(--lmo-muted);font-size:8px}\n.lmo-two-column{display:grid;grid-template-columns:220px minmax(0,1fr);gap:15px;align-items:start}.lmo-selector,.lmo-placement{padding:16px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-selector h2{margin:6px 0 14px;font:700 17px Georgia,"Songti SC",serif}.lmo-compact-list{display:grid;gap:6px;max-height:470px;overflow:auto}.lmo-compact-space{padding:9px 10px;display:grid;gap:3px;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-surface);text-align:left;cursor:pointer}.lmo-compact-space:hover,.lmo-compact-space.selected{border-color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel))}.lmo-compact-space span,.lmo-compact-space small{color:var(--lmo-muted);font-size:7px}.lmo-compact-space strong{font-size:10px}\n.lmo-workspace{min-width:0}.lmo-preview-room{min-height:360px;padding:27px;display:flex;flex-direction:column;align-items:start;border:1px solid var(--lmo-line);border-radius:18px;background:radial-gradient(circle at 90% 10%,color-mix(in srgb,var(--active-accent) 13%,transparent),transparent 35%),var(--lmo-panel)}.lmo-preview-room>span{color:var(--active-accent);font-size:8px;font-weight:700;letter-spacing:.08em}.lmo-preview-room h2{margin:10px 0 7px;font:750 27px Georgia,"Songti SC",serif}.lmo-preview-room>p{max-width:510px;margin:0;color:var(--lmo-muted);font-size:10px;line-height:1.6}.lmo-current-style{min-width:220px;margin:26px 0;padding:14px;display:grid;gap:4px;border:1px solid var(--lmo-line);border-radius:12px;background:var(--lmo-panel-soft)}.lmo-current-style small,.lmo-current-style span{font-size:8px;color:var(--lmo-muted)}.lmo-current-style strong{font-size:12px}\n.lmo-renovation-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.lmo-renovation-card{padding:13px;border:1px solid var(--lmo-line);border-radius:14px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.17s}.lmo-renovation-card:hover,.lmo-renovation-card.selected{border-color:var(--active-accent);transform:translateY(-2px)}.lmo-palette{height:57px;margin:-6px -6px 12px;display:flex;overflow:hidden;border-radius:10px}.lmo-palette i{flex:1;background:var(--swatch)}.lmo-renovation-card>span{color:var(--active-accent);font-size:7px;font-weight:700}.lmo-renovation-card h3{margin:5px 0;font:700 14px Georgia,"Songti SC",serif}.lmo-renovation-card>p{min-height:38px;margin:0 0 9px;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-renovation-card>small{display:block;margin-top:10px;padding-top:8px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:7px}\n.lmo-recruit-layout{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:14px;align-items:start}.lmo-candidate-list{display:grid;gap:9px}.lmo-candidate{position:relative;padding:14px;display:grid;grid-template-columns:48px 1fr;gap:12px;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.17s}.lmo-candidate:hover,.lmo-candidate.selected{border-color:var(--person-accent);transform:translateX(2px);box-shadow:0 10px 25px color-mix(in srgb,var(--person-accent) 10%,transparent)}.lmo-avatar{width:48px;height:48px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(135deg,var(--person-accent),color-mix(in srgb,var(--person-accent) 55%,#c4a7e7));color:white;font:700 18px Georgia,serif;box-shadow:0 8px 18px color-mix(in srgb,var(--person-accent) 22%,transparent)}.lmo-candidate>div:nth-child(2)>span{color:var(--person-accent);font-size:7px;font-weight:700}.lmo-candidate h3{margin:4px 0;font:700 14px Georgia,"Songti SC",serif}.lmo-candidate p{margin:0;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-candidate blockquote{margin:8px 0;padding:7px 9px;border-left:2px solid var(--person-accent);border-radius:0 8px 8px 0;background:var(--lmo-panel-soft);color:var(--lmo-muted);font-size:8px;font-style:italic}.lmo-candidate .lmo-tags span{color:var(--person-accent);border-color:color-mix(in srgb,var(--person-accent) 22%,var(--lmo-line));background:color-mix(in srgb,var(--person-accent) 6%,transparent)}.lmo-placement{position:sticky;top:0}.lmo-placement h3{margin:6px 0;font:700 15px Georgia,"Songti SC",serif}.lmo-placement>p{margin:0 0 13px;color:var(--lmo-muted);font-size:8px;line-height:1.5}\n.lmo-event-timeline{display:grid;gap:9px}.lmo-event-timeline article{padding:15px 17px;display:grid;grid-template-columns:38px 1fr auto;gap:13px;align-items:start;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel)}.lmo-event-mark{width:38px;height:38px;padding:9px;border-radius:12px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-event-mark .lmo-icon{width:100%;height:100%}.lmo-event-timeline article>div:nth-child(2){display:grid;gap:3px}.lmo-event-timeline span,.lmo-event-timeline small{color:var(--lmo-muted);font-size:8px}.lmo-event-timeline h3{margin:1px 0;font-size:11px}.lmo-event-timeline p{margin:0;color:var(--lmo-muted);font-size:9px}.lmo-event-timeline em{padding:4px 7px;border-radius:99px;background:rgba(70,169,142,.1);color:var(--lmo-positive);font-size:8px;font-style:normal}\n.lmo-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.lmo-mode-card{padding:20px;display:grid;gap:8px;border:1px solid var(--lmo-line);border-radius:18px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.18s}.lmo-mode-card:hover:not(:disabled),.lmo-mode-card.selected{border-color:var(--active-accent);transform:translateY(-2px);box-shadow:0 12px 30px rgba(82,47,67,.09)}.lmo-mode-card:disabled{opacity:.48;cursor:not-allowed}.lmo-mode-card>div{position:relative;width:42px;height:42px;padding:10px;border-radius:13px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-mode-card>div>.lmo-icon{width:100%;height:100%}.lmo-mode-card .lmo-option-check{right:-7px;top:-7px;width:18px;height:18px;padding:3px}.lmo-mode-card strong{font:700 17px Georgia,"Songti SC",serif}.lmo-mode-card p{margin:0;color:var(--lmo-muted);font-size:9px;line-height:1.6}.lmo-mode-card>small{color:var(--active-accent);font-size:8px}.lmo-safety-line{padding:13px 15px;display:flex;align-items:center;gap:11px;border:1px solid color-mix(in srgb,var(--lmo-positive) 28%,var(--lmo-line));border-radius:14px;background:color-mix(in srgb,var(--lmo-positive) 7%,var(--lmo-panel))}.lmo-safety-line>.lmo-icon{color:var(--lmo-positive)}.lmo-safety-line>span{display:grid;gap:2px}.lmo-safety-line strong{font-size:10px}.lmo-safety-line small{color:var(--lmo-muted);font-size:8px}.lmo-task-list{display:grid;gap:7px}.lmo-task-row{min-width:0;padding:10px 11px;display:grid;grid-template-columns:68px minmax(0,1fr) minmax(80px,145px) auto;gap:10px;align-items:center;border:1px solid var(--lmo-line);border-radius:11px;background:var(--lmo-surface)}.lmo-task-state{padding:4px 6px;border-radius:99px;background:var(--lmo-panel-soft);color:var(--lmo-muted);font-size:8px;text-align:center}.lmo-task-state.status-ready,.lmo-task-state.status-confirmed{color:var(--lmo-positive);background:color-mix(in srgb,var(--lmo-positive) 10%,transparent)}.lmo-task-state.status-failed,.lmo-task-state.status-cancelled{color:var(--lmo-danger);background:color-mix(in srgb,var(--lmo-danger) 9%,transparent)}.lmo-task-row>div{display:grid;gap:3px}.lmo-task-row strong{font-size:10px}.lmo-task-row small{overflow:hidden;color:var(--lmo-muted);font-size:8px;text-overflow:ellipsis;white-space:nowrap}.lmo-task-row code{overflow:hidden;color:var(--lmo-muted);font:7px ui-monospace,SFMono-Regular,Menlo,monospace;text-overflow:ellipsis}.lmo-task-actions{display:flex;gap:5px}.lmo-task-actions button{padding:4px 7px;border:1px solid var(--lmo-line);border-radius:7px;background:var(--lmo-panel);font-size:8px;cursor:pointer}.lmo-task-actions button:hover{border-color:var(--active-accent);color:var(--active-accent)}\n.lmo-link-channels{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.lmo-link-channels>div{padding:12px 14px;display:grid;grid-template-columns:1fr auto;align-items:center;border:1px solid var(--lmo-line);border-radius:13px;background:var(--lmo-panel)}.lmo-link-channels>div.unavailable{border-style:dashed;opacity:.62}.lmo-link-channels span{color:var(--active-accent);font-size:9px;font-weight:700}.lmo-link-channels strong{grid-row:span 2;font:750 22px Georgia,serif}.lmo-link-channels small{color:var(--lmo-muted);font-size:7px}.lmo-link-list{display:grid;gap:6px}.lmo-link-list>div{padding:9px 10px;display:grid;grid-template-columns:48px minmax(0,1fr) auto auto auto;gap:8px;align-items:center;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-surface)}.lmo-link-list>div>span{padding:4px 5px;border-radius:99px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 8%,transparent);font-size:8px;text-align:center}.lmo-link-list p{margin:0;display:grid;gap:2px}.lmo-link-list strong{font-size:9px}.lmo-link-list small{overflow:hidden;color:var(--lmo-muted);font-size:8px;text-overflow:ellipsis;white-space:nowrap}.lmo-link-list button{padding:4px 6px;border:1px solid var(--lmo-line);border-radius:7px;background:var(--lmo-panel);font-size:8px;cursor:pointer}.lmo-link-list button:hover{border-color:var(--active-accent);color:var(--active-accent)}\n.lmo-link-preview{padding:17px;border:1px solid color-mix(in srgb,var(--active-accent) 32%,var(--lmo-line));border-radius:17px;background:linear-gradient(135deg,color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel)),var(--lmo-panel))}.lmo-link-preview>header{display:flex;align-items:center;justify-content:space-between}.lmo-link-preview>header>div{display:flex;align-items:center;gap:9px}.lmo-link-preview>header>div>.lmo-icon{width:28px;height:28px;padding:6px;border-radius:9px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-link-preview>header span{display:grid;gap:2px}.lmo-link-preview>header strong{font-size:11px}.lmo-link-preview>header small{color:var(--lmo-muted);font-size:7px}.lmo-link-preview>header>button{width:28px;height:28px;padding:6px;border:1px solid var(--lmo-line);border-radius:9px;background:var(--lmo-panel);cursor:pointer}.lmo-link-draft-grid{margin-top:13px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.lmo-link-draft{min-width:0;padding:11px;border:1px solid var(--lmo-line);border-radius:11px;background:var(--lmo-surface)}.lmo-link-draft>header{display:flex;align-items:center;justify-content:space-between;gap:8px}.lmo-link-draft>header span{padding:3px 6px;border-radius:99px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 9%,transparent);font-size:7px}.lmo-link-draft>header code{overflow:hidden;color:var(--lmo-muted);font:6px ui-monospace,SFMono-Regular,Menlo,monospace;text-overflow:ellipsis}.lmo-link-draft>strong{display:block;margin:8px 0 5px;font-size:10px}.lmo-link-draft>span{color:var(--lmo-muted);font-size:7px}.lmo-link-draft>p{margin:5px 0 0;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-link-draft>pre{max-height:82px;margin:6px 0 0;padding:7px;overflow:auto;border-radius:7px;background:var(--lmo-panel-soft);color:var(--lmo-muted);font:6px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}.lmo-link-preview>footer{margin-top:13px;padding-top:11px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--lmo-line)}.lmo-link-preview>footer p{margin:0;color:var(--lmo-muted);font-size:7px;line-height:1.5}.lmo-link-preview>footer button{flex:0 0 auto}\n.lmo-floor.visibility-outline,.lmo-space-card.visibility-outline{border-style:dashed;background:repeating-linear-gradient(135deg,var(--lmo-panel),var(--lmo-panel) 8px,var(--lmo-panel-soft) 8px,var(--lmo-panel-soft) 16px)}.lmo-floor.visibility-partial,.lmo-space-card.visibility-partial{border-color:color-mix(in srgb,var(--active-accent) 24%,var(--lmo-line))}.lmo-space-card.visibility-outline{filter:saturate(.45)}\n.lmo-resident-strip{display:flex;gap:8px;overflow:auto}.lmo-resident-strip>div{min-width:215px;padding:9px 10px;display:grid;grid-template-columns:38px minmax(0,1fr);gap:8px;align-items:center;border:1px solid var(--lmo-line);border-radius:12px;background:var(--lmo-surface)}.lmo-resident-strip>div>span{grid-row:span 2;width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,var(--person-accent),color-mix(in srgb,var(--person-accent) 55%,#c4a7e7));color:white;font:700 15px Georgia,serif}.lmo-resident-strip p{margin:0;display:grid;gap:2px}.lmo-resident-strip strong{font-size:10px}.lmo-resident-strip small{color:var(--lmo-muted);font-size:7px}.lmo-resident-strip code{grid-column:2;color:var(--lmo-muted);font:6px ui-monospace,SFMono-Regular,Menlo,monospace}\n.lmo-history-console{min-height:205px;padding:24px 28px;display:grid;grid-template-columns:150px minmax(0,1fr);gap:28px;align-items:center;overflow:hidden;position:relative;border:1px solid color-mix(in srgb,var(--active-accent) 28%,var(--lmo-line));border-radius:20px;background:radial-gradient(circle at 8% 50%,color-mix(in srgb,var(--active-accent) 13%,transparent),transparent 34%),var(--lmo-panel)}.lmo-history-console::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(90deg,color-mix(in srgb,var(--active-accent) 5%,transparent) 1px,transparent 1px),linear-gradient(color-mix(in srgb,var(--active-accent) 5%,transparent) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,black,transparent 70%)}.lmo-history-orbit{position:relative;z-index:1;width:126px;height:126px;display:grid;place-content:center;border:1px solid color-mix(in srgb,var(--active-accent) 35%,transparent);border-radius:50%;text-align:center}.lmo-history-orbit::before,.lmo-history-orbit::after{content:"";position:absolute;border-radius:50%;border:1px dashed color-mix(in srgb,var(--active-accent) 25%,transparent);animation:lmo-spin 16s linear infinite}.lmo-history-orbit::before{inset:-12px}.lmo-history-orbit::after{inset:18px;animation-direction:reverse;animation-duration:9s}.lmo-history-orbit span{color:var(--active-accent);font:800 34px/1 Georgia,serif}.lmo-history-orbit small{margin-top:5px;color:var(--lmo-muted);font-size:8px}.lmo-history-copy{position:relative;z-index:1}.lmo-history-copy>span{color:var(--active-accent);font-size:7px;font-weight:800;letter-spacing:.16em}.lmo-history-copy h3{margin:7px 0 5px;font:700 20px Georgia,"Songti SC",serif}.lmo-history-copy>p{max-width:590px;margin:0;color:var(--lmo-muted);font-size:9px;line-height:1.65}.lmo-history-actions{margin-top:15px;display:flex;gap:8px}.lmo-history-actions button{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-history-actions .lmo-secondary:disabled{opacity:.42;cursor:not-allowed}.lmo-history-warning{margin-top:10px;padding:7px 9px;border:1px solid color-mix(in srgb,var(--lmo-danger) 26%,var(--lmo-line));border-radius:9px;background:color-mix(in srgb,var(--lmo-danger) 6%,transparent);color:var(--lmo-danger);font-size:7px}.lmo-history-list{display:grid;gap:7px;margin-top:14px}.lmo-history-list>div{padding:10px 11px;display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;gap:10px;align-items:center;border:1px solid var(--lmo-line);border-radius:11px;background:var(--lmo-surface)}.lmo-history-list>div.status-undone{opacity:.5}.lmo-history-list>div>span{width:34px;height:34px;padding:8px;border-radius:10px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 9%,transparent)}.lmo-history-list>div>span .lmo-icon{width:100%;height:100%}.lmo-history-list p{min-width:0;margin:0;display:grid;gap:3px}.lmo-history-list strong{font-size:10px}.lmo-history-list small{overflow:hidden;color:var(--lmo-muted);font-size:7px;text-overflow:ellipsis;white-space:nowrap}.lmo-history-list time{color:var(--lmo-muted);font-size:7px}.lmo-history-list em{padding:4px 7px;border-radius:99px;background:color-mix(in srgb,var(--lmo-positive) 10%,transparent);color:var(--lmo-positive);font-size:7px;font-style:normal}.lmo-history-list .status-undone em{background:var(--lmo-panel-soft);color:var(--lmo-muted)}\n.lmo-twin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}.lmo-twin-metrics{display:flex;gap:8px}.lmo-twin-metrics span{padding:8px 11px;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-panel);color:var(--lmo-muted);font-size:8px}.lmo-twin-metrics b{margin-right:4px;color:var(--lmo-text);font-size:12px}.lmo-twin-legend{display:flex;gap:10px;color:var(--lmo-muted);font-size:7px}.lmo-twin-legend span{display:flex;align-items:center;gap:4px}.lmo-twin-legend i{width:8px;height:8px;border:1px solid var(--active-accent);border-radius:2px;background:color-mix(in srgb,var(--active-accent) 12%,var(--lmo-panel))}.lmo-twin-legend i.outline{border-style:dashed;opacity:.5}.lmo-twin-legend i.revealed{background:color-mix(in srgb,var(--active-accent) 24%,var(--lmo-panel))}.lmo-twin-legend i.occupied{border-radius:50%;background:var(--lmo-positive);border-color:var(--lmo-positive)}\n.lmo-twin-layout{display:grid;grid-template-columns:128px minmax(320px,1fr) 224px;gap:12px;align-items:start}.lmo-twin-floor-nav{display:grid;gap:7px}.lmo-twin-floor-nav button{min-width:0;padding:9px;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:center;border:1px solid var(--lmo-line);border-radius:11px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.16s}.lmo-twin-floor-nav button:hover,.lmo-twin-floor-nav button.active{border-color:color-mix(in srgb,var(--active-accent) 45%,var(--lmo-line));background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel));transform:translateX(2px)}.lmo-twin-floor-nav button>span{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:var(--lmo-panel-soft);color:var(--active-accent);font:700 10px Georgia,serif}.lmo-twin-floor-nav button.active>span{color:white;background:var(--active-accent)}.lmo-twin-floor-nav p{min-width:0;margin:0;display:grid;gap:2px}.lmo-twin-floor-nav strong,.lmo-twin-floor-nav small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-twin-floor-nav strong{font-size:8px}.lmo-twin-floor-nav small{color:var(--lmo-muted);font-size:6px}\n.lmo-twin-stage{overflow:hidden;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-twin-stage>header{padding:11px 13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--lmo-line);background:var(--lmo-panel-soft)}.lmo-twin-stage>header>div{display:grid;gap:2px}.lmo-twin-stage>header span{color:var(--active-accent);font-size:6px;font-weight:800;letter-spacing:.14em}.lmo-twin-stage>header strong{font-size:11px}.lmo-twin-stage>header small{color:var(--lmo-muted);font-size:7px}.lmo-twin-map{position:relative;height:400px;margin:12px;border:1px solid color-mix(in srgb,var(--twin-accent) 26%,var(--lmo-line));border-radius:12px;overflow:hidden;background:linear-gradient(color-mix(in srgb,var(--twin-accent) 5%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--twin-accent) 5%,transparent) 1px,transparent 1px),radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--twin-accent) 7%,transparent),transparent 65%),var(--lmo-panel-soft);background-size:20px 20px,20px 20px,auto,auto}.lmo-twin-edges{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:visible;filter:drop-shadow(0 0 2px color-mix(in srgb,var(--twin-accent) 42%,transparent))}.lmo-backdrop .lmo-twin-edges line{stroke:color-mix(in srgb,var(--twin-accent) 62%,var(--lmo-muted));stroke-width:1;stroke-dasharray:2 2;vector-effect:non-scaling-stroke;opacity:.48;transition:.16s}.lmo-backdrop .lmo-twin-edges line.active{stroke:var(--twin-accent);stroke-width:2.4;stroke-dasharray:none;opacity:.92}.lmo-twin-map>button{position:absolute;z-index:2;padding:7px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;overflow:hidden;border:2px solid var(--lmo-panel);outline:1px solid color-mix(in srgb,var(--twin-accent) 24%,var(--lmo-line));background:color-mix(in srgb,var(--twin-accent) 12%,var(--lmo-panel));text-align:left;cursor:pointer;transition:.16s}.lmo-twin-map>button:hover,.lmo-twin-map>button.connected{z-index:3;background:color-mix(in srgb,var(--twin-accent) 20%,var(--lmo-panel));box-shadow:0 6px 18px rgba(0,0,0,.12)}.lmo-twin-map>button.selected{z-index:4;outline:2px solid var(--twin-accent);outline-offset:-3px;background:color-mix(in srgb,var(--twin-accent) 30%,var(--lmo-panel));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--twin-accent) 18%,transparent),0 8px 22px rgba(0,0,0,.14)}.lmo-twin-map strong{max-width:100%;overflow:hidden;font-size:9px;text-overflow:ellipsis;white-space:nowrap}.lmo-twin-map small,.lmo-twin-map em{max-width:100%;overflow:hidden;color:var(--lmo-muted);font-size:6px;font-style:normal;text-overflow:ellipsis;white-space:nowrap}.lmo-twin-map>button.visibility-outline{border-style:dashed;filter:saturate(.35)}\n.lmo-twin-inspector{min-height:448px;padding:15px;display:flex;flex-direction:column;gap:13px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-twin-inspector>.lmo-empty{margin:auto 0}.lmo-twin-inspector-head>span{color:var(--active-accent);font-size:7px;font-weight:700}.lmo-twin-inspector-head>strong{display:block;margin:5px 0 4px;font:700 17px Georgia,"Songti SC",serif}.lmo-twin-inspector-head>p,.lmo-twin-inspector-block>p{margin:0;color:var(--lmo-muted);font-size:8px;line-height:1.55}.lmo-twin-data-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.lmo-twin-data-grid>span{min-width:0;padding:8px;border:1px solid var(--lmo-line);border-radius:9px;background:var(--lmo-surface)}.lmo-twin-data-grid small,.lmo-twin-inspector-block>small{display:block;margin-bottom:3px;color:var(--lmo-muted);font-size:6px}.lmo-twin-data-grid b{display:block;overflow:hidden;font-size:8px;text-overflow:ellipsis;white-space:nowrap}.lmo-twin-inspector-block{padding-top:10px;border-top:1px solid var(--lmo-line)}.lmo-twin-people{display:flex;flex-wrap:wrap;gap:5px}.lmo-twin-people>span{display:flex;align-items:center;gap:4px;padding:3px 6px 3px 3px;border-radius:99px;background:var(--lmo-panel-soft);font-size:7px}.lmo-twin-people i{width:17px;height:17px;display:grid;place-items:center;border-radius:50%;background:var(--person-accent);color:white;font-size:7px;font-style:normal}.lmo-twin-people>small{color:var(--lmo-muted);font-size:7px}.lmo-twin-inspector>.lmo-primary{width:100%;margin-top:auto;font-size:9px}\n.lmo-link-channels button{grid-column:1/-1;margin-top:8px;padding:5px 7px;border:1px solid color-mix(in srgb,var(--active-accent) 25%,var(--lmo-line));border-radius:8px;background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel));color:var(--active-accent);font-size:7px;cursor:pointer}.lmo-link-channels button:hover{background:color-mix(in srgb,var(--active-accent) 14%,var(--lmo-panel))}\n@keyframes lmo-fade-in{from{opacity:0}to{opacity:1}}@keyframes lmo-rise{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}@keyframes lmo-content-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}@keyframes lmo-spin{to{transform:rotate(360deg)}}\n@media(max-width:820px){.lmo-backdrop{padding:9px}.lmo-shell{width:100%;height:96vh;grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);border-radius:20px}.lmo-sidebar{padding:12px 14px;display:grid;grid-template-columns:auto 1fr;border-right:0;border-bottom:1px solid var(--lmo-line);gap:12px}.lmo-brand{padding:0}.lmo-sidebar nav{display:flex;overflow:auto;gap:4px}.lmo-nav-item{width:auto;min-height:38px;padding:0 10px;white-space:nowrap}.lmo-sidebar-summary,.lmo-mode{display:none}.lmo-main{grid-template-rows:62px minmax(0,1fr)}.lmo-header{padding:0 16px}.lmo-header h1{font-size:16px}.lmo-scroll{padding:16px 14px 34px}.lmo-building-grid,.lmo-dashboard-row{grid-template-columns:1fr}.lmo-building-card{grid-template-columns:110px 1fr}.lmo-section-heading>p{display:none}.lmo-two-column,.lmo-recruit-layout{grid-template-columns:1fr}.lmo-selector,.lmo-placement{position:static}.lmo-compact-list{grid-template-columns:repeat(2,1fr);max-height:220px}.lmo-option-grid,.lmo-renovation-plans{grid-template-columns:1fr}.lmo-space-grid{grid-template-columns:repeat(2,1fr)}.lmo-space-card,.lmo-space-card.size-\u5927\u578B,.lmo-space-card.size-\u8D85\u5927\u578B,.lmo-space-card.size-\u5C0F\u578B,.lmo-space-card.size-\u5FAE\u578B{grid-column:span 1}.lmo-hero{grid-template-columns:1fr;min-height:190px}.lmo-hero-orbit{display:none}.lmo-building-banner{align-items:start;flex-direction:column}.lmo-banner-actions{width:100%}.lmo-banner-actions button{flex:1}.lmo-metric-strip{grid-template-columns:repeat(2,1fr)}.lmo-metric-strip>div:nth-child(2){border-right:0}.lmo-metric-strip>div:nth-child(-n+2){border-bottom:1px solid var(--lmo-line)}.lmo-generation-callout{align-items:start;flex-wrap:wrap}.lmo-generation-callout button{width:100%}.lmo-confirm-bar{bottom:-16px}.lmo-workflow-steps{gap:5px}.lmo-workflow-steps>i{width:16px}.lmo-workflow-steps span{font-size:8px}}\n@media(max-width:820px){.lmo-mode-grid{grid-template-columns:1fr}.lmo-link-channels{grid-template-columns:repeat(2,1fr)}.lmo-link-draft-grid{grid-template-columns:1fr}.lmo-task-row{grid-template-columns:62px minmax(0,1fr) auto}.lmo-task-row>code{display:none}.lmo-history-console{grid-template-columns:115px minmax(0,1fr);padding:21px}.lmo-history-orbit{width:100px;height:100px}.lmo-twin-layout{grid-template-columns:110px minmax(0,1fr)}.lmo-twin-inspector{grid-column:1/-1;min-height:0}.lmo-twin-map{height:340px}}\n@media(max-width:520px){.lmo-brand div:last-child{display:none}.lmo-nav-item>span:last-child{display:none}.lmo-nav-item{padding:0 9px}.lmo-header-actions .lmo-status-dot{display:none}.lmo-building-card{grid-template-columns:90px 1fr}.lmo-building-visual{min-height:165px}.lmo-card-metrics span:nth-child(3){display:none}.lmo-facts{display:grid;grid-template-columns:1fr 1fr}.lmo-confirm-bar{align-items:stretch;flex-direction:column}.lmo-confirm-bar button{width:100%}.lmo-candidate{grid-template-columns:40px 1fr}.lmo-avatar{width:40px;height:40px}.lmo-event-timeline article{grid-template-columns:34px 1fr}.lmo-event-timeline article>em{display:none}}\n@media(max-width:520px){.lmo-banner-actions{flex-wrap:wrap}.lmo-banner-actions button{min-width:45%}.lmo-link-list>div{grid-template-columns:repeat(3,1fr)}.lmo-link-list>div>span{grid-column:1}.lmo-link-list p{grid-column:2/4}.lmo-link-list button{grid-row:2}.lmo-link-list button:nth-last-child(3){grid-column:1}.lmo-link-list button:nth-last-child(2){grid-column:2}.lmo-link-list button:last-child{grid-column:3}.lmo-link-preview>footer{align-items:stretch;flex-direction:column}.lmo-link-preview>footer button{width:100%}.lmo-task-row{grid-template-columns:56px minmax(0,1fr)}.lmo-task-actions{grid-column:2}.lmo-history-console{grid-template-columns:1fr}.lmo-history-orbit{display:none}.lmo-history-actions{align-items:stretch;flex-direction:column}.lmo-history-actions button{width:100%;max-width:none}.lmo-history-list>div{grid-template-columns:30px minmax(0,1fr) auto}.lmo-history-list time{display:none}.lmo-twin-toolbar{align-items:flex-start;flex-direction:column}.lmo-twin-legend{flex-wrap:wrap}.lmo-twin-layout{grid-template-columns:1fr}.lmo-twin-floor-nav{display:flex;overflow:auto}.lmo-twin-floor-nav button{min-width:120px}.lmo-twin-stage,.lmo-twin-inspector{grid-column:1}.lmo-twin-map{height:300px}}\n@media(prefers-reduced-motion:reduce){.lmo-backdrop,.lmo-shell,.lmo-view,.lmo-hero-orbit::before,.lmo-hero-orbit::after,.lmo-history-orbit::before,.lmo-history-orbit::after{animation:none!important}.lmo-backdrop *{scroll-behavior:auto!important;transition:none!important}}\n';
+    styles_default = '#landlord-console-root { position: relative; z-index: 2147483000; }\n.lmo-backdrop {\n  --lmo-bg: #fffafb; --lmo-surface: rgba(255,255,255,.86); --lmo-panel: #fff; --lmo-panel-soft: #fff5f7;\n  --lmo-text: #283044; --lmo-muted: #778096; --lmo-line: rgba(99,73,85,.12); --lmo-shadow: 0 28px 80px rgba(82,47,67,.22);\n  --lmo-positive: #46a98e; --lmo-danger: #d85a72; --lmo-sidebar: linear-gradient(165deg,#fff 0%,#fff4f7 100%);\n  position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; padding: 24px;\n  background: rgba(38,29,43,.48); backdrop-filter: blur(14px) saturate(1.15); -webkit-backdrop-filter: blur(14px) saturate(1.15);\n  font-family: Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color: var(--lmo-text);\n  animation: lmo-fade-in .2s ease-out;\n}\n.lmo-backdrop[data-theme="dark"] {\n  --lmo-bg: #232136; --lmo-surface: rgba(42,39,63,.9); --lmo-panel: #2a273f; --lmo-panel-soft: #312d49;\n  --lmo-text: #e0def4; --lmo-muted: #9893ad; --lmo-line: rgba(224,222,244,.1); --lmo-shadow: 0 30px 90px rgba(0,0,0,.52);\n  --lmo-positive: #9ccfd8; --lmo-danger: #eb6f92; --lmo-sidebar: linear-gradient(165deg,#2a273f 0%,#232136 100%);\n}\n.lmo-backdrop * { box-sizing: border-box; }\n.lmo-backdrop button { font: inherit; color: inherit; }\n.lmo-backdrop svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }\n.lmo-shell { width: min(1180px,96vw); height: min(880px,92vh); display: grid; grid-template-columns: 224px minmax(0,1fr); overflow: hidden; border: 1px solid rgba(255,255,255,.56); border-radius: 26px; background: var(--lmo-bg); box-shadow: var(--lmo-shadow); animation: lmo-rise .34s cubic-bezier(.2,.8,.2,1); }\n.lmo-icon { display: inline-grid; place-items: center; width: 20px; height: 20px; flex: 0 0 auto; }\n.lmo-sidebar { min-width: 0; padding: 26px 17px 18px; display: flex; flex-direction: column; gap: 26px; border-right: 1px solid var(--lmo-line); background: var(--lmo-sidebar); }\n.lmo-brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; }\n.lmo-brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 13px; background: linear-gradient(135deg,#ff9eaa,#c4a7e7); box-shadow: 0 8px 20px rgba(235,111,146,.25); color: white; font: 800 19px/1 Georgia,serif; }\n.lmo-brand div:last-child { display: grid; gap: 1px; }\n.lmo-brand strong { font: 750 15px/1.2 Georgia,"Songti SC",serif; letter-spacing: .02em; }\n.lmo-brand span { color: var(--lmo-muted); font-size: 10px; letter-spacing: .08em; }\n.lmo-sidebar nav { display: grid; gap: 5px; }\n.lmo-nav-item { border: 0; background: transparent; width: 100%; min-height: 43px; padding: 0 12px; border-radius: 13px; display: flex; align-items: center; gap: 11px; cursor: pointer; color: var(--lmo-muted); font-size: 13px; text-align: left; transition: .18s ease; }\n.lmo-nav-item:hover { background: var(--lmo-panel); color: var(--lmo-text); transform: translateX(2px); }\n.lmo-nav-item.active { color: var(--lmo-text); background: var(--lmo-panel); box-shadow: 0 8px 24px rgba(82,47,67,.08); }\n.lmo-nav-item.active .lmo-icon { color: var(--active-accent); }\n.lmo-sidebar-summary { margin-top: auto; padding: 15px; border: 1px solid var(--lmo-line); border-radius: 16px; background: color-mix(in srgb,var(--lmo-panel) 82%,transparent); }\n.lmo-sidebar-summary > span { color: var(--lmo-muted); font-size: 10px; letter-spacing: .12em; }\n.lmo-sidebar-summary strong { display: block; margin: 7px 0; font-size: 24px; }\n.lmo-sidebar-summary small { color: var(--lmo-muted); font-size: 10px; font-weight: 500; }\n.lmo-sidebar-summary > div { height: 5px; border-radius: 9px; overflow: hidden; background: var(--lmo-line); }\n.lmo-sidebar-summary i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#ff9eaa,#c4a7e7); }\n.lmo-sidebar-summary p { margin: 8px 0 0; color: var(--lmo-muted); font-size: 10px; line-height: 1.5; }\n.lmo-mode { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 12px; background: rgba(70,169,142,.09); }\n.lmo-mode div { display: grid; gap: 1px; }\n.lmo-mode strong { font-size: 10px; color: var(--lmo-positive); }\n.lmo-mode small { font-size: 9px; color: var(--lmo-muted); }\n.lmo-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lmo-positive); box-shadow: 0 0 0 4px color-mix(in srgb,var(--lmo-positive) 18%,transparent); }\n.lmo-mode.ai { background: color-mix(in srgb,#c4a7e7 12%,transparent); }.lmo-mode.ai strong{color:#9b78ce}.lmo-mode.ai .lmo-pulse{background:#c4a7e7;box-shadow:0 0 0 4px color-mix(in srgb,#c4a7e7 18%,transparent)}\n.lmo-main { min-width: 0; display: grid; grid-template-rows: 76px minmax(0,1fr); }\n.lmo-header { padding: 0 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--lmo-line); background: color-mix(in srgb,var(--lmo-surface) 92%,transparent); backdrop-filter: blur(16px); }\n.lmo-header h1 { margin: 3px 0 0; font: 700 20px/1.2 Georgia,"Songti SC",serif; }\n.lmo-eyebrow,.lmo-kicker { display: block; color: var(--active-accent); font-size: 9px; font-weight: 800; letter-spacing: .16em; }\n.lmo-header-actions { display: flex; align-items: center; gap: 12px; }\n.lmo-status-dot { padding: 6px 9px; border-radius: 99px; background: rgba(70,169,142,.1); color: var(--lmo-positive); font-size: 10px; }\n.lmo-icon-button { width: 34px; height: 34px; padding: 7px; border: 1px solid var(--lmo-line); border-radius: 11px; background: var(--lmo-panel); cursor: pointer; transition: .15s; }\n.lmo-icon-button:hover { color: var(--lmo-danger); transform: rotate(4deg); }\n.lmo-scroll { min-height: 0; overflow: auto; padding: 25px 28px 40px; scrollbar-width: thin; scrollbar-color: var(--lmo-line) transparent; }\n.lmo-view { display: grid; gap: 22px; max-width: 970px; margin: 0 auto; animation: lmo-content-in .24s ease-out; }\n.lmo-notice { max-width: 970px; margin: 0 auto 14px; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--lmo-line); background: var(--lmo-panel); font-size: 12px; }\n.lmo-notice.success { border-color: color-mix(in srgb,var(--lmo-positive) 35%,var(--lmo-line)); color: var(--lmo-positive); }\n.lmo-notice.error { border-color: color-mix(in srgb,var(--lmo-danger) 35%,var(--lmo-line)); color: var(--lmo-danger); }\n.lmo-hero { min-height: 210px; padding: 28px 31px; border-radius: 22px; display: grid; grid-template-columns: 1fr 210px; align-items: center; overflow: hidden; position: relative; background: linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 16%,var(--lmo-panel)),var(--lmo-panel)); border: 1px solid color-mix(in srgb,var(--building-accent) 25%,var(--lmo-line)); }\n.lmo-hero::before { content:""; position:absolute; inset:0; opacity:.32; background-image: radial-gradient(var(--building-accent) 1px,transparent 1px); background-size:18px 18px; mask-image:linear-gradient(90deg,transparent,black); pointer-events:none; }\n.lmo-hero > div { position: relative; }\n.lmo-hero h2 { margin: 8px 0 6px; font: 750 clamp(24px,3vw,37px)/1.1 Georgia,"Songti SC",serif; }\n.lmo-hero p { max-width: 540px; margin: 0 0 20px; color: var(--lmo-muted); font-size: 12px; }\n.lmo-primary,.lmo-secondary { min-height: 39px; padding: 0 16px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; font-size: 12px; font-weight: 700; transition: .17s ease; }\n.lmo-primary { color: white !important; background: linear-gradient(135deg,var(--active-accent),color-mix(in srgb,var(--active-accent) 66%,#7c6ce7)); box-shadow: 0 8px 20px color-mix(in srgb,var(--active-accent) 26%,transparent); }\n.lmo-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 26px color-mix(in srgb,var(--active-accent) 32%,transparent); }\n.lmo-primary:disabled { opacity: .42; cursor: not-allowed; box-shadow: none; }\n.lmo-primary .lmo-icon,.lmo-secondary .lmo-icon { width: 16px; height: 16px; }\n.lmo-secondary { border: 1px solid var(--lmo-line); background: var(--lmo-panel); }\n.lmo-secondary:hover { border-color: var(--active-accent); color: var(--active-accent); }\n.lmo-hero-orbit { justify-self: center; width: 132px; height: 132px; border: 1px solid color-mix(in srgb,var(--building-accent) 35%,transparent); border-radius: 50%; display: grid; place-content: center; text-align: center; }\n.lmo-hero-orbit::before,.lmo-hero-orbit::after { content:""; position:absolute; inset:-14px; border:1px dashed color-mix(in srgb,var(--building-accent) 25%,transparent); border-radius:50%; animation:lmo-spin 18s linear infinite; }\n.lmo-hero-orbit::after { inset:18px; animation-direction:reverse; animation-duration:10s; }\n.lmo-hero-orbit span { font: 800 38px/1 Georgia,serif; color: var(--building-accent); }\n.lmo-hero-orbit small { margin-top: 4px; color: var(--lmo-muted); font-size: 10px; }\n.lmo-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-top: 4px; }\n.lmo-section-heading span { color: var(--active-accent); font-size: 9px; font-weight: 800; letter-spacing: .17em; }\n.lmo-section-heading h2 { margin: 4px 0 0; font: 700 20px/1.2 Georgia,"Songti SC",serif; }\n.lmo-section-heading > p { max-width: 390px; margin: 0; color: var(--lmo-muted); font-size: 10px; line-height: 1.6; text-align: right; }\n.lmo-building-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }\n.lmo-building-card { min-width: 0; padding: 0; display: grid; grid-template-columns: 128px 1fr; overflow: hidden; border: 1px solid var(--lmo-line); border-radius: 18px; background: var(--lmo-panel); text-align: left; cursor: pointer; transition: .2s ease; }\n.lmo-building-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb,var(--building-accent) 44%,var(--lmo-line)); box-shadow: 0 15px 35px rgba(82,47,67,.1); }\n.lmo-building-visual { min-height: 172px; position: relative; overflow: hidden; display: grid; place-items: center; background: linear-gradient(145deg,color-mix(in srgb,var(--building-accent) 19%,var(--lmo-panel-soft)),var(--lmo-panel-soft)); }\n.lmo-building-visual::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg,transparent 49%,color-mix(in srgb,var(--building-accent) 15%,transparent) 50%,transparent 51%),linear-gradient(0deg,transparent 49%,color-mix(in srgb,var(--building-accent) 15%,transparent) 50%,transparent 51%); background-size:20px 20px; }\n.lmo-building-type { display: inline-flex; width: fit-content; padding: 4px 8px; border-radius: 99px; color: var(--building-accent); background: color-mix(in srgb,var(--building-accent) 10%,var(--lmo-panel)); font-size: 9px; font-weight: 700; }\n.lmo-building-visual > .lmo-building-type { position:absolute; left:10px; top:10px; }\n.lmo-building-glyph { position:relative; width:56px; height:56px; padding:14px; border-radius:18px; color:white; background:var(--building-accent); box-shadow:0 12px 25px color-mix(in srgb,var(--building-accent) 32%,transparent); transform:rotate(-4deg); }\n.lmo-building-glyph .lmo-icon { width:100%; height:100%; }\n.lmo-building-visual > i { position:absolute; bottom:16px; width:12px; height:20px; border-radius:3px 3px 0 0; background:color-mix(in srgb,var(--building-accent) 25%,var(--lmo-panel)); }\n.lmo-building-visual > i:nth-last-child(3) { left:29px; height:31px; }.lmo-building-visual > i:nth-last-child(2){left:48px;height:22px}.lmo-building-visual > i:last-child{left:67px;height:39px}\n.lmo-building-copy { min-width:0; padding:15px 16px; display:flex; flex-direction:column; }\n.lmo-card-title { display:flex; align-items:start; justify-content:space-between; gap:8px; }\n.lmo-card-title > div { min-width:0; display:grid; gap:3px; }.lmo-card-title strong{font-size:14px}.lmo-card-title span{font-size:9px;color:var(--lmo-muted)}\n.lmo-badge { flex:0 0 auto; padding:4px 7px; border-radius:99px; background:rgba(246,193,119,.13); color:#b98532!important; font-size:9px!important; }.lmo-badge.owned{background:rgba(70,169,142,.12);color:var(--lmo-positive)!important}\n.lmo-building-copy > p { margin:10px 0; color:var(--lmo-muted); font-size:10px; line-height:1.55; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }\n.lmo-card-metrics { margin-top:auto; padding-top:10px; display:flex; gap:9px; border-top:1px solid var(--lmo-line); align-items:center; }\n.lmo-card-metrics span { color:var(--lmo-muted); font-size:8px; }.lmo-card-metrics b{color:var(--lmo-text);font-size:10px}.lmo-card-metrics em{margin-left:auto;display:flex;align-items:center;gap:3px;color:var(--building-accent);font-size:9px;font-style:normal;font-weight:700}.lmo-card-metrics em .lmo-icon{width:12px;height:12px}\n.lmo-dashboard-row { display:grid; grid-template-columns:1.2fr .8fr; gap:14px; }.lmo-panel{padding:18px;border:1px solid var(--lmo-line);border-radius:17px;background:var(--lmo-panel)}\n.lmo-panel-title > div{display:flex;align-items:center;gap:10px}.lmo-panel-title .lmo-icon{width:27px;height:27px;padding:6px;border-radius:9px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-panel-title span{display:grid;gap:2px}.lmo-panel-title strong{font-size:12px}.lmo-panel-title small{font-size:8px;color:var(--lmo-muted)}\n.lmo-mini-timeline{display:grid;margin-top:15px}.lmo-mini-timeline>div{display:grid;grid-template-columns:10px 1fr auto;gap:9px;padding:8px 0;border-top:1px solid var(--lmo-line)}.lmo-mini-timeline i{width:7px;height:7px;margin-top:4px;border-radius:50%;background:var(--active-accent)}.lmo-mini-timeline span{display:grid;gap:3px}.lmo-mini-timeline strong{font-size:10px}.lmo-mini-timeline small,.lmo-mini-timeline time{color:var(--lmo-muted);font-size:8px}.lmo-world-card>p{margin:14px 0;color:var(--lmo-muted);font-size:10px;line-height:1.65}\n.lmo-tags{display:flex;flex-wrap:wrap;gap:5px}.lmo-tags span{padding:4px 7px;border:1px solid color-mix(in srgb,var(--active-accent) 20%,var(--lmo-line));border-radius:99px;background:color-mix(in srgb,var(--active-accent) 7%,transparent);color:var(--active-accent);font-size:8px}\n.lmo-empty{min-height:130px;padding:22px;display:grid;place-items:center;align-content:center;gap:6px;text-align:center;color:var(--lmo-muted)}.lmo-empty .lmo-icon{width:27px;height:27px;color:var(--active-accent)}.lmo-empty strong{color:var(--lmo-text);font-size:12px}.lmo-empty p{max-width:330px;margin:0;font-size:9px;line-height:1.5}\n.lmo-building-banner{padding:22px 24px;display:flex;align-items:end;justify-content:space-between;gap:20px;border:1px solid color-mix(in srgb,var(--building-accent) 24%,var(--lmo-line));border-radius:19px;background:linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 12%,var(--lmo-panel)),var(--lmo-panel))}.lmo-building-banner span{color:var(--building-accent);font-size:9px;font-weight:700;letter-spacing:.1em}.lmo-building-banner h2{margin:5px 0;font:750 28px/1.15 Georgia,"Songti SC",serif}.lmo-building-banner p{max-width:590px;margin:0;color:var(--lmo-muted);font-size:10px;line-height:1.55}.lmo-banner-actions{display:flex;gap:8px;flex:0 0 auto}\n.lmo-metric-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-metric-strip>div{padding:14px 17px;display:grid;gap:4px;border-right:1px solid var(--lmo-line)}.lmo-metric-strip>div:last-child{border:0}.lmo-metric-strip span{color:var(--lmo-muted);font-size:8px}.lmo-metric-strip strong{font:700 20px/1 Georgia,serif}.lmo-metric-strip small{font:500 9px sans-serif;color:var(--lmo-muted)}\n.lmo-floor-list{display:grid;gap:14px}.lmo-floor{overflow:hidden;border:1px solid var(--lmo-line);border-radius:18px;background:var(--lmo-panel)}.lmo-floor>header{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--lmo-line);background:var(--lmo-panel-soft)}.lmo-floor>header>div{display:flex;align-items:center;gap:11px}.lmo-floor>header>div>span{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:var(--active-accent);color:white;font:700 10px Georgia,serif}.lmo-floor>header div div{display:grid;gap:2px}.lmo-floor>header strong{font-size:11px}.lmo-floor>header small,.lmo-floor>header em{color:var(--lmo-muted);font-size:8px;font-style:normal}\n.lmo-space-grid{padding:13px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.lmo-space-card{grid-column:span 2;min-height:112px;padding:12px;border:1px solid var(--lmo-line);border-radius:13px;background:var(--lmo-surface);text-align:left;cursor:pointer;transition:.17s}.lmo-space-card.size-\u5927\u578B{grid-column:span 3}.lmo-space-card.size-\u8D85\u5927\u578B{grid-column:span 4}.lmo-space-card.size-\u5C0F\u578B,.lmo-space-card.size-\u5FAE\u578B{grid-column:span 1}.lmo-space-card:hover{border-color:var(--active-accent);transform:translateY(-2px)}.lmo-space-card>div{display:flex;justify-content:space-between;gap:6px}.lmo-space-type,.lmo-space-status{font-size:7px;color:var(--lmo-muted)}.lmo-space-status{padding:2px 5px;border-radius:99px;background:var(--lmo-panel-soft)}.lmo-space-status.status-\u7A7A\u7F6E{color:#b98532;background:rgba(246,193,119,.12)}.lmo-space-card>strong{display:block;margin:9px 0 3px;font-size:11px}.lmo-space-card>p{margin:0;color:var(--lmo-muted);font-size:8px}.lmo-space-card footer{margin-top:12px;padding-top:7px;display:flex;justify-content:space-between;gap:5px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:7px}\n.lmo-workflow-steps{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px}.lmo-workflow-steps span{display:flex;align-items:center;gap:6px;color:var(--lmo-muted);font-size:9px}.lmo-workflow-steps b{width:23px;height:23px;display:grid;place-items:center;border:1px solid var(--lmo-line);border-radius:50%;font-size:9px}.lmo-workflow-steps span.done{color:var(--lmo-text)}.lmo-workflow-steps span.done b{background:var(--active-accent);border-color:var(--active-accent);color:white}.lmo-workflow-steps>i{width:45px;height:1px;background:var(--lmo-line)}\n.lmo-workflow-intro{padding:20px 22px;border-radius:18px;border:1px solid color-mix(in srgb,var(--building-accent) 24%,var(--lmo-line));background:linear-gradient(135deg,color-mix(in srgb,var(--building-accent) 10%,var(--lmo-panel)),var(--lmo-panel))}.lmo-text-button{padding:0;border:0;background:transparent;display:flex;align-items:center;gap:4px;color:var(--lmo-muted);font-size:9px;cursor:pointer}.lmo-text-button .lmo-icon{width:14px;height:14px}.lmo-workflow-intro>div:nth-child(2){margin-top:15px}.lmo-workflow-intro h2{margin:7px 0 5px;font:700 24px Georgia,"Songti SC",serif}.lmo-workflow-intro p{margin:0;max-width:650px;color:var(--lmo-muted);font-size:10px;line-height:1.6}.lmo-facts{margin-top:16px!important;display:flex;gap:8px}.lmo-facts span{padding:7px 10px;border-radius:9px;background:color-mix(in srgb,var(--lmo-panel) 72%,transparent);font-size:8px;color:var(--lmo-muted)}.lmo-facts b{color:var(--lmo-text);font-size:10px}\n.lmo-generation-callout{min-height:100px;padding:16px 18px;display:flex;align-items:center;gap:13px;border:1px dashed color-mix(in srgb,var(--active-accent) 36%,var(--lmo-line));border-radius:16px;background:color-mix(in srgb,var(--active-accent) 5%,var(--lmo-panel))}.lmo-generation-callout>.lmo-icon{width:38px;height:38px;padding:9px;border-radius:12px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-generation-callout>div{margin-right:auto}.lmo-generation-callout strong{font-size:12px}.lmo-generation-callout p{margin:4px 0 0;color:var(--lmo-muted);font-size:9px}.lmo-generation-callout.compact{min-height:82px}\n.lmo-option-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.lmo-option-card{position:relative;padding:18px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.18s}.lmo-option-card:hover,.lmo-option-card.selected{border-color:var(--active-accent);transform:translateY(-2px);box-shadow:0 12px 28px rgba(82,47,67,.09)}.lmo-option-card>span{color:var(--active-accent);font-size:8px;font-weight:700;letter-spacing:.1em}.lmo-option-card h3{margin:7px 0;font:700 16px Georgia,"Songti SC",serif}.lmo-option-card>p{min-height:62px;margin:0 0 10px;color:var(--lmo-muted);font-size:9px;line-height:1.55}.lmo-option-card ul{margin:12px 0 0;padding:10px 0 0 15px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:8px;line-height:1.8}.lmo-option-check{position:absolute;right:10px;top:10px;width:20px;height:20px;padding:3px;border-radius:50%;color:white;background:var(--active-accent)}.lmo-option-check:empty{background:transparent;border:1px solid var(--lmo-line)}.lmo-option-check .lmo-icon{width:100%;height:100%}\n.lmo-confirm-bar{position:sticky;bottom:-26px;z-index:2;margin-top:4px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid var(--lmo-line);border-radius:15px;background:color-mix(in srgb,var(--lmo-surface) 92%,transparent);backdrop-filter:blur(16px);box-shadow:0 -8px 28px rgba(82,47,67,.08)}.lmo-confirm-bar>div{display:grid;gap:3px}.lmo-confirm-bar strong{font-size:10px}.lmo-confirm-bar span{color:var(--lmo-muted);font-size:8px}\n.lmo-two-column{display:grid;grid-template-columns:220px minmax(0,1fr);gap:15px;align-items:start}.lmo-selector,.lmo-placement{padding:16px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-selector h2{margin:6px 0 14px;font:700 17px Georgia,"Songti SC",serif}.lmo-compact-list{display:grid;gap:6px;max-height:470px;overflow:auto}.lmo-compact-space{padding:9px 10px;display:grid;gap:3px;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-surface);text-align:left;cursor:pointer}.lmo-compact-space:hover,.lmo-compact-space.selected{border-color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel))}.lmo-compact-space span,.lmo-compact-space small{color:var(--lmo-muted);font-size:7px}.lmo-compact-space strong{font-size:10px}\n.lmo-workspace{min-width:0}.lmo-preview-room{min-height:360px;padding:27px;display:flex;flex-direction:column;align-items:start;border:1px solid var(--lmo-line);border-radius:18px;background:radial-gradient(circle at 90% 10%,color-mix(in srgb,var(--active-accent) 13%,transparent),transparent 35%),var(--lmo-panel)}.lmo-preview-room>span{color:var(--active-accent);font-size:8px;font-weight:700;letter-spacing:.08em}.lmo-preview-room h2{margin:10px 0 7px;font:750 27px Georgia,"Songti SC",serif}.lmo-preview-room>p{max-width:510px;margin:0;color:var(--lmo-muted);font-size:10px;line-height:1.6}.lmo-current-style{min-width:220px;margin:26px 0;padding:14px;display:grid;gap:4px;border:1px solid var(--lmo-line);border-radius:12px;background:var(--lmo-panel-soft)}.lmo-current-style small,.lmo-current-style span{font-size:8px;color:var(--lmo-muted)}.lmo-current-style strong{font-size:12px}\n.lmo-renovation-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.lmo-renovation-card{padding:13px;border:1px solid var(--lmo-line);border-radius:14px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.17s}.lmo-renovation-card:hover,.lmo-renovation-card.selected{border-color:var(--active-accent);transform:translateY(-2px)}.lmo-palette{height:57px;margin:-6px -6px 12px;display:flex;overflow:hidden;border-radius:10px}.lmo-palette i{flex:1;background:var(--swatch)}.lmo-renovation-card>span{color:var(--active-accent);font-size:7px;font-weight:700}.lmo-renovation-card h3{margin:5px 0;font:700 14px Georgia,"Songti SC",serif}.lmo-renovation-card>p{min-height:38px;margin:0 0 9px;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-renovation-card>small{display:block;margin-top:10px;padding-top:8px;border-top:1px solid var(--lmo-line);color:var(--lmo-muted);font-size:7px}\n.lmo-recruit-layout{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:14px;align-items:start}.lmo-candidate-list{display:grid;gap:9px}.lmo-candidate{position:relative;padding:14px;display:grid;grid-template-columns:48px 1fr;gap:12px;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.17s}.lmo-candidate:hover,.lmo-candidate.selected{border-color:var(--person-accent);transform:translateX(2px);box-shadow:0 10px 25px color-mix(in srgb,var(--person-accent) 10%,transparent)}.lmo-avatar{width:48px;height:48px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(135deg,var(--person-accent),color-mix(in srgb,var(--person-accent) 55%,#c4a7e7));color:white;font:700 18px Georgia,serif;box-shadow:0 8px 18px color-mix(in srgb,var(--person-accent) 22%,transparent)}.lmo-candidate>div:nth-child(2)>span{color:var(--person-accent);font-size:7px;font-weight:700}.lmo-candidate h3{margin:4px 0;font:700 14px Georgia,"Songti SC",serif}.lmo-candidate p{margin:0;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-candidate blockquote{margin:8px 0;padding:7px 9px;border-left:2px solid var(--person-accent);border-radius:0 8px 8px 0;background:var(--lmo-panel-soft);color:var(--lmo-muted);font-size:8px;font-style:italic}.lmo-candidate .lmo-tags span{color:var(--person-accent);border-color:color-mix(in srgb,var(--person-accent) 22%,var(--lmo-line));background:color-mix(in srgb,var(--person-accent) 6%,transparent)}.lmo-placement{position:sticky;top:0}.lmo-placement h3{margin:6px 0;font:700 15px Georgia,"Songti SC",serif}.lmo-placement>p{margin:0 0 13px;color:var(--lmo-muted);font-size:8px;line-height:1.5}\n.lmo-event-timeline{display:grid;gap:9px}.lmo-event-timeline article{padding:15px 17px;display:grid;grid-template-columns:38px 1fr auto;gap:13px;align-items:start;border:1px solid var(--lmo-line);border-radius:15px;background:var(--lmo-panel)}.lmo-event-mark{width:38px;height:38px;padding:9px;border-radius:12px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-event-mark .lmo-icon{width:100%;height:100%}.lmo-event-timeline article>div:nth-child(2){display:grid;gap:3px}.lmo-event-timeline span,.lmo-event-timeline small{color:var(--lmo-muted);font-size:8px}.lmo-event-timeline h3{margin:1px 0;font-size:11px}.lmo-event-timeline p{margin:0;color:var(--lmo-muted);font-size:9px}.lmo-event-timeline em{padding:4px 7px;border-radius:99px;background:rgba(70,169,142,.1);color:var(--lmo-positive);font-size:8px;font-style:normal}\n.lmo-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.lmo-mode-card{padding:20px;display:grid;gap:8px;border:1px solid var(--lmo-line);border-radius:18px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.18s}.lmo-mode-card:hover:not(:disabled),.lmo-mode-card.selected{border-color:var(--active-accent);transform:translateY(-2px);box-shadow:0 12px 30px rgba(82,47,67,.09)}.lmo-mode-card:disabled{opacity:.48;cursor:not-allowed}.lmo-mode-card>div{position:relative;width:42px;height:42px;padding:10px;border-radius:13px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-mode-card>div>.lmo-icon{width:100%;height:100%}.lmo-mode-card .lmo-option-check{right:-7px;top:-7px;width:18px;height:18px;padding:3px}.lmo-mode-card strong{font:700 17px Georgia,"Songti SC",serif}.lmo-mode-card p{margin:0;color:var(--lmo-muted);font-size:9px;line-height:1.6}.lmo-mode-card>small{color:var(--active-accent);font-size:8px}.lmo-safety-line{padding:13px 15px;display:flex;align-items:center;gap:11px;border:1px solid color-mix(in srgb,var(--lmo-positive) 28%,var(--lmo-line));border-radius:14px;background:color-mix(in srgb,var(--lmo-positive) 7%,var(--lmo-panel))}.lmo-safety-line>.lmo-icon{color:var(--lmo-positive)}.lmo-safety-line>span{display:grid;gap:2px}.lmo-safety-line strong{font-size:10px}.lmo-safety-line small{color:var(--lmo-muted);font-size:8px}.lmo-task-list{display:grid;gap:7px}.lmo-task-row{min-width:0;padding:10px 11px;display:grid;grid-template-columns:68px minmax(0,1fr) minmax(80px,145px) auto;gap:10px;align-items:center;border:1px solid var(--lmo-line);border-radius:11px;background:var(--lmo-surface)}.lmo-task-state{padding:4px 6px;border-radius:99px;background:var(--lmo-panel-soft);color:var(--lmo-muted);font-size:8px;text-align:center}.lmo-task-state.status-ready,.lmo-task-state.status-confirmed{color:var(--lmo-positive);background:color-mix(in srgb,var(--lmo-positive) 10%,transparent)}.lmo-task-state.status-failed,.lmo-task-state.status-cancelled{color:var(--lmo-danger);background:color-mix(in srgb,var(--lmo-danger) 9%,transparent)}.lmo-task-row>div{display:grid;gap:3px}.lmo-task-row strong{font-size:10px}.lmo-task-row small{overflow:hidden;color:var(--lmo-muted);font-size:8px;text-overflow:ellipsis;white-space:nowrap}.lmo-task-row code{overflow:hidden;color:var(--lmo-muted);font:7px ui-monospace,SFMono-Regular,Menlo,monospace;text-overflow:ellipsis}.lmo-task-actions{display:flex;gap:5px}.lmo-task-actions button{padding:4px 7px;border:1px solid var(--lmo-line);border-radius:7px;background:var(--lmo-panel);font-size:8px;cursor:pointer}.lmo-task-actions button:hover{border-color:var(--active-accent);color:var(--active-accent)}\n.lmo-link-channels{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.lmo-link-channels>div{padding:12px 14px;display:grid;grid-template-columns:1fr auto;align-items:center;border:1px solid var(--lmo-line);border-radius:13px;background:var(--lmo-panel)}.lmo-link-channels>div.unavailable{border-style:dashed;opacity:.62}.lmo-link-channels span{color:var(--active-accent);font-size:9px;font-weight:700}.lmo-link-channels strong{grid-row:span 2;font:750 22px Georgia,serif}.lmo-link-channels small{color:var(--lmo-muted);font-size:7px}.lmo-link-list{display:grid;gap:6px}.lmo-link-list>div{padding:9px 10px;display:grid;grid-template-columns:48px minmax(0,1fr) auto auto auto;gap:8px;align-items:center;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-surface)}.lmo-link-list>div>span{padding:4px 5px;border-radius:99px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 8%,transparent);font-size:8px;text-align:center}.lmo-link-list p{margin:0;display:grid;gap:2px}.lmo-link-list strong{font-size:9px}.lmo-link-list small{overflow:hidden;color:var(--lmo-muted);font-size:8px;text-overflow:ellipsis;white-space:nowrap}.lmo-link-list button{padding:4px 6px;border:1px solid var(--lmo-line);border-radius:7px;background:var(--lmo-panel);font-size:8px;cursor:pointer}.lmo-link-list button:hover{border-color:var(--active-accent);color:var(--active-accent)}\n.lmo-link-preview{padding:17px;border:1px solid color-mix(in srgb,var(--active-accent) 32%,var(--lmo-line));border-radius:17px;background:linear-gradient(135deg,color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel)),var(--lmo-panel))}.lmo-link-preview>header{display:flex;align-items:center;justify-content:space-between}.lmo-link-preview>header>div{display:flex;align-items:center;gap:9px}.lmo-link-preview>header>div>.lmo-icon{width:28px;height:28px;padding:6px;border-radius:9px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 10%,transparent)}.lmo-link-preview>header span{display:grid;gap:2px}.lmo-link-preview>header strong{font-size:11px}.lmo-link-preview>header small{color:var(--lmo-muted);font-size:7px}.lmo-link-preview>header>button{width:28px;height:28px;padding:6px;border:1px solid var(--lmo-line);border-radius:9px;background:var(--lmo-panel);cursor:pointer}.lmo-link-draft-grid{margin-top:13px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.lmo-link-draft{min-width:0;padding:11px;border:1px solid var(--lmo-line);border-radius:11px;background:var(--lmo-surface)}.lmo-link-draft>header{display:flex;align-items:center;justify-content:space-between;gap:8px}.lmo-link-draft>header span{padding:3px 6px;border-radius:99px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 9%,transparent);font-size:7px}.lmo-link-draft>header code{overflow:hidden;color:var(--lmo-muted);font:6px ui-monospace,SFMono-Regular,Menlo,monospace;text-overflow:ellipsis}.lmo-link-draft>strong{display:block;margin:8px 0 5px;font-size:10px}.lmo-link-draft>span{color:var(--lmo-muted);font-size:7px}.lmo-link-draft>p{margin:5px 0 0;color:var(--lmo-muted);font-size:8px;line-height:1.5}.lmo-link-draft>pre{max-height:82px;margin:6px 0 0;padding:7px;overflow:auto;border-radius:7px;background:var(--lmo-panel-soft);color:var(--lmo-muted);font:6px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}.lmo-link-preview>footer{margin-top:13px;padding-top:11px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--lmo-line)}.lmo-link-preview>footer p{margin:0;color:var(--lmo-muted);font-size:7px;line-height:1.5}.lmo-link-preview>footer button{flex:0 0 auto}\n.lmo-floor.visibility-outline,.lmo-space-card.visibility-outline{border-style:dashed;background:repeating-linear-gradient(135deg,var(--lmo-panel),var(--lmo-panel) 8px,var(--lmo-panel-soft) 8px,var(--lmo-panel-soft) 16px)}.lmo-floor.visibility-partial,.lmo-space-card.visibility-partial{border-color:color-mix(in srgb,var(--active-accent) 24%,var(--lmo-line))}.lmo-space-card.visibility-outline{filter:saturate(.45)}\n.lmo-resident-strip{display:flex;gap:8px;overflow:auto}.lmo-resident-strip>div{min-width:215px;padding:9px 10px;display:grid;grid-template-columns:38px minmax(0,1fr);gap:8px;align-items:center;border:1px solid var(--lmo-line);border-radius:12px;background:var(--lmo-surface)}.lmo-resident-strip>div>span{grid-row:span 2;width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,var(--person-accent),color-mix(in srgb,var(--person-accent) 55%,#c4a7e7));color:white;font:700 15px Georgia,serif}.lmo-resident-strip p{margin:0;display:grid;gap:2px}.lmo-resident-strip strong{font-size:10px}.lmo-resident-strip small{color:var(--lmo-muted);font-size:7px}.lmo-resident-strip code{grid-column:2;color:var(--lmo-muted);font:6px ui-monospace,SFMono-Regular,Menlo,monospace}\n.lmo-history-console{min-height:205px;padding:24px 28px;display:grid;grid-template-columns:150px minmax(0,1fr);gap:28px;align-items:center;overflow:hidden;position:relative;border:1px solid color-mix(in srgb,var(--active-accent) 28%,var(--lmo-line));border-radius:20px;background:radial-gradient(circle at 8% 50%,color-mix(in srgb,var(--active-accent) 13%,transparent),transparent 34%),var(--lmo-panel)}.lmo-history-console::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(90deg,color-mix(in srgb,var(--active-accent) 5%,transparent) 1px,transparent 1px),linear-gradient(color-mix(in srgb,var(--active-accent) 5%,transparent) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,black,transparent 70%)}.lmo-history-orbit{position:relative;z-index:1;width:126px;height:126px;display:grid;place-content:center;border:1px solid color-mix(in srgb,var(--active-accent) 35%,transparent);border-radius:50%;text-align:center}.lmo-history-orbit::before,.lmo-history-orbit::after{content:"";position:absolute;border-radius:50%;border:1px dashed color-mix(in srgb,var(--active-accent) 25%,transparent);animation:lmo-spin 16s linear infinite}.lmo-history-orbit::before{inset:-12px}.lmo-history-orbit::after{inset:18px;animation-direction:reverse;animation-duration:9s}.lmo-history-orbit span{color:var(--active-accent);font:800 34px/1 Georgia,serif}.lmo-history-orbit small{margin-top:5px;color:var(--lmo-muted);font-size:8px}.lmo-history-copy{position:relative;z-index:1}.lmo-history-copy>span{color:var(--active-accent);font-size:7px;font-weight:800;letter-spacing:.16em}.lmo-history-copy h3{margin:7px 0 5px;font:700 20px Georgia,"Songti SC",serif}.lmo-history-copy>p{max-width:590px;margin:0;color:var(--lmo-muted);font-size:9px;line-height:1.65}.lmo-history-actions{margin-top:15px;display:flex;gap:8px}.lmo-history-actions button{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-history-actions .lmo-secondary:disabled{opacity:.42;cursor:not-allowed}.lmo-history-warning{margin-top:10px;padding:7px 9px;border:1px solid color-mix(in srgb,var(--lmo-danger) 26%,var(--lmo-line));border-radius:9px;background:color-mix(in srgb,var(--lmo-danger) 6%,transparent);color:var(--lmo-danger);font-size:7px}.lmo-history-list{display:grid;gap:7px;margin-top:14px}.lmo-history-list>div{padding:10px 11px;display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;gap:10px;align-items:center;border:1px solid var(--lmo-line);border-radius:11px;background:var(--lmo-surface)}.lmo-history-list>div.status-undone{opacity:.5}.lmo-history-list>div>span{width:34px;height:34px;padding:8px;border-radius:10px;color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 9%,transparent)}.lmo-history-list>div>span .lmo-icon{width:100%;height:100%}.lmo-history-list p{min-width:0;margin:0;display:grid;gap:3px}.lmo-history-list strong{font-size:10px}.lmo-history-list small{overflow:hidden;color:var(--lmo-muted);font-size:7px;text-overflow:ellipsis;white-space:nowrap}.lmo-history-list time{color:var(--lmo-muted);font-size:7px}.lmo-history-list em{padding:4px 7px;border-radius:99px;background:color-mix(in srgb,var(--lmo-positive) 10%,transparent);color:var(--lmo-positive);font-size:7px;font-style:normal}.lmo-history-list .status-undone em{background:var(--lmo-panel-soft);color:var(--lmo-muted)}\n.lmo-renovation-visual{height:116px;margin-bottom:11px;position:relative;overflow:hidden;border:1px solid color-mix(in srgb,var(--room-accent) 34%,var(--lmo-line));border-radius:11px;background:linear-gradient(145deg,var(--room-base),var(--room-secondary));color:var(--room-text);isolation:isolate}.lmo-renovation-visual.compact{height:86px}.lmo-renovation-visual::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.24}.lmo-renovation-visual::after{content:"";position:absolute;inset:-40% -20%;z-index:-1;pointer-events:none;background:radial-gradient(circle at 80% 20%,var(--room-glow),transparent 36%);opacity:.55}.lmo-renovation-visual.lighting-dynamic::after{background:conic-gradient(from 110deg at 78% 20%,transparent,var(--room-glow),transparent 32%);animation:lmo-light-sweep 7s linear infinite}.lmo-renovation-visual.lighting-warm::after{background:radial-gradient(circle at 78% 10%,#FFD39A,transparent 42%)}.lmo-renovation-visual.lighting-cool::after{background:linear-gradient(155deg,transparent 30%,color-mix(in srgb,#A5F3FC 48%,transparent),transparent 70%)}.lmo-visual-light{position:absolute;right:10px;top:9px;width:24px;height:4px;border-radius:99px;background:var(--room-glow);box-shadow:0 0 10px var(--room-glow)}.lmo-visual-room{position:absolute;inset:12px 10px 25px;display:flex;align-items:end;justify-content:space-between;gap:6px}.lmo-visual-room>em{max-width:60%;padding:4px 6px;border-radius:7px;background:color-mix(in srgb,var(--room-base) 70%,transparent);font-size:7px;font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-visual-room>div{display:flex;align-items:end;gap:4px}.lmo-visual-room>div i{width:22px;height:22px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--room-accent) 30%,transparent);border-radius:6px;background:color-mix(in srgb,var(--room-base) 68%,transparent);font-size:7px;font-style:normal;box-shadow:0 5px 10px rgba(0,0,0,.08)}.lmo-visual-room>div i:nth-child(2){height:29px}.lmo-visual-room>div i:nth-child(3){height:18px}.lmo-visual-room>div i.empty{opacity:.45}.lmo-renovation-visual>footer{position:absolute;left:9px;right:9px;bottom:7px;display:flex;align-items:center;gap:4px}.lmo-renovation-visual>footer>i{width:8px;height:8px;border:1px solid rgba(255,255,255,.65);border-radius:50%;background:var(--swatch);box-shadow:0 1px 3px rgba(0,0,0,.12)}.lmo-renovation-visual>footer span{margin-left:auto;max-width:58%;overflow:hidden;font-size:6px;text-overflow:ellipsis;white-space:nowrap}.lmo-renovation-card>.lmo-renovation-visual{margin:-6px -6px 11px}.lmo-twin-inspector>.lmo-renovation-visual{flex:0 0 auto;margin:0}\n.lmo-renovation-visual.material-wood::before,.lmo-twin-map>button.material-wood::before{background:repeating-linear-gradient(8deg,transparent 0 9px,var(--room-accent) 10px 11px)}.lmo-renovation-visual.material-stone::before,.lmo-twin-map>button.material-stone::before{background-image:linear-gradient(30deg,var(--room-accent) 12%,transparent 12.5%,transparent 87%,var(--room-accent) 87.5%),linear-gradient(150deg,var(--room-accent) 12%,transparent 12.5%,transparent 87%,var(--room-accent) 87.5%);background-size:20px 34px}.lmo-renovation-visual.material-metal::before,.lmo-twin-map>button.material-metal::before{background:repeating-linear-gradient(135deg,transparent 0 7px,var(--room-accent) 8px 9px)}.lmo-renovation-visual.material-glass::before,.lmo-twin-map>button.material-glass::before{background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.8) 21%,transparent 23%,transparent 65%,rgba(255,255,255,.5) 66%,transparent 68%)}.lmo-renovation-visual.material-fabric::before,.lmo-twin-map>button.material-fabric::before{background-image:radial-gradient(var(--room-accent) .8px,transparent .8px);background-size:7px 7px}.lmo-renovation-visual.material-organic::before,.lmo-twin-map>button.material-organic::before{background-image:radial-gradient(ellipse at 30% 30%,var(--room-accent) 0 5%,transparent 6%),radial-gradient(ellipse at 70% 65%,var(--room-accent) 0 4%,transparent 5%);background-size:36px 28px}.lmo-renovation-visual.material-arcane::before,.lmo-twin-map>button.material-arcane::before{background-image:radial-gradient(var(--room-glow) 1px,transparent 1px),linear-gradient(45deg,transparent 49%,var(--room-accent) 50%,transparent 51%);background-size:14px 14px,28px 28px}.lmo-renovation-visual.material-soft::before,.lmo-twin-map>button.material-soft::before{background:radial-gradient(circle at 20% 25%,var(--room-accent),transparent 28%),radial-gradient(circle at 80% 70%,var(--room-secondary),transparent 25%)}\n.lmo-spatial-metrics{display:flex;gap:8px}.lmo-spatial-metrics span{padding:8px 11px;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-panel);color:var(--lmo-muted);font-size:8px}.lmo-spatial-metrics b{margin-right:4px;color:var(--lmo-text);font-size:12px}.lmo-spatial-planner{padding:15px;display:grid;grid-template-columns:minmax(150px,1fr) 24px minmax(170px,1fr) 24px 220px;gap:9px;align-items:stretch;border:1px solid var(--lmo-line);border-radius:17px;background:var(--lmo-panel)}.lmo-spatial-column{min-width:0;display:flex;flex-direction:column;gap:10px}.lmo-spatial-people,.lmo-spatial-spaces{max-height:235px;display:grid;gap:6px;overflow:auto}.lmo-spatial-people button{padding:8px;display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;align-items:center;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-surface);text-align:left;cursor:pointer}.lmo-spatial-people button:hover,.lmo-spatial-people button.selected{border-color:var(--person-accent);background:color-mix(in srgb,var(--person-accent) 7%,var(--lmo-panel))}.lmo-spatial-people button>i{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:var(--person-accent);color:white;font-size:11px;font-style:normal}.lmo-spatial-people p{min-width:0;margin:0;display:grid;gap:2px}.lmo-spatial-people strong,.lmo-spatial-people small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-spatial-people strong{font-size:9px}.lmo-spatial-people small{color:var(--lmo-muted);font-size:6px}.lmo-spatial-spaces button{padding:8px 9px;display:grid;gap:2px;border:1px solid var(--lmo-line);border-radius:9px;background:var(--lmo-surface);text-align:left;cursor:pointer}.lmo-spatial-spaces button:hover,.lmo-spatial-spaces button.selected{border-color:var(--active-accent);background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel))}.lmo-spatial-spaces span,.lmo-spatial-spaces small{color:var(--lmo-muted);font-size:6px}.lmo-spatial-spaces strong{font-size:9px}.lmo-spatial-arrow{display:grid;place-items:center;color:var(--active-accent)}.lmo-spatial-arrow .lmo-icon{width:16px;height:16px}.lmo-spatial-submit{padding:13px;display:flex;flex-direction:column;gap:10px;border:1px solid color-mix(in srgb,var(--active-accent) 26%,var(--lmo-line));border-radius:12px;background:color-mix(in srgb,var(--active-accent) 5%,var(--lmo-surface))}.lmo-spatial-submit>div{padding:9px;border-radius:9px;background:var(--lmo-panel)}.lmo-spatial-submit>div small{display:block;color:var(--lmo-muted);font-size:6px}.lmo-spatial-submit>div strong{display:block;margin-top:3px;font-size:9px}.lmo-spatial-submit label{color:var(--lmo-muted);font-size:7px}.lmo-spatial-submit input{width:100%;height:34px;padding:0 9px;border:1px solid var(--lmo-line);border-radius:9px;outline:none;background:var(--lmo-panel);color:var(--lmo-text);font:9px inherit}.lmo-spatial-submit input:focus{border-color:var(--active-accent)}.lmo-spatial-submit>p{margin:0;color:var(--lmo-muted);font-size:6px;line-height:1.5}.lmo-spatial-proposals{margin-top:14px;display:grid;gap:7px}.lmo-spatial-proposals>div{padding:9px 10px;display:grid;grid-template-columns:30px minmax(0,1fr) auto auto auto;gap:8px;align-items:center;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-surface)}.lmo-spatial-proposals>div>span{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:color-mix(in srgb,var(--active-accent) 9%,transparent);color:var(--active-accent);font:700 10px Georgia,serif}.lmo-spatial-proposals>div.status-\u51B2\u7A81>span{background:color-mix(in srgb,var(--lmo-danger) 9%,transparent);color:var(--lmo-danger)}.lmo-spatial-proposals p{min-width:0;margin:0;display:grid;gap:2px}.lmo-spatial-proposals strong{font-size:9px}.lmo-spatial-proposals small{overflow:hidden;color:var(--lmo-muted);font-size:7px;text-overflow:ellipsis;white-space:nowrap}.lmo-spatial-proposals em{padding:4px 6px;border-radius:99px;background:var(--lmo-panel-soft);color:var(--lmo-muted);font-size:7px;font-style:normal}.lmo-spatial-proposals .status-\u5F85\u786E\u8BA4 em,.lmo-spatial-proposals .status-\u5DF2\u5E94\u7528 em{background:color-mix(in srgb,var(--lmo-positive) 9%,transparent);color:var(--lmo-positive)}.lmo-spatial-proposals button{padding:5px 7px;border:1px solid var(--lmo-line);border-radius:7px;background:var(--lmo-panel);font-size:7px;cursor:pointer}.lmo-spatial-proposals button:hover{border-color:var(--active-accent);color:var(--active-accent)}\n.lmo-twin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}.lmo-twin-metrics{display:flex;gap:8px}.lmo-twin-metrics span{padding:8px 11px;border:1px solid var(--lmo-line);border-radius:10px;background:var(--lmo-panel);color:var(--lmo-muted);font-size:8px}.lmo-twin-metrics b{margin-right:4px;color:var(--lmo-text);font-size:12px}.lmo-twin-legend{display:flex;gap:10px;color:var(--lmo-muted);font-size:7px}.lmo-twin-legend span{display:flex;align-items:center;gap:4px}.lmo-twin-legend i{width:8px;height:8px;border:1px solid var(--active-accent);border-radius:2px;background:color-mix(in srgb,var(--active-accent) 12%,var(--lmo-panel))}.lmo-twin-legend i.outline{border-style:dashed;opacity:.5}.lmo-twin-legend i.revealed{background:color-mix(in srgb,var(--active-accent) 24%,var(--lmo-panel))}.lmo-twin-legend i.occupied{border-radius:50%;background:var(--lmo-positive);border-color:var(--lmo-positive)}\n.lmo-twin-layout{display:grid;grid-template-columns:128px minmax(320px,1fr) 224px;gap:12px;align-items:start}.lmo-twin-floor-nav{display:grid;gap:7px}.lmo-twin-floor-nav button{min-width:0;padding:9px;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:center;border:1px solid var(--lmo-line);border-radius:11px;background:var(--lmo-panel);text-align:left;cursor:pointer;transition:.16s}.lmo-twin-floor-nav button:hover,.lmo-twin-floor-nav button.active{border-color:color-mix(in srgb,var(--active-accent) 45%,var(--lmo-line));background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel));transform:translateX(2px)}.lmo-twin-floor-nav button>span{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:var(--lmo-panel-soft);color:var(--active-accent);font:700 10px Georgia,serif}.lmo-twin-floor-nav button.active>span{color:white;background:var(--active-accent)}.lmo-twin-floor-nav p{min-width:0;margin:0;display:grid;gap:2px}.lmo-twin-floor-nav strong,.lmo-twin-floor-nav small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lmo-twin-floor-nav strong{font-size:8px}.lmo-twin-floor-nav small{color:var(--lmo-muted);font-size:6px}\n.lmo-twin-stage{overflow:hidden;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-twin-stage>header{padding:11px 13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--lmo-line);background:var(--lmo-panel-soft)}.lmo-twin-stage>header>div{display:grid;gap:2px}.lmo-twin-stage>header span{color:var(--active-accent);font-size:6px;font-weight:800;letter-spacing:.14em}.lmo-twin-stage>header strong{font-size:11px}.lmo-twin-stage>header small{color:var(--lmo-muted);font-size:7px}.lmo-twin-map{position:relative;height:400px;margin:12px;border:1px solid color-mix(in srgb,var(--twin-accent) 26%,var(--lmo-line));border-radius:12px;overflow:hidden;background:linear-gradient(color-mix(in srgb,var(--twin-accent) 5%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--twin-accent) 5%,transparent) 1px,transparent 1px),radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--twin-accent) 7%,transparent),transparent 65%),var(--lmo-panel-soft);background-size:20px 20px,20px 20px,auto,auto}.lmo-twin-edges{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:visible;filter:drop-shadow(0 0 2px color-mix(in srgb,var(--twin-accent) 42%,transparent))}.lmo-backdrop .lmo-twin-edges line{stroke:color-mix(in srgb,var(--twin-accent) 62%,var(--lmo-muted));stroke-width:1;stroke-dasharray:2 2;vector-effect:non-scaling-stroke;opacity:.48;transition:.16s}.lmo-backdrop .lmo-twin-edges line.active{stroke:var(--twin-accent);stroke-width:2.4;stroke-dasharray:none;opacity:.92}.lmo-twin-map>button{position:absolute;z-index:2;padding:7px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;overflow:hidden;border:2px solid var(--lmo-panel);outline:1px solid color-mix(in srgb,var(--twin-accent) 24%,var(--lmo-line));background:color-mix(in srgb,var(--twin-accent) 12%,var(--lmo-panel));text-align:left;cursor:pointer;transition:.16s}.lmo-twin-map>button:hover,.lmo-twin-map>button.connected{z-index:3;background:color-mix(in srgb,var(--twin-accent) 20%,var(--lmo-panel));box-shadow:0 6px 18px rgba(0,0,0,.12)}.lmo-twin-map>button.selected{z-index:4;outline:2px solid var(--twin-accent);outline-offset:-3px;background:color-mix(in srgb,var(--twin-accent) 30%,var(--lmo-panel));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--twin-accent) 18%,transparent),0 8px 22px rgba(0,0,0,.14)}.lmo-twin-map strong{max-width:100%;overflow:hidden;font-size:9px;text-overflow:ellipsis;white-space:nowrap}.lmo-twin-map small,.lmo-twin-map em{max-width:100%;overflow:hidden;color:var(--lmo-muted);font-size:6px;font-style:normal;text-overflow:ellipsis;white-space:nowrap}.lmo-twin-map>button.visibility-outline{border-style:dashed;filter:saturate(.35)}\n.lmo-twin-map>button{background:linear-gradient(145deg,var(--room-base),var(--room-secondary));color:var(--room-text);isolation:isolate}.lmo-twin-map>button::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.2}.lmo-twin-map>button>*{position:relative;z-index:1}.lmo-twin-map>button:hover,.lmo-twin-map>button.connected{background:linear-gradient(145deg,color-mix(in srgb,var(--room-base) 84%,var(--room-glow)),var(--room-secondary))}.lmo-twin-map>button.selected{background:linear-gradient(145deg,color-mix(in srgb,var(--room-base) 72%,var(--room-glow)),var(--room-secondary))}.lmo-twin-map>button small,.lmo-twin-map>button em{color:color-mix(in srgb,var(--room-text) 66%,transparent)}.lmo-twin-furniture{position:absolute!important;right:6px;top:6px;display:flex;gap:3px}.lmo-twin-furniture i{width:18px;height:18px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--room-accent) 32%,transparent);border-radius:5px;background:color-mix(in srgb,var(--room-base) 72%,transparent);font-size:6px;font-style:normal;box-shadow:0 3px 8px rgba(0,0,0,.09)}\n.lmo-twin-inspector{min-height:448px;padding:15px;display:flex;flex-direction:column;gap:13px;border:1px solid var(--lmo-line);border-radius:16px;background:var(--lmo-panel)}.lmo-twin-inspector>.lmo-empty{margin:auto 0}.lmo-twin-inspector-head>span{color:var(--active-accent);font-size:7px;font-weight:700}.lmo-twin-inspector-head>strong{display:block;margin:5px 0 4px;font:700 17px Georgia,"Songti SC",serif}.lmo-twin-inspector-head>p,.lmo-twin-inspector-block>p{margin:0;color:var(--lmo-muted);font-size:8px;line-height:1.55}.lmo-twin-data-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.lmo-twin-data-grid>span{min-width:0;padding:8px;border:1px solid var(--lmo-line);border-radius:9px;background:var(--lmo-surface)}.lmo-twin-data-grid small,.lmo-twin-inspector-block>small{display:block;margin-bottom:3px;color:var(--lmo-muted);font-size:6px}.lmo-twin-data-grid b{display:block;overflow:hidden;font-size:8px;text-overflow:ellipsis;white-space:nowrap}.lmo-twin-inspector-block{padding-top:10px;border-top:1px solid var(--lmo-line)}.lmo-twin-people{display:flex;flex-wrap:wrap;gap:5px}.lmo-twin-people>span{display:flex;align-items:center;gap:4px;padding:3px 6px 3px 3px;border-radius:99px;background:var(--lmo-panel-soft);font-size:7px}.lmo-twin-people i{width:17px;height:17px;display:grid;place-items:center;border-radius:50%;background:var(--person-accent);color:white;font-size:7px;font-style:normal}.lmo-twin-people>small{color:var(--lmo-muted);font-size:7px}.lmo-twin-inspector>.lmo-primary{width:100%;margin-top:auto;font-size:9px}\n.lmo-link-channels button{grid-column:1/-1;margin-top:8px;padding:5px 7px;border:1px solid color-mix(in srgb,var(--active-accent) 25%,var(--lmo-line));border-radius:8px;background:color-mix(in srgb,var(--active-accent) 7%,var(--lmo-panel));color:var(--active-accent);font-size:7px;cursor:pointer}.lmo-link-channels button:hover{background:color-mix(in srgb,var(--active-accent) 14%,var(--lmo-panel))}\n@keyframes lmo-fade-in{from{opacity:0}to{opacity:1}}@keyframes lmo-rise{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}@keyframes lmo-content-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}@keyframes lmo-spin{to{transform:rotate(360deg)}}@keyframes lmo-light-sweep{to{transform:rotate(360deg)}}\n@media(max-width:820px){.lmo-backdrop{padding:9px}.lmo-shell{width:100%;height:96vh;grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);border-radius:20px}.lmo-sidebar{padding:12px 14px;display:grid;grid-template-columns:auto 1fr;border-right:0;border-bottom:1px solid var(--lmo-line);gap:12px}.lmo-brand{padding:0}.lmo-sidebar nav{display:flex;overflow:auto;gap:4px}.lmo-nav-item{width:auto;min-height:38px;padding:0 10px;white-space:nowrap}.lmo-sidebar-summary,.lmo-mode{display:none}.lmo-main{grid-template-rows:62px minmax(0,1fr)}.lmo-header{padding:0 16px}.lmo-header h1{font-size:16px}.lmo-scroll{padding:16px 14px 34px}.lmo-building-grid,.lmo-dashboard-row{grid-template-columns:1fr}.lmo-building-card{grid-template-columns:110px 1fr}.lmo-section-heading>p{display:none}.lmo-two-column,.lmo-recruit-layout{grid-template-columns:1fr}.lmo-selector,.lmo-placement{position:static}.lmo-compact-list{grid-template-columns:repeat(2,1fr);max-height:220px}.lmo-option-grid,.lmo-renovation-plans{grid-template-columns:1fr}.lmo-space-grid{grid-template-columns:repeat(2,1fr)}.lmo-space-card,.lmo-space-card.size-\u5927\u578B,.lmo-space-card.size-\u8D85\u5927\u578B,.lmo-space-card.size-\u5C0F\u578B,.lmo-space-card.size-\u5FAE\u578B{grid-column:span 1}.lmo-hero{grid-template-columns:1fr;min-height:190px}.lmo-hero-orbit{display:none}.lmo-building-banner{align-items:start;flex-direction:column}.lmo-banner-actions{width:100%}.lmo-banner-actions button{flex:1}.lmo-metric-strip{grid-template-columns:repeat(2,1fr)}.lmo-metric-strip>div:nth-child(2){border-right:0}.lmo-metric-strip>div:nth-child(-n+2){border-bottom:1px solid var(--lmo-line)}.lmo-generation-callout{align-items:start;flex-wrap:wrap}.lmo-generation-callout button{width:100%}.lmo-confirm-bar{bottom:-16px}.lmo-workflow-steps{gap:5px}.lmo-workflow-steps>i{width:16px}.lmo-workflow-steps span{font-size:8px}}\n@media(max-width:820px){.lmo-mode-grid{grid-template-columns:1fr}.lmo-link-channels{grid-template-columns:repeat(2,1fr)}.lmo-link-draft-grid{grid-template-columns:1fr}.lmo-task-row{grid-template-columns:62px minmax(0,1fr) auto}.lmo-task-row>code{display:none}.lmo-history-console{grid-template-columns:115px minmax(0,1fr);padding:21px}.lmo-history-orbit{width:100px;height:100px}.lmo-spatial-planner{grid-template-columns:1fr}.lmo-spatial-arrow{display:none}.lmo-spatial-people,.lmo-spatial-spaces{max-height:190px}.lmo-twin-layout{grid-template-columns:110px minmax(0,1fr)}.lmo-twin-inspector{grid-column:1/-1;min-height:0}.lmo-twin-map{height:340px}}\n@media(max-width:520px){.lmo-brand div:last-child{display:none}.lmo-nav-item>span:last-child{display:none}.lmo-nav-item{padding:0 9px}.lmo-header-actions .lmo-status-dot{display:none}.lmo-building-card{grid-template-columns:90px 1fr}.lmo-building-visual{min-height:165px}.lmo-card-metrics span:nth-child(3){display:none}.lmo-facts{display:grid;grid-template-columns:1fr 1fr}.lmo-confirm-bar{align-items:stretch;flex-direction:column}.lmo-confirm-bar button{width:100%}.lmo-candidate{grid-template-columns:40px 1fr}.lmo-avatar{width:40px;height:40px}.lmo-event-timeline article{grid-template-columns:34px 1fr}.lmo-event-timeline article>em{display:none}}\n@media(max-width:520px){.lmo-banner-actions{flex-wrap:wrap}.lmo-banner-actions button{min-width:45%}.lmo-link-list>div{grid-template-columns:repeat(3,1fr)}.lmo-link-list>div>span{grid-column:1}.lmo-link-list p{grid-column:2/4}.lmo-link-list button{grid-row:2}.lmo-link-list button:nth-last-child(3){grid-column:1}.lmo-link-list button:nth-last-child(2){grid-column:2}.lmo-link-list button:last-child{grid-column:3}.lmo-link-preview>footer{align-items:stretch;flex-direction:column}.lmo-link-preview>footer button{width:100%}.lmo-task-row{grid-template-columns:56px minmax(0,1fr)}.lmo-task-actions{grid-column:2}.lmo-history-console{grid-template-columns:1fr}.lmo-history-orbit{display:none}.lmo-history-actions{align-items:stretch;flex-direction:column}.lmo-history-actions button{width:100%;max-width:none}.lmo-history-list>div{grid-template-columns:30px minmax(0,1fr) auto}.lmo-history-list time{display:none}.lmo-twin-toolbar{align-items:flex-start;flex-direction:column}.lmo-twin-legend{flex-wrap:wrap}.lmo-twin-layout{grid-template-columns:1fr}.lmo-twin-floor-nav{display:flex;overflow:auto}.lmo-twin-floor-nav button{min-width:120px}.lmo-twin-stage,.lmo-twin-inspector{grid-column:1}.lmo-twin-map{height:300px}}\n@media(prefers-reduced-motion:reduce){.lmo-backdrop,.lmo-shell,.lmo-view,.lmo-hero-orbit::before,.lmo-hero-orbit::after,.lmo-history-orbit::before,.lmo-history-orbit::after,.lmo-renovation-visual::after{animation:none!important}.lmo-backdrop *{scroll-behavior:auto!important;transition:none!important}}\n';
   }
 });
 
@@ -21750,6 +22200,7 @@ function activate3(context) {
   const tasks = context.services.require("landlord.tasks");
   const events = context.services.require("landlord.events");
   const history = context.services.require("landlord.history");
+  const spatialSync = context.services.require("landlord.spatialSync");
   const perception = context.services.require("landlord.perception");
   const identities = context.services.require("landlord.identities");
   const layouts = context.services.require("building.layout");
@@ -21765,6 +22216,7 @@ function activate3(context) {
     tasks,
     events,
     history,
+    spatialSync,
     perception,
     identities,
     layouts,
@@ -21875,14 +22327,14 @@ function createTavernHelperService() {
     },
     async generateStructured({ schemaName, schema, mode = "raw", ...config }) {
       const generator = mode === "story" ? this.generateWithStoryContext : this.generateIsolated;
-      const text = await generator.call(this, {
+      const text2 = await generator.call(this, {
         ...config,
         json_schema: {
           name: schemaName,
           value: schema
         }
       });
-      return JSON.parse(text);
+      return JSON.parse(text2);
     },
     async getCurrentCharacterWorldbook() {
       const getNames = requireApi("getCharWorldbookNames");
@@ -22486,7 +22938,7 @@ var modules = [
     afterLoad: null,
     cleanup: [],
     requires: ["landlord.schema"],
-    provides: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.history", "landlord.perception", "landlord.identities", "landlord.bridges", "building.compiler", "building.layout"],
+    provides: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.history", "landlord.perception", "landlord.identities", "landlord.bridges", "landlord.spatialSync", "building.compiler", "building.layout", "building.renovationVisual", "building.routes"],
     legacyRequires: [],
     load: () => Promise.resolve().then(() => (init_landlord_core(), landlord_core_exports))
   },
@@ -22496,10 +22948,10 @@ var modules = [
     critical: false,
     afterLoad: null,
     cleanup: [],
-    requires: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.history", "landlord.perception", "landlord.identities", "landlord.bridges", "building.compiler", "building.layout", "ui.floatingMenu"],
+    requires: ["landlord.store", "landlord.tasks", "landlord.events", "landlord.history", "landlord.spatialSync", "landlord.perception", "landlord.identities", "landlord.bridges", "building.compiler", "building.layout", "ui.floatingMenu"],
     provides: ["landlord.console"],
     legacyRequires: ["FloatingMenuManager"],
     load: () => Promise.resolve().then(() => (init_landlord_console(), landlord_console_exports))
   }
 ];
-await startLandlordRuntime({ version: "0.3.0-preview.2", modules });
+await startLandlordRuntime({ version: "0.3.0-preview.3", modules });

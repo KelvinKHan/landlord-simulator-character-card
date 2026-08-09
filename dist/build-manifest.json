@@ -1,16 +1,16 @@
 {
-  "version": "0.3.0-preview.2",
+  "version": "0.3.0-preview.3",
   "format": "esm",
   "entry": "landlord-simulator.bundle.js",
-  "bytes": 1154073,
-  "sha256": "5c80b39c21c050af55b6bd773f08ce8e4c60a876e7893bb6be75c728f5ddaf31",
+  "bytes": 1193388,
+  "sha256": "cc4976cb9f215174d47602e42e21339efd89e6da8223871f680c5767dde4f15a",
   "release": {
-    "tag": "v0.3.0-preview.2",
+    "tag": "v0.3.0-preview.3",
     "repository": "KelvinKHan/landlord-simulator-character-card",
     "loader": "landlord-simulator.loader.js",
     "sources": [
-      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.2/dist/landlord-simulator.bundle.js",
-      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.2/dist/landlord-simulator.bundle.js"
+      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.3/dist/landlord-simulator.bundle.js",
+      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.3/dist/landlord-simulator.bundle.js"
     ]
   },
   "upstreams": {
@@ -570,8 +570,11 @@
         "landlord.perception",
         "landlord.identities",
         "landlord.bridges",
+        "landlord.spatialSync",
         "building.compiler",
-        "building.layout"
+        "building.layout",
+        "building.renovationVisual",
+        "building.routes"
       ],
       "legacyRequires": [],
       "features": [
@@ -585,6 +588,8 @@
         "建筑、楼层与空间的逐步感知",
         "租客在正文、微信、新闻与建筑中的统一身份",
         "基于空间尺寸与相邻关系的建筑数字孪生",
+        "把装修配色、材质、照明与家具编译为稳定视觉令牌",
+        "人物移动路线校验、同步提案、冲突检测与确认写入",
         "正文一次性提示词注入与微信、新闻的显式草稿投递桥"
       ]
     },
@@ -599,6 +604,7 @@
         "landlord.tasks",
         "landlord.events",
         "landlord.history",
+        "landlord.spatialSync",
         "landlord.perception",
         "landlord.identities",
         "landlord.bridges",
@@ -619,6 +625,7 @@
         "经营事件时间线",
         "多频道联动待办与消费状态",
         "经营操作时间线与安全撤销/重做",
+        "人物位置同步提案、路线预览与冲突队列",
         "糖果明亮主题与 Rose Pine 暗色主题",
         "桌面与窄屏响应式布局"
       ]

@@ -38,6 +38,9 @@ test('经营中枢构建产物包含所有可玩流程且明确显示本地模�
     '建筑数字孪生',
     '经营时光回溯',
     '装修这个空间',
+    'data-renovation-signature',
+    '叙事—空间同步',
+    '校验移动意图',
     '探索下一处',
   ]) {
     assert.ok(bundle.includes(bundleText(marker)), `最终 bundle 缺少经营中枢标记：${marker}`);

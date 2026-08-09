@@ -1,3 +1,5 @@
+import { createRenovationVisual } from '../renovation/visual-engine.js';
+
 function round(value) {
   return Math.round(value * 1000) / 1000;
 }
@@ -88,6 +90,7 @@ export function createBuildingLayout(building) {
       description: space.description,
       facilityCount: space.facilityCount,
       renovation: space.renovation,
+      visual: createRenovationVisual(space.renovation, { fallbackAccent: building.theme?.主色 }),
       occupants: space.occupants,
       adjacentSpaceIds: space.adjacentSpaceIds,
       weight: Math.max(1, Number(space.weight) || 1),

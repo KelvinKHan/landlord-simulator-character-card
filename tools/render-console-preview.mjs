@@ -57,7 +57,31 @@ const historyCenter = {
     { id: 'op_1', kind: 'exploration', label: '探索房东总部公寓', changeCount: 2, affectedRoots: ['建筑列表'], createdAt: Date.now() - 120_000, status: '已应用' },
   ],
 };
-const twin = createBuildingLayout(current);
+const twinBuilding = structuredClone(current);
+const twinRoom = twinBuilding.floors.flatMap(floor => floor.spaces).find(space => space.id === ownerRoom.id);
+const twinPlan = renovationPreview.plans[1];
+twinRoom.renovation = {
+  风格: twinPlan.style,
+  配色: twinPlan.palette,
+  材质: twinPlan.materials,
+  家具: twinPlan.furniture,
+  照明: twinPlan.lighting,
+  氛围: twinPlan.atmosphere,
+  完成度: 100,
+};
+const twin = createBuildingLayout(twinBuilding);
+const spatialCenter = {
+  people: [
+    { id: 'preview_person_linxia', name: '林夏', status: '正在看窗外', buildingName: current.name, spaceName: '客厅', color: '#6B8DC9' },
+    { id: 'preview_person_shaoqing', name: '邵青', status: '研究电梯', buildingName: current.name, spaceName: '花园', color: '#55B7A5' },
+  ],
+  spaces: current.floors.flatMap(floor => floor.spaces).map(space => ({ ...space, floorName: current.floors.find(floor => floor.spaces.some(item => item.id === space.id))?.name ?? '' })),
+  counts: { 待确认: 1, 冲突: 1, 已应用: 2, 已忽略: 0, 写入中: 0 },
+  proposals: [
+    { id: 'spatial_preview_ready', personId: 'preview_person_linxia', buildingId: current.id, spaceId: 'garden', activity: '观察花园里的异世界植物', status: '待确认', reason: '经过 2 段已知连接', route: { personName: '林夏', destinationName: '花园', kind: '建筑内移动', path: ['living_room', 'garden'] } },
+    { id: 'spatial_preview_conflict', personId: 'preview_person_shaoqing', buildingId: current.id, spaceId: 'unknown_room', activity: '寻找不存在的密室', status: '冲突', reason: '目标空间尚未被发现', route: { personName: '邵青', destinationName: '未知密室', path: [] } },
+  ],
+};
 
 const pages = {
   portfolio: { ui: { section: 'portfolio' }, task: null },
@@ -82,6 +106,7 @@ const pages = {
   },
   tasks: { ui: { section: 'tasks' }, task: null },
   history: { ui: { section: 'history' }, task: null },
+  spatial: { ui: { section: 'spatial', selectedMovePersonId: 'preview_person_linxia', selectedMoveSpaceId: 'garden' }, task: null },
   events: { ui: { section: 'events' }, task: null },
   twin: { ui: { section: 'twin' }, task: null },
 };
@@ -89,7 +114,7 @@ const pages = {
 await fs.mkdir(outputDirectory, { recursive: true });
 
 for (const [name, page] of Object.entries(pages)) {
-  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, historyCenter, twin });
+  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, twin });
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),

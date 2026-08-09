@@ -1,3 +1,5 @@
+import { createRenovationVisual } from '../../renovation/visual-engine.js';
+
 const icons = Object.freeze({
   home: '<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
   buildings: '<svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M8 7h4M8 11h4M8 15h4M2 21h20M16 9h2a2 2 0 0 1 2 2v10"/></svg>',
@@ -7,6 +9,7 @@ const icons = Object.freeze({
   event: '<svg viewBox="0 0 24 24"><path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M18 12h3M6 21h12M8 17a6 6 0 1 1 8 0l-1 1H9z"/></svg>',
   tasks: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9h6M9 13h6M9 17h3M8 2v3M16 2v3"/></svg>',
   history: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6M12 7v5l3 2"/></svg>',
+  route: '<svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3v-6a3 3 0 0 1 3-3"/></svg>',
   close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
   arrow: '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
   sparkle: '<svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
@@ -40,6 +43,17 @@ function emptyState(title, text) {
   return `<div class="lmo-empty">${icon('sparkle')}<strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></div>`;
 }
 
+function renovationVisualStyle(visual) {
+  return `--room-base:${safeColor(visual.css.base)};--room-accent:${safeColor(visual.css.accent)};--room-secondary:${safeColor(visual.css.secondary)};--room-glow:${safeColor(visual.css.glow)};--room-text:${safeColor(visual.css.text, '#283044')}`;
+}
+
+function renderRenovationVisual(visual, { compact = false } = {}) {
+  const furniture = visual.furniture.length
+    ? visual.furniture.map(item => `<i title="${escapeHtml(item.label)}">${escapeHtml(item.marker)}</i>`).join('')
+    : '<i class="empty">空</i>';
+  return `<div class="lmo-renovation-visual material-${escapeHtml(visual.material)} lighting-${escapeHtml(visual.lightingMode)} ${compact ? 'compact' : ''}" style="${renovationVisualStyle(visual)}"><span class="lmo-visual-light"></span><div class="lmo-visual-room"><em>${escapeHtml(visual.style)}</em><div>${furniture}</div></div><footer>${visual.colors.slice(0, 4).map(color => `<i style="--swatch:${safeColor(color.value)}" title="${escapeHtml(color.name)}"></i>`).join('')}<span>${escapeHtml(visual.atmosphere)}</span></footer></div>`;
+}
+
 function navItem(section, current, label, iconName) {
   return `<button class="lmo-nav-item ${section === current ? 'active' : ''}" data-action="navigate" data-section="${section}">${icon(iconName)}<span>${label}</span></button>`;
 }
@@ -62,6 +76,7 @@ function renderSidebar(state, ui, portfolio) {
       ${navItem('recruitment', ui.section, '招募中心', 'recruit')}
       ${navItem('tasks', ui.section, '任务中心', 'tasks')}
       ${navItem('history', ui.section, '经营回溯', 'history')}
+      ${navItem('spatial', ui.section, '空间同步', 'route')}
       ${navItem('events', ui.section, '动态记录', 'event')}
     </nav>
     <div class="lmo-sidebar-summary">
@@ -89,6 +104,7 @@ function sectionTitle(section, current) {
   if (section === 'takeover') return '建筑接管提案';
   if (section === 'tasks') return '统一任务中心';
   if (section === 'history') return '经营时光回溯';
+  if (section === 'spatial') return '叙事—空间同步';
   if (section === 'events') return '建筑动态记录';
   return current.name;
 }
@@ -160,7 +176,7 @@ function renderTwinMap(floor, selectedId, accent) {
       node.id === selected?.id ? 'selected' : '',
       connected.has(node.id) && node.id !== selected?.id ? 'connected' : '',
     ].filter(Boolean).join(' ');
-    return `<button class="${classes}" data-action="inspect-twin-space" data-floor-id="${escapeHtml(floor.id)}" data-space-id="${escapeHtml(node.id)}" aria-pressed="${node.id === selected?.id}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%"><strong>${escapeHtml(node.name)}</strong><small>${escapeHtml(node.type)} · ${node.awareness}%</small>${node.occupants?.length ? `<em>${node.occupants.map(person => escapeHtml(person.name)).join(' / ')}</em>` : ''}</button>`;
+    return `<button class="${classes} material-${escapeHtml(node.visual.material)} lighting-${escapeHtml(node.visual.lightingMode)}" data-action="inspect-twin-space" data-floor-id="${escapeHtml(floor.id)}" data-space-id="${escapeHtml(node.id)}" aria-pressed="${node.id === selected?.id}" data-renovation-signature="${escapeHtml(node.visual.signature)}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%;${renovationVisualStyle(node.visual)}"><strong>${escapeHtml(node.name)}</strong><small>${escapeHtml(node.type)} · ${node.awareness}%</small>${node.occupants?.length ? `<em>${node.occupants.map(person => escapeHtml(person.name)).join(' / ')}</em>` : ''}${node.visual.furniture.length ? `<span class="lmo-twin-furniture">${node.visual.furniture.slice(0, 4).map(item => `<i title="${escapeHtml(item.label)}">${escapeHtml(item.marker)}</i>`).join('')}</span>` : ''}</button>`;
   }).join('');
   return `<div class="lmo-twin-map" style="--twin-accent:${safeColor(accent)}"><svg class="lmo-twin-edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="已知空间相邻关系">${lines}</svg>${nodes}</div>`;
 }
@@ -179,6 +195,7 @@ function renderTwinInspector(node, floor) {
     : '<small>当前无人使用</small>';
   return `<aside class="lmo-twin-inspector">
     <div class="lmo-twin-inspector-head"><span>${escapeHtml(node.type)} · ${escapeHtml(node.size)}</span><strong>${escapeHtml(node.name)}</strong><p>${escapeHtml(node.description)}</p></div>
+    ${renderRenovationVisual(node.visual, { compact: true })}
     <div class="lmo-twin-data-grid"><span><small>空间状态</small><b>${escapeHtml(node.status)}</b></span><span><small>感知程度</small><b>${node.awareness}%</b></span><span><small>已知设施</small><b>${node.facilityCount ?? 0}</b></span><span><small>装修风格</small><b>${escapeHtml(node.renovation?.风格 ?? '尚未具现')}</b></span></div>
     <div class="lmo-twin-inspector-block"><small>当前用途</small><p>${escapeHtml(node.purpose)}</p></div>
     <div class="lmo-twin-inspector-block"><small>正在这里的人</small><div class="lmo-twin-people">${occupants}</div></div>
@@ -222,13 +239,14 @@ function ownedSpaceOptions(building, selectedSpaceId, action = 'choose-workflow-
 }
 
 function renderRenovation(state, building, task, selectedSpaceId, selectedId, busy) {
+  const mode = taskModeCopy(state);
   const plans = task?.status === 'ready' ? task.preview.plans : [];
   const space = building.floors.flatMap(floor => floor.spaces).find(item => item.id === selectedSpaceId);
   const markup = `<section class="lmo-view lmo-workflow">${workflowSteps(plans.length ? 2 : selectedSpaceId ? 1 : 0)}
     <div class="lmo-two-column"><aside class="lmo-selector"><span class="lmo-kicker">选择装修目标</span><h2>${escapeHtml(building.name)}</h2><div class="lmo-compact-list">${ownedSpaceOptions(building, selectedSpaceId)}</div></aside>
-    <div class="lmo-workspace">${!space ? emptyState('先选择一个空间', '可以从一个房间开始，不需要一次装修整栋建筑。') : !plans.length ? `<div class="lmo-preview-room"><span>${escapeHtml(space.type)} · ${escapeHtml(space.size)}</span><h2>${escapeHtml(space.name)}</h2><p>${escapeHtml(space.description)}</p><div class="lmo-current-style"><small>当前装修</small><strong>${escapeHtml(space.renovation?.风格)}</strong><span>${escapeHtml(space.renovation?.氛围)}</span></div><button class="lmo-primary" data-action="run-renovation" ${busy ? 'disabled' : ''}>${icon('sparkle')} ${busy ? '正在整理…' : '生成三个本地方案'}</button></div>` : `<div class="lmo-renovation-plans">${plans.map(plan => `<button class="lmo-renovation-card ${selectedId === plan.id ? 'selected' : ''}" data-action="choose-option" data-option-id="${escapeHtml(plan.id)}"><div class="lmo-palette">${Object.values(plan.palette).map(color => `<i style="--swatch:${safeColor(color, '#E2E8F0')}"></i>`).join('')}</div><span>${escapeHtml(plan.style)}</span><h3>${escapeHtml(plan.name)}</h3><p>${escapeHtml(plan.tagline)}</p>${tags(plan.impacts)}<small>${escapeHtml(plan.lighting)}</small></button>`).join('')}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? '装修效果可以具现化' : '挑选最喜欢的方案'}</strong><span>确认后会改变空间描述、配色、材质和事件记录。</span></div><button class="lmo-primary" data-action="confirm-renovation" ${selectedId && !busy ? '' : 'disabled'}>应用装修 ${icon('arrow')}</button></div>`}</div></div>
+    <div class="lmo-workspace">${!space ? emptyState('先选择一个空间', '可以从一个房间开始，不需要一次装修整栋建筑。') : !plans.length ? `<div class="lmo-preview-room"><span>${escapeHtml(space.type)} · ${escapeHtml(space.size)}</span><h2>${escapeHtml(space.name)}</h2><p>${escapeHtml(space.description)}</p><div class="lmo-current-style"><small>当前装修</small><strong>${escapeHtml(space.renovation?.风格)}</strong><span>${escapeHtml(space.renovation?.氛围)}</span></div><button class="lmo-primary" data-action="run-renovation" ${busy ? 'disabled' : ''}>${icon('sparkle')} ${busy ? '正在整理…' : `${mode.verb}方案`}</button></div>` : `<div class="lmo-renovation-plans">${plans.map(plan => { const visual = createRenovationVisual(plan, { fallbackAccent: building.theme?.主色 }); return `<button class="lmo-renovation-card ${selectedId === plan.id ? 'selected' : ''}" data-action="choose-option" data-option-id="${escapeHtml(plan.id)}" data-renovation-signature="${escapeHtml(visual.signature)}">${renderRenovationVisual(visual, { compact: true })}<span>${escapeHtml(plan.style)}</span><h3>${escapeHtml(plan.name)}</h3><p>${escapeHtml(plan.tagline)}</p>${tags(plan.impacts)}<small>${escapeHtml(plan.lighting)}</small></button>`; }).join('')}</div><div class="lmo-confirm-bar"><div><strong>${selectedId ? '装修效果可以具现化' : '挑选最喜欢的方案'}</strong><span>确认后会改变空间描述、配色、材质和事件记录。</span></div><button class="lmo-primary" data-action="confirm-renovation" ${selectedId && !busy ? '' : 'disabled'}>应用装修 ${icon('arrow')}</button></div>`}</div></div>
   </section>`;
-  return state.运行模式 === '真实' ? markup.replace('生成三个本地方案', '生成三个 AI 方案') : markup;
+  return markup;
 }
 
 function renderRecruitment(state, building, task, selectedSpaceId, selectedId, busy) {
@@ -296,8 +314,25 @@ function renderEvents(state, portfolio, linkCenter) {
 }
 
 const operationKindLabels = Object.freeze({
-  takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募', exploration: '探索感知', management: '经营操作',
+  takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募', exploration: '探索感知', movement: '人物移动', management: '经营操作',
 });
+
+function renderSpatial(spatialCenter, current, ui) {
+  const selectedPerson = spatialCenter.people.find(person => person.id === ui.selectedMovePersonId);
+  const selectedSpace = spatialCenter.spaces.find(space => space.id === ui.selectedMoveSpaceId);
+  return `<section class="lmo-view lmo-spatial-view">
+    <div class="lmo-section-heading"><div><span>NARRATIVE · SPACE SYNC</span><h2>让人物位置先通过建筑结构校验</h2></div><p>现在可手动验证完整流程；以后 AI 只负责把正文提取成同一种移动意图。</p></div>
+    <div class="lmo-spatial-metrics"><span><b>${spatialCenter.counts.待确认 ?? 0}</b>待确认</span><span><b>${spatialCenter.counts.冲突 ?? 0}</b>结构冲突</span><span><b>${spatialCenter.counts.已应用 ?? 0}</b>已同步</span></div>
+    <article class="lmo-spatial-planner">
+      <div class="lmo-spatial-column"><span class="lmo-kicker">1 · 选择人物</span>${spatialCenter.people.length ? `<div class="lmo-spatial-people">${spatialCenter.people.map(person => `<button class="${person.id === ui.selectedMovePersonId ? 'selected' : ''}" data-action="choose-spatial-person" data-person-id="${escapeHtml(person.id)}" style="--person-accent:${safeColor(person.color)}"><i>${escapeHtml(person.name.slice(0, 1))}</i><p><strong>${escapeHtml(person.name)}</strong><small>${escapeHtml(person.buildingName)} · ${escapeHtml(person.spaceName)}</small></p></button>`).join('')}</div>` : emptyState('还没有可移动的人物', '先从招募中心让一位人物进入建筑。')}</div>
+      <div class="lmo-spatial-arrow">${icon('arrow')}</div>
+      <div class="lmo-spatial-column"><span class="lmo-kicker">2 · 选择目标</span><div class="lmo-spatial-spaces">${spatialCenter.spaces.map(space => `<button class="${space.id === ui.selectedMoveSpaceId ? 'selected' : ''}" data-action="choose-spatial-space" data-space-id="${escapeHtml(space.id)}"><span>${escapeHtml(space.floorName)}</span><strong>${escapeHtml(space.name)}</strong><small>${escapeHtml(space.type)} · ${escapeHtml(space.status)}</small></button>`).join('')}</div></div>
+      <div class="lmo-spatial-arrow">${icon('arrow')}</div>
+      <div class="lmo-spatial-submit"><span class="lmo-kicker">3 · 描述当前动作</span><div><small>移动预览</small><strong>${escapeHtml(selectedPerson?.name ?? '待选人物')} → ${escapeHtml(selectedSpace?.name ?? '待选空间')}</strong></div><label for="lmo-spatial-activity">到达后正在做什么</label><input id="lmo-spatial-activity" value="适应新环境" maxlength="40"><button class="lmo-primary" data-action="propose-spatial-move" ${selectedPerson && selectedSpace ? '' : 'disabled'}>${icon('route')} 校验移动意图</button><p>这一步只创建提案，不会直接改动人物位置。</p></div>
+    </article>
+    <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon('route')}<span><strong>空间同步提案</strong><small>结构合法才允许确认；冲突不会写入 MVU</small></span></div></div>${spatialCenter.proposals.length ? `<div class="lmo-spatial-proposals">${spatialCenter.proposals.map(proposal => `<div class="status-${escapeHtml(proposal.status)}"><span>${proposal.status === '冲突' ? '!' : proposal.route.path.length}</span><p><strong>${escapeHtml(proposal.route.personName ?? proposal.personId)} → ${escapeHtml(proposal.route.destinationName ?? proposal.spaceId)}</strong><small>${escapeHtml(proposal.route.kind ?? '无法规划')} · ${escapeHtml(proposal.reason)} · ${escapeHtml(proposal.activity)}</small></p><em>${escapeHtml(proposal.status)}</em>${proposal.status === '待确认' ? `<button data-action="confirm-spatial-proposal" data-proposal-id="${escapeHtml(proposal.id)}">确认同步</button>` : ''}${['待确认','冲突'].includes(proposal.status) ? `<button data-action="ignore-spatial-proposal" data-proposal-id="${escapeHtml(proposal.id)}">忽略</button>` : ''}</div>`).join('')}</div>` : emptyState('还没有空间同步提案', `选择人物和「${escapeHtml(current.name)}」内的目标空间，先用本地规则验证。`)}</article>
+  </section>`;
+}
 
 function renderOperationTime(value) {
   const date = new Date(value);
@@ -321,7 +356,7 @@ function renderHistory(historyCenter) {
   </section>`;
 }
 
-export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, historyCenter, twin }) {
+export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, twin }) {
   let content;
   if (ui.section === 'portfolio') content = renderPortfolio(state, portfolio);
   else if (ui.section === 'building') content = renderBuilding(current, identityCenter);
@@ -331,6 +366,7 @@ export function renderConsole({ state, portfolio, current, ui, task, taskCenter,
   else if (ui.section === 'recruitment') content = renderRecruitment(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
   else if (ui.section === 'tasks') content = renderTasks(taskCenter);
   else if (ui.section === 'history') content = renderHistory(historyCenter);
+  else if (ui.section === 'spatial') content = renderSpatial(spatialCenter, current, ui);
   else content = renderEvents(state, portfolio, linkCenter);
 
   const displayBuilding = ui.section === 'takeover' ? ui.targetBuilding : current;
