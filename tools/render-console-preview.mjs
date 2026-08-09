@@ -4,6 +4,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compilePortfolio } from '../scripts/src/buildings/compiler.js';
+import { applyAcquisitionDirection } from '../scripts/src/buildings/acquisition-projection-engine.js';
 import { createBuildingLayout } from '../scripts/src/buildings/layout-engine.js';
 import { compileBuildingMemories } from '../scripts/src/buildings/memory-engine.js';
 import { compileBuildingOperations } from '../scripts/src/buildings/operations-engine.js';
@@ -29,6 +30,15 @@ const current = portfolio.headquarters;
 const hospital = portfolio.available.find(building => building.type === '医院');
 const ownerRoom = current.floors.flatMap(floor => floor.spaces).find(space => space.id === 'room_owner');
 const takeoverPreview = await managementMockRecipes.takeover({ building: hospital });
+const radarState = structuredClone(state);
+applyAcquisitionDirection(radarState.建筑列表[hospital.id], takeoverPreview.directions[0]);
+radarState.当前建筑ID = hospital.id;
+radarState.建筑列表.building_headquarters.空间列表.living_room.占用者 = { preview_person_shaoqing: '租客' };
+radarState.人物列表.preview_person_linxia.所在建筑ID = hospital.id;
+radarState.人物列表.preview_person_linxia.所在空间ID = 'hospital_ward';
+radarState.建筑列表[hospital.id].空间列表.hospital_ward.占用者 = { preview_person_linxia: '员工' };
+const radarPortfolio = compilePortfolio(radarState);
+const radarCurrent = radarPortfolio.buildings.find(building => building.id === hospital.id);
 const renovationPreview = await managementMockRecipes.renovation({ building: current, space: ownerRoom });
 const recruitmentPreview = await managementMockRecipes.recruitment({ building: current });
 const taskCenter = {
@@ -109,6 +119,7 @@ const contextCapsule = compileContextCapsule(state, current.id);
 
 const pages = {
   portfolio: { ui: { section: 'portfolio' }, task: null },
+  'portfolio-radar': { ui: { section: 'portfolio' }, task: null, state: radarState, portfolio: radarPortfolio, current: radarCurrent, scrollTop: 690 },
   'portfolio-dark': { ui: { section: 'portfolio' }, task: null, theme: 'dark' },
   building: { ui: { section: 'building' }, task: null },
   pulse: { ui: { section: 'pulse', selectedPulseSceneId: pulse.scenes[0]?.id }, task: null },
@@ -147,7 +158,7 @@ const pages = {
 await fs.mkdir(outputDirectory, { recursive: true });
 
 for (const [name, page] of Object.entries(pages)) {
-  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin: page.twin ?? twin });
+  const rendered = renderConsole({ state: page.state ?? state, portfolio: page.portfolio ?? portfolio, current: page.current ?? current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, autonomyCenter, relationshipCenter, memory, pulse, twin: page.twin ?? twin });
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),
