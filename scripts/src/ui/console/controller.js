@@ -1,10 +1,11 @@
 import { renderConsole } from './templates.js';
+import { extractNarrativeProposals } from './workflow-actions.js';
 
 function owned(building) {
   return building && ['总部', '已接管'].includes(building.status);
 }
 
-export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, embodiment = null, perception = null, identities = null, layouts = null, operations = null, bridges = null, compiler, logger }) {
+export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, perception = null, identities = null, layouts = null, operations = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -18,6 +19,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     selectedPulseSceneId: null,
     selectedReactionId: null,
     previewLinkIds: [],
+    contextCapsuleVisible: false,
     selectedMovePersonId: null,
     selectedMoveSpaceId: null,
     lastNarrativeExtraction: null,
@@ -47,6 +49,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
         })()
       : { counts: { 正文: 0, 微信: 0, 新闻: 0, 建筑: 0 }, pending: [], capabilities: {}, previewDrafts: [] };
     const identityCenter = { residents: identities?.listForBuilding(current.id) ?? [] };
+    const contextCapsule = contextCapsules?.compile(current.id) ?? null;
     const twin = layouts?.compile(current) ?? { buildingId: current.id, name: current.name, theme: current.theme, floors: [], metrics: { floors: 0, nodes: 0, edges: 0 } };
     const pulse = operations?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'pulse_unavailable', total: 0, state: '尚未加载', metrics: { comfort: 0, function: 0, vitality: 0, appeal: 0 }, spaces: [], synergies: [], scenes: [], residentCount: 0, originCount: 0 };
     const tenantLife = embodiment?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'embodied_unavailable', residents: [], encounters: [] };
@@ -65,7 +68,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       narrativeMode: state.运行模式 === '真实' ? 'ai' : 'local',
       narrativeCapabilities: narrativeIntents?.capabilities() ?? { local: true, ai: false },
     };
-    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, tenantLife, pulse, twin };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, pulse, twin };
   }
 
   function resetWorkflow({ keepSpace = false } = {}) {
@@ -205,15 +208,10 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
       return render();
     }
     if (action === 'extract-narrative-intents') {
-      if (!narrativeIntents || !spatialSync) throw new Error('剧情空间提取服务尚未加载');
       const text = root.querySelector('#lmo-narrative-fragment')?.value?.trim();
-      if (!text) throw new Error('请先粘贴一段需要解析的剧情文字');
       return withBusy(async () => {
-        const result = await narrativeIntents.extract(text, { mode: data.spatialCenter.narrativeMode });
-        if (!result.intents.length) throw new Error(result.unresolved.length ? `没有形成可确认移动：${result.unresolved[0]}` : '没有识别到人物移动');
-        spatialSync.propose(result.intents, { source: `narrative-${result.mode}` });
-        ui.lastNarrativeExtraction = { mode: result.mode, count: result.intents.length, unresolved: result.unresolved.length };
-        setNotice(`已提取 ${result.intents.length} 条移动意图；仍需逐条确认后才会改动人物位置。`, 'success');
+        ui.lastNarrativeExtraction = await extractNarrativeProposals({ text, mode: data.spatialCenter.narrativeMode, narrativeIntents, spatialSync });
+        setNotice(`已提取 ${ui.lastNarrativeExtraction.count} 条移动意图；仍需逐条确认后才会改动人物位置。`, 'success');
       });
     }
     if (action === 'choose-spatial-space') {
@@ -323,6 +321,18 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     if (action === 'preview-link') {
       ui.previewLinkIds = [button.dataset.linkId];
       return render();
+    }
+    if (action === 'toggle-context-capsule') {
+      ui.contextCapsuleVisible = !ui.contextCapsuleVisible;
+      return render();
+    }
+    if (action === 'inject-context-capsule') {
+      if (!bridges?.injectContextCapsule || !data.contextCapsule) throw new Error('上下文胶囊注入服务尚未加载');
+      return withBusy(async () => {
+        await bridges.injectContextCapsule(data.contextCapsule, { confirmed: true });
+        ui.contextCapsuleVisible = false;
+        setNotice('当前建筑上下文已作为一次性 system 提示注入下一次正文生成。', 'success');
+      });
     }
     if (action === 'preview-channel-links') {
       ui.previewLinkIds = data.linkCenter.pending

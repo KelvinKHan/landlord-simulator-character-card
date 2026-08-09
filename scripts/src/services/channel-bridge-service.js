@@ -125,6 +125,26 @@ export function createChannelBridgeService({ events, identities, ports }) {
     return Object.freeze({ total: results.length, successful, failed: results.length - successful, results: Object.freeze(results) });
   }
 
+  async function injectContextCapsule(capsule, { confirmed = false } = {}) {
+    if (!confirmed) throw new Error('注入上下文胶囊必须由玩家显式确认');
+    if (!capsule?.signature || !capsule?.content) throw new Error('上下文胶囊内容无效');
+    if (!ports.capabilities().正文) throw new Error('正文提示词注入接口尚未就绪');
+    const draft = Object.freeze({
+      deliveryId: capsule.signature,
+      eventId: capsule.signature,
+      channel: '正文',
+      status: '待分发',
+      kind: 'state-context-capsule',
+      title: `${capsule.buildingName}·状态上下文胶囊`,
+      summary: `${capsule.spaceCount} 个空间、${capsule.residentCount} 位人物`,
+      buildingId: capsule.buildingId,
+      spaceId: '',
+      content: capsule.content,
+    });
+    const result = await ports.story(draft);
+    return Object.freeze({ draft, result: clone(result) });
+  }
+
   return Object.freeze({
     capabilities: () => ports.capabilities(),
     draft,
@@ -133,5 +153,6 @@ export function createChannelBridgeService({ events, identities, ports }) {
     },
     dispatch,
     dispatchMany,
+    injectContextCapsule,
   });
 }

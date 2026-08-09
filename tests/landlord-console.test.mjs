@@ -14,6 +14,7 @@ import { createOperationJournal } from '../scripts/src/services/operation-journa
 import { createSpatialSyncService } from '../scripts/src/services/spatial-sync-service.js';
 import { createPerceptionService } from '../scripts/src/services/perception-service.js';
 import { createChannelBridgeService } from '../scripts/src/services/channel-bridge-service.js';
+import { createContextCapsuleService } from '../scripts/src/services/context-capsule-service.js';
 import { createTenantIdentityService } from '../scripts/src/services/tenant-identity-service.js';
 import { createRecipeTaskProvider, createTaskCenter } from '../scripts/src/services/task-center.js';
 import { createTenantEmbodimentService } from '../scripts/src/tenants/embodiment-engine.js';
@@ -85,6 +86,7 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
   const narrativeIntents = createNarrativeIntentService({ store });
   const perception = createPerceptionService({ store });
   const identities = createTenantIdentityService({ store });
+  const contextCapsules = createContextCapsuleService({ store });
   const dispatchedLinks = [];
   const channelPorts = {
     capabilities: () => ({ 正文: true, 微信: true, 新闻: true, 建筑: true }),
@@ -104,6 +106,7 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     narrativeIntents,
     perception,
     identities,
+    contextCapsules,
     bridges,
     layouts: createBuildingLayoutService(),
     operations: createBuildingOperationsService(),
@@ -185,6 +188,14 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     click(dom.window.document, '[data-action="dispatch-preview-links"]');
     await waitFor(() => assert.equal(events.list({ status: '已读取' }).length, 2));
     assert.equal(dispatchedLinks.length, 1);
+
+    click(dom.window.document, '[data-action="toggle-context-capsule"]');
+    assert.match(dom.window.document.body.textContent, /NEXT TURN STATE CAPSULE/);
+    assert.match(dom.window.document.querySelector('.lmo-context-capsule pre').textContent, /白塔治愈生活馆/);
+    click(dom.window.document, '[data-action="inject-context-capsule"]');
+    await waitFor(() => assert.equal(dispatchedLinks.length, 2));
+    assert.equal(dispatchedLinks[1].kind, 'state-context-capsule');
+    await waitFor(() => assert.match(dom.window.document.body.textContent, /一次性 system 提示注入/));
 
     click(dom.window.document, '[data-action="navigate"][data-section="building"]');
     assert.match(dom.window.document.body.textContent, /landlord_wechat_/);

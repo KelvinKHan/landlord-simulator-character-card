@@ -8,6 +8,7 @@ import { createBuildingLayout } from '../scripts/src/buildings/layout-engine.js'
 import { compileBuildingOperations } from '../scripts/src/buildings/operations-engine.js';
 import { createDefaultLandlordState } from '../scripts/src/model/default-state.js';
 import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js';
+import { compileContextCapsule } from '../scripts/src/services/context-capsule-service.js';
 import { compileTenantEmbodiment } from '../scripts/src/tenants/embodiment-engine.js';
 import { renderConsole } from '../scripts/src/ui/console/templates.js';
 
@@ -90,6 +91,7 @@ const spatialCenter = {
 };
 const pulse = compileBuildingOperations(state, current.id);
 const tenantLife = compileTenantEmbodiment(state, current.id);
+const contextCapsule = compileContextCapsule(state, current.id);
 
 const pages = {
   portfolio: { ui: { section: 'portfolio' }, task: null },
@@ -117,7 +119,7 @@ const pages = {
   tasks: { ui: { section: 'tasks' }, task: null },
   history: { ui: { section: 'history' }, task: null },
   spatial: { ui: { section: 'spatial', selectedMovePersonId: 'preview_person_linxia', selectedMoveSpaceId: 'garden' }, task: null },
-  events: { ui: { section: 'events' }, task: null },
+  events: { ui: { section: 'events', contextCapsuleVisible: true }, task: null },
   twin: { ui: { section: 'twin', twinLayer: 'layout' }, task: null },
   'twin-pulse': { ui: { section: 'twin', twinLayer: 'pulse', focusedFloorId: 'floor_1', twinSpaceId: 'living_room' }, task: null },
   'twin-tenants': { ui: { section: 'twin', twinLayer: 'tenants', focusedFloorId: 'floor_1', twinSpaceId: 'living_room' }, task: null },
@@ -126,7 +128,7 @@ const pages = {
 await fs.mkdir(outputDirectory, { recursive: true });
 
 for (const [name, page] of Object.entries(pages)) {
-  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, tenantLife, pulse, twin });
+  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, pulse, twin });
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),

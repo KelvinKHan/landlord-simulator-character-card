@@ -50,6 +50,8 @@ test('经营中枢构建产物包含所有可玩流程且明确显示本地模�
     '校验移动意图',
     '剧情 → 结构化移动',
     '本地提取意图',
+    'NEXT TURN STATE CAPSULE',
+    'data-context-capsule',
     '探索下一处',
   ]) {
     assert.ok(bundle.includes(bundleText(marker)), `最终 bundle 缺少经营中枢标记：${marker}`);

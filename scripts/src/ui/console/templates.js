@@ -369,10 +369,16 @@ function renderLinkPreview(linkCenter) {
   </article>`;
 }
 
-function renderEvents(state, portfolio, linkCenter) {
+function renderContextCapsule(capsule, ui, capabilities) {
+  if (!capsule) return '';
+  return `<article class="lmo-context-capsule ${ui.contextCapsuleVisible ? 'expanded' : ''}" data-context-capsule="${escapeHtml(capsule.signature)}"><header><div>${icon('sparkle')}<span><small>NEXT TURN STATE CAPSULE</small><strong>只把当前正文真正需要的建筑事实交给 AI</strong></span></div><code>${escapeHtml(capsule.signature)}</code></header><div class="lmo-capsule-metrics"><span><b>${capsule.spaceCount}</b>空间</span><span><b>${capsule.residentCount}</b>人物</span><span><b>${capsule.eventCount}</b>近期变化</span><span><b>${capsule.chars}</b>字符</span><span><b>≈${capsule.estimatedTokens}</b>tokens</span></div><p>它不是整份 MVU，也不是常驻世界书：只编译「${escapeHtml(capsule.buildingName)}」当前相关事实，并以 once / system / depth 0 注入下一次生成。</p>${ui.contextCapsuleVisible ? `<pre>${escapeHtml(capsule.content)}</pre>` : ''}<footer><span>${capabilities.正文 ? '正文注入接口已就绪；确认前不会发送。' : '正文注入接口尚未就绪，只能预览。'}</span><button class="lmo-secondary" data-action="toggle-context-capsule">${ui.contextCapsuleVisible ? '收起内容' : '预览胶囊'}</button>${ui.contextCapsuleVisible ? `<button class="lmo-primary" data-action="inject-context-capsule" ${capabilities.正文 ? '' : 'disabled'}>一次性注入正文 ${icon('arrow')}</button>` : ''}</footer></article>`;
+}
+
+function renderEvents(state, portfolio, linkCenter, contextCapsule, ui) {
   const events = Object.entries(state.事件列表 ?? {}).reverse();
   const channels = ['正文', '微信', '新闻', '建筑'];
   return `<section class="lmo-view"><div class="lmo-section-heading"><div><span>BUILDING MEMORY</span><h2>真正发生过的变化</h2></div><p>这里只有确认写入过的操作，不展示临时候选和取消的方案。</p></div>
+    ${renderContextCapsule(contextCapsule, ui, linkCenter.capabilities)}
     <div class="lmo-link-channels">${channels.map(channel => `<div class="${linkCenter.capabilities[channel] ? '' : 'unavailable'}"><span>${escapeHtml(channel)}</span><strong>${linkCenter.counts[channel] ?? 0}</strong><small>${linkCenter.capabilities[channel] ? '待分发联动' : '频道未就绪'}</small>${linkCenter.counts[channel] ? `<button data-action="preview-channel-links" data-channel="${escapeHtml(channel)}">预览本批次</button>` : ''}</div>`).join('')}</div>
     ${renderLinkPreview(linkCenter)}
     <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon('sparkle')}<span><strong>跨系统联动队列</strong><small>正文、微信、新闻和建筑使用同一个事件源</small></span></div></div>${linkCenter.pending.length ? `<div class="lmo-link-list">${linkCenter.pending.map(item => `<div><span>${escapeHtml(item.频道)}</span><p><strong>${escapeHtml(item.标题)}</strong><small>${escapeHtml(item.摘要)}</small></p><button data-action="preview-link" data-link-id="${escapeHtml(item.id)}">预览</button><button data-action="consume-link" data-link-id="${escapeHtml(item.id)}">已读</button><button data-action="ignore-link" data-link-id="${escapeHtml(item.id)}">忽略</button></div>`).join('')}</div>` : emptyState('联动队列已清空', '新的经营变化会自动投递到四个频道。')}</article>
@@ -424,7 +430,7 @@ function renderHistory(historyCenter) {
   </section>`;
 }
 
-export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, historyCenter, spatialCenter, tenantLife, pulse, twin }) {
+export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, contextCapsule, historyCenter, spatialCenter, tenantLife, pulse, twin }) {
   let content;
   if (ui.section === 'portfolio') content = renderPortfolio(state, portfolio);
   else if (ui.section === 'building') content = renderBuilding(current, identityCenter);
@@ -437,7 +443,7 @@ export function renderConsole({ state, portfolio, current, ui, task, taskCenter,
   else if (ui.section === 'tasks') content = renderTasks(taskCenter);
   else if (ui.section === 'history') content = renderHistory(historyCenter);
   else if (ui.section === 'spatial') content = renderSpatial(spatialCenter, current, ui);
-  else content = renderEvents(state, portfolio, linkCenter);
+  else content = renderEvents(state, portfolio, linkCenter, contextCapsule, ui);
 
   const displayBuilding = ui.section === 'takeover' ? ui.targetBuilding : current;
   return `<div class="lmo-backdrop" data-action="close-backdrop"><div class="lmo-shell" role="dialog" aria-modal="true" aria-label="房东经营中枢" style="--active-accent:${safeColor(displayBuilding.theme?.主色)}">
