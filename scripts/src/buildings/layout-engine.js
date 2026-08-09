@@ -39,15 +39,35 @@ function tile(items, rect, depth = 0) {
   ];
 }
 
-function uniqueEdges(spaces) {
-  const known = new Set(spaces.map(space => space.id));
+function centerOf(node) {
+  return Object.freeze({
+    x: round(node.x + node.w / 2),
+    y: round(node.y + node.h / 2),
+  });
+}
+
+function uniqueEdges(nodes) {
+  const known = new Map(nodes.map(node => [node.id, node]));
   const edges = new Map();
-  for (const space of spaces) {
-    for (const targetId of space.adjacentSpaceIds ?? []) {
-      if (!known.has(targetId) || targetId === space.id) continue;
-      const ids = [space.id, targetId].sort();
+  for (const node of nodes) {
+    for (const targetId of node.adjacentSpaceIds ?? []) {
+      if (!known.has(targetId) || targetId === node.id) continue;
+      const ids = [node.id, targetId].sort();
       const key = ids.join('::');
-      if (!edges.has(key)) edges.set(key, Object.freeze({ id: key, from: ids[0], to: ids[1] }));
+      if (!edges.has(key)) {
+        const fromNode = known.get(ids[0]);
+        const toNode = known.get(ids[1]);
+        const fromPoint = centerOf(fromNode);
+        const toPoint = centerOf(toNode);
+        edges.set(key, Object.freeze({
+          id: key,
+          from: ids[0],
+          to: ids[1],
+          fromPoint,
+          toPoint,
+          distance: round(Math.hypot(toPoint.x - fromPoint.x, toPoint.y - fromPoint.y)),
+        }));
+      }
     }
   }
   return [...edges.values()];
@@ -61,8 +81,13 @@ export function createBuildingLayout(building) {
       name: space.name,
       type: space.type,
       status: space.status,
+      size: space.size,
       visibility: space.visibility,
       awareness: space.awareness,
+      purpose: space.purpose,
+      description: space.description,
+      facilityCount: space.facilityCount,
+      renovation: space.renovation,
       occupants: space.occupants,
       adjacentSpaceIds: space.adjacentSpaceIds,
       weight: Math.max(1, Number(space.weight) || 1),
@@ -78,7 +103,7 @@ export function createBuildingLayout(building) {
       awareness: floor.awareness,
       visibility: floor.visibility,
       nodes,
-      edges: uniqueEdges(source),
+      edges: uniqueEdges(nodes),
     });
   });
   return Object.freeze({

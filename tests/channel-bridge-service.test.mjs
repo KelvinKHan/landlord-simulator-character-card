@@ -37,11 +37,17 @@ test('四频道草稿使用同一事件和租客身份，未确认时绝不投�
   await bridge.dispatch('link_1', { confirmed: true });
   assert.equal(calls.length, 1);
   assert.deepEqual(consumed, ['link_1']);
+  await assert.rejects(bridge.dispatchMany(['link_0', 'link_2']), /显式确认/);
+  const batch = await bridge.dispatchMany(['link_0', 'link_2'], { confirmed: true });
+  assert.deepEqual({ total: batch.total, successful: batch.successful, failed: batch.failed }, { total: 2, successful: 2, failed: 0 });
+  assert.equal(calls.length, 3);
+  assert.deepEqual(consumed, ['link_1', 'link_0', 'link_2']);
 });
 
 test('旧微信和新闻适配器只在显式调用时写入现有模块', async () => {
   const messages = [];
   const emitted = [];
+  const injections = [];
   const phone = { newsSystem: { newsData: { headlines: [] }, saveNewsToVariable() {} }, emit: (...args) => emitted.push(args) };
   const globals = {
     ChatDB: {
@@ -49,12 +55,18 @@ test('旧微信和新闻适配器只在显式调用时写入现有模块', async
       addMessage: async (conversationId, sender, content) => { messages.push({ conversationId, sender, content }); return messages.at(-1); },
     },
     PhoneSystem: phone,
+    injectPrompts: (prompts, options) => injections.push({ prompts, options }),
   };
   const ports = createLegacyChannelPorts({ getLegacy: name => globals[name], logger: { warn() {} } });
   assert.deepEqual(ports.capabilities(), { 正文: true, 微信: true, 新闻: true, 建筑: true });
   await ports.wechat({ conversationName: '白塔·经营群', sender: '林夏', content: '我已经到了。' });
   await ports.news({ headline: { tag: '人物加入', title: '新成员', summary: '林夏加入', source: '房东经营中枢', time: '刚刚' } });
+  await ports.story({ deliveryId: 'link_story', content: '<landlord_link>新成员加入</landlord_link>' });
   assert.deepEqual(messages, [{ conversationId: 'group_1', sender: '林夏', content: '我已经到了。' }]);
   assert.equal(phone.newsSystem.newsData.headlines[0].title, '新成员');
   assert.equal(emitted[0][0], 'news-updated');
+  assert.equal(injections[0].prompts[0].id, 'landlord_link_link_story');
+  assert.equal(injections[0].prompts[0].depth, 0);
+  assert.equal(injections[0].prompts[0].role, 'system');
+  assert.deepEqual(injections[0].options, { once: true });
 });

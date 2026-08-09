@@ -1,5 +1,6 @@
 import { cloneLandlordState, createDefaultLandlordState } from '../model/default-state.js';
 import { assertLandlordState } from '../model/validate-state.js';
+import { applyChangeSet } from '../state/change-set.js';
 
 function defaultIdFactory(prefix) {
   const random = Math.random().toString(36).slice(2, 8);
@@ -244,6 +245,10 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
         if (!delivery) throw new Error(`联动项不存在：${deliveryId}`);
         delivery.状态 = status;
       });
+    },
+
+    async applyStateChanges(changes, { direction = 'undo', label = '应用经营状态变更' } = {}) {
+      return commit(label, state => applyChangeSet(state, changes, direction));
     },
 
     subscribe(listener) {

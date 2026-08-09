@@ -39,4 +39,11 @@ test('数字孪生只为同楼层的已知相邻空间创建唯一连接', () =>
   assert.ok(keys.includes('garden::living_room'));
   assert.ok(keys.includes('garden::pool'));
   assert.ok(keys.includes('kitchen::living_room'));
+  for (const edge of ground.edges) {
+    assert.ok(edge.fromPoint.x >= 0 && edge.fromPoint.x <= 100);
+    assert.ok(edge.fromPoint.y >= 0 && edge.fromPoint.y <= 100);
+    assert.ok(edge.toPoint.x >= 0 && edge.toPoint.x <= 100);
+    assert.ok(edge.toPoint.y >= 0 && edge.toPoint.y <= 100);
+    assert.ok(edge.distance > 0);
+  }
 });

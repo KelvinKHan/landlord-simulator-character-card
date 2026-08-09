@@ -36,8 +36,27 @@ const linkCenter = {
     { id: 'preview_link_story', 频道: '正文', 标题: '总部客厅完成改造', 摘要: '新的空间变化等待在正文中显露。' },
     { id: 'preview_link_wechat', 频道: '微信', 标题: '新成员加入', 摘要: '联系人和建筑位置已经同步。' },
   ],
+  previewDrafts: [
+    { deliveryId: 'preview_link_story', eventId: 'preview_event', channel: '正文', status: '待分发', kind: 'story-context', title: '总部客厅完成改造', summary: '新的空间变化等待在正文中显露。', content: '<landlord_link event="preview_event">\n- [装修完成] 总部客厅完成改造：新的空间变化等待在正文中显露。\n</landlord_link>' },
+    { deliveryId: 'preview_link_wechat', eventId: 'preview_event', channel: '微信', status: '待分发', kind: 'wechat-message', title: '新成员加入', summary: '联系人和建筑位置已经同步。', conversationName: '房东总部公寓·经营群', sender: '房东系统', content: '联系人和建筑位置已经同步。' },
+  ],
 };
 const identityCenter = { residents: [] };
+const historyCenter = {
+  busy: false,
+  count: 3,
+  appliedCount: 2,
+  canUndo: true,
+  canRedo: true,
+  undoLabel: '装修客厅',
+  redoLabel: '招募林夏',
+  blockedUndo: false,
+  entries: [
+    { id: 'op_3', kind: 'recruitment', label: '招募林夏', changeCount: 8, affectedRoots: ['人物列表', '建筑列表'], createdAt: Date.now(), status: '已撤销' },
+    { id: 'op_2', kind: 'renovation', label: '装修客厅', changeCount: 12, affectedRoots: ['建筑列表', '事件列表', '联动队列'], createdAt: Date.now() - 60_000, status: '已应用' },
+    { id: 'op_1', kind: 'exploration', label: '探索房东总部公寓', changeCount: 2, affectedRoots: ['建筑列表'], createdAt: Date.now() - 120_000, status: '已应用' },
+  ],
+};
 const twin = createBuildingLayout(current);
 
 const pages = {
@@ -62,6 +81,7 @@ const pages = {
     task: { status: 'ready', preview: recruitmentPreview },
   },
   tasks: { ui: { section: 'tasks' }, task: null },
+  history: { ui: { section: 'history' }, task: null },
   events: { ui: { section: 'events' }, task: null },
   twin: { ui: { section: 'twin' }, task: null },
 };
@@ -69,7 +89,7 @@ const pages = {
 await fs.mkdir(outputDirectory, { recursive: true });
 
 for (const [name, page] of Object.entries(pages)) {
-  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, twin });
+  const rendered = renderConsole({ state, portfolio, current, ui: { notice: null, ...page.ui }, task: page.task, taskCenter, linkCenter, identityCenter, historyCenter, twin });
   const html = page.theme ? rendered.replace('class="lmo-backdrop"', `class="lmo-backdrop" data-theme="${page.theme}"`) : rendered;
   await fs.writeFile(
     path.join(outputDirectory, `${name}.html`),

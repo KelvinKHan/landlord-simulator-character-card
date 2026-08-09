@@ -4,6 +4,7 @@ import { createBuildingLayoutService } from '../../src/buildings/layout-engine.j
 import { createBuildingEventBus } from '../../src/events/building-event-bus.js';
 import { managementMockRecipes } from '../../src/mock/management-recipes.js';
 import { createLandlordStore } from '../../src/services/landlord-store.js';
+import { createOperationJournal } from '../../src/services/operation-journal-service.js';
 import { createPerceptionService } from '../../src/services/perception-service.js';
 import { createTenantIdentityService } from '../../src/services/tenant-identity-service.js';
 import { createChannelBridgeService, createLegacyChannelPorts } from '../../src/services/channel-bridge-service.js';
@@ -31,6 +32,7 @@ export function activate(context) {
   });
   const compiler = Object.freeze({ compileBuilding, compilePortfolio });
   const events = createBuildingEventBus({ store });
+  const history = createOperationJournal({ store });
   const perception = createPerceptionService({ store });
   const identities = createTenantIdentityService({ store });
   const layouts = createBuildingLayoutService();
@@ -43,6 +45,7 @@ export function activate(context) {
   context.services.register('landlord.store', store, { legacyGlobal: 'LandlordStore' });
   context.services.register('landlord.tasks', tasks);
   context.services.register('landlord.events', events);
+  context.services.register('landlord.history', history);
   context.services.register('landlord.perception', perception);
   context.services.register('landlord.identities', identities);
   context.services.register('building.layout', layouts);
@@ -50,4 +53,5 @@ export function activate(context) {
   context.services.register('building.compiler', compiler);
   context.lifecycle.onDispose(() => tasks.dispose());
   context.lifecycle.onDispose(() => events.dispose());
+  context.lifecycle.onDispose(() => history.dispose());
 }

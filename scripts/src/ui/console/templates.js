@@ -6,6 +6,7 @@ const icons = Object.freeze({
   recruit: '<svg viewBox="0 0 24 24"><path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M16 11h6"/></svg>',
   event: '<svg viewBox="0 0 24 24"><path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M18 12h3M6 21h12M8 17a6 6 0 1 1 8 0l-1 1H9z"/></svg>',
   tasks: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 9h6M9 13h6M9 17h3M8 2v3M16 2v3"/></svg>',
+  history: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6M12 7v5l3 2"/></svg>',
   close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
   arrow: '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
   sparkle: '<svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>',
@@ -60,6 +61,7 @@ function renderSidebar(state, ui, portfolio) {
       ${navItem('renovation', ui.section, '装修中心', 'renovate')}
       ${navItem('recruitment', ui.section, '招募中心', 'recruit')}
       ${navItem('tasks', ui.section, '任务中心', 'tasks')}
+      ${navItem('history', ui.section, '经营回溯', 'history')}
       ${navItem('events', ui.section, '动态记录', 'event')}
     </nav>
     <div class="lmo-sidebar-summary">
@@ -86,6 +88,7 @@ function sectionTitle(section, current) {
   if (section === 'recruitment') return '跨世界招募中心';
   if (section === 'takeover') return '建筑接管提案';
   if (section === 'tasks') return '统一任务中心';
+  if (section === 'history') return '经营时光回溯';
   if (section === 'events') return '建筑动态记录';
   return current.name;
 }
@@ -140,11 +143,64 @@ function renderBuilding(building, identityCenter) {
   </section>`;
 }
 
-function renderTwin(twin) {
+function renderTwinMap(floor, selectedId, accent) {
+  const selected = floor.nodes.find(node => node.id === selectedId) ?? floor.nodes[0] ?? null;
+  const connected = new Set(
+    floor.edges
+      .filter(edge => edge.from === selected?.id || edge.to === selected?.id)
+      .flatMap(edge => [edge.from, edge.to]),
+  );
+  const lines = floor.edges.map(edge => {
+    const highlighted = edge.from === selected?.id || edge.to === selected?.id;
+    return `<line class="${highlighted ? 'active' : ''}" x1="${edge.fromPoint.x}" y1="${edge.fromPoint.y}" x2="${edge.toPoint.x}" y2="${edge.toPoint.y}" data-edge-id="${escapeHtml(edge.id)}"/>`;
+  }).join('');
+  const nodes = floor.nodes.map(node => {
+    const classes = [
+      `visibility-${escapeHtml(node.visibility)}`,
+      node.id === selected?.id ? 'selected' : '',
+      connected.has(node.id) && node.id !== selected?.id ? 'connected' : '',
+    ].filter(Boolean).join(' ');
+    return `<button class="${classes}" data-action="inspect-twin-space" data-floor-id="${escapeHtml(floor.id)}" data-space-id="${escapeHtml(node.id)}" aria-pressed="${node.id === selected?.id}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%"><strong>${escapeHtml(node.name)}</strong><small>${escapeHtml(node.type)} · ${node.awareness}%</small>${node.occupants?.length ? `<em>${node.occupants.map(person => escapeHtml(person.name)).join(' / ')}</em>` : ''}</button>`;
+  }).join('');
+  return `<div class="lmo-twin-map" style="--twin-accent:${safeColor(accent)}"><svg class="lmo-twin-edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="已知空间相邻关系">${lines}</svg>${nodes}</div>`;
+}
+
+function renderTwinInspector(node, floor) {
+  if (!node) return `<aside class="lmo-twin-inspector">${emptyState('这一层仍是未知', '继续探索后，房间和连接关系会在这里显现。')}</aside>`;
+  const connectedIds = new Set(
+    floor.edges
+      .filter(edge => edge.from === node.id || edge.to === node.id)
+      .flatMap(edge => [edge.from, edge.to]),
+  );
+  connectedIds.delete(node.id);
+  const connectedNames = floor.nodes.filter(item => connectedIds.has(item.id)).map(item => item.name);
+  const occupants = node.occupants?.length
+    ? node.occupants.map(person => `<span style="--person-accent:${safeColor(person.color)}"><i>${escapeHtml(person.name.slice(0, 1))}</i>${escapeHtml(person.name)}</span>`).join('')
+    : '<small>当前无人使用</small>';
+  return `<aside class="lmo-twin-inspector">
+    <div class="lmo-twin-inspector-head"><span>${escapeHtml(node.type)} · ${escapeHtml(node.size)}</span><strong>${escapeHtml(node.name)}</strong><p>${escapeHtml(node.description)}</p></div>
+    <div class="lmo-twin-data-grid"><span><small>空间状态</small><b>${escapeHtml(node.status)}</b></span><span><small>感知程度</small><b>${node.awareness}%</b></span><span><small>已知设施</small><b>${node.facilityCount ?? 0}</b></span><span><small>装修风格</small><b>${escapeHtml(node.renovation?.风格 ?? '尚未具现')}</b></span></div>
+    <div class="lmo-twin-inspector-block"><small>当前用途</small><p>${escapeHtml(node.purpose)}</p></div>
+    <div class="lmo-twin-inspector-block"><small>正在这里的人</small><div class="lmo-twin-people">${occupants}</div></div>
+    <div class="lmo-twin-inspector-block"><small>已知相邻空间</small>${connectedNames.length ? tags(connectedNames) : '<p>尚未确认连接关系</p>'}</div>
+    <button class="lmo-primary" data-action="select-space" data-space-id="${escapeHtml(node.id)}">${icon('renovate')} 装修这个空间</button>
+  </aside>`;
+}
+
+function renderTwin(twin, ui) {
+  const floor = twin.floors.find(item => item.id === ui.focusedFloorId)
+    ?? twin.floors.find(item => item.nodes.length > 0)
+    ?? twin.floors[0]
+    ?? null;
+  const selected = floor?.nodes.find(node => node.id === ui.twinSpaceId) ?? floor?.nodes[0] ?? null;
   return `<section class="lmo-view lmo-twin-view">
-    <div class="lmo-section-heading"><div><span>BUILDING DIGITAL TWIN</span><h2>${escapeHtml(twin.name)}·可计算空间镜像</h2></div><p>布局由空间尺寸和相邻关系确定性生成，不需要 AI 猜测坐标。</p></div>
-    <div class="lmo-twin-metrics"><span><b>${twin.metrics.floors}</b>可见楼层</span><span><b>${twin.metrics.nodes}</b>空间节点</span><span><b>${twin.metrics.edges}</b>已知连接</span></div>
-    <div class="lmo-twin-floors">${twin.floors.map(floor => `<article><header><div><strong>${escapeHtml(floor.name)}</strong><small>感知 ${floor.awareness}% · ${floor.nodes.length} 个空间</small></div><span>${String(floor.order).padStart(2, '0')}</span></header>${floor.nodes.length ? `<div class="lmo-twin-map" style="--twin-accent:${safeColor(twin.theme?.主色)}">${floor.nodes.map(node => `<button class="visibility-${escapeHtml(node.visibility)}" data-action="select-space" data-space-id="${escapeHtml(node.id)}" style="left:${node.x}%;top:${node.y}%;width:${node.w}%;height:${node.h}%"><strong>${escapeHtml(node.name)}</strong><small>${escapeHtml(node.type)} · ${node.awareness}%</small>${node.occupants?.length ? `<em>${node.occupants.map(person => escapeHtml(person.name)).join(' / ')}</em>` : ''}</button>`).join('')}</div>` : emptyState('暂无可见空间', '继续探索后，空间会进入数字孪生。')}</article>`).join('')}</div>
+    <div class="lmo-section-heading"><div><span>BUILDING DIGITAL TWIN</span><h2>${escapeHtml(twin.name)}·可计算空间镜像</h2></div><p>布局、房间面积与连接均由状态确定性计算；AI 不负责猜坐标。</p></div>
+    <div class="lmo-twin-toolbar"><div class="lmo-twin-metrics"><span><b>${twin.metrics.floors}</b>可见楼层</span><span><b>${twin.metrics.nodes}</b>空间节点</span><span><b>${twin.metrics.edges}</b>已知连接</span></div><div class="lmo-twin-legend"><span><i class="outline"></i>轮廓</span><span><i class="revealed"></i>已显现</span><span><i class="occupied"></i>有人使用</span></div></div>
+    <div class="lmo-twin-layout">
+      <nav class="lmo-twin-floor-nav" aria-label="数字孪生楼层">${twin.floors.map(item => `<button class="${item.id === floor?.id ? 'active' : ''}" data-action="focus-twin-floor" data-floor-id="${escapeHtml(item.id)}" aria-pressed="${item.id === floor?.id}"><span>${String(item.order).padStart(2, '0')}</span><p><strong>${escapeHtml(item.name)}</strong><small>${item.nodes.length} 空间 · 感知 ${item.awareness}%</small></p></button>`).join('')}</nav>
+      <article class="lmo-twin-stage"><header><div><span>FOCUSED FLOOR</span><strong>${escapeHtml(floor?.name ?? '暂无可见楼层')}</strong></div><small>${floor ? `${floor.nodes.length} 个空间 · ${floor.edges.length} 条连接` : '等待探索'}</small></header>${floor?.nodes.length ? renderTwinMap(floor, selected?.id, twin.theme?.主色) : emptyState('暂无可见空间', '继续探索后，空间会进入数字孪生。')}</article>
+      ${renderTwinInspector(selected, floor ?? { nodes: [], edges: [] })}
+    </div>
   </section>`;
 }
 
@@ -208,24 +264,73 @@ function renderTasks(taskCenter) {
   </section>`;
 }
 
+function renderLinkDraft(draft) {
+  const detail = draft.kind === 'story-context'
+    ? `<span>下一次正文 · system / depth 0 / once</span><pre>${escapeHtml(draft.content)}</pre>`
+    : draft.kind === 'wechat-message'
+      ? `<span>${escapeHtml(draft.conversationName)} · ${escapeHtml(draft.sender)}</span><p>${escapeHtml(draft.content)}</p>`
+      : draft.kind === 'news-headline'
+        ? `<span>${escapeHtml(draft.headline.tag)} · ${escapeHtml(draft.headline.source)}</span><p>${escapeHtml(draft.headline.summary)}</p>`
+        : `<span>建筑内部时间线</span><p>${escapeHtml(draft.summary)}</p>`;
+  return `<article class="lmo-link-draft"><header><span>${escapeHtml(draft.channel)}</span><code>${escapeHtml(draft.kind)}</code></header><strong>${escapeHtml(draft.title)}</strong>${detail}</article>`;
+}
+
+function renderLinkPreview(linkCenter) {
+  if (!linkCenter.previewDrafts.length) return '';
+  const unavailable = [...new Set(linkCenter.previewDrafts.filter(draft => !linkCenter.capabilities[draft.channel]).map(draft => draft.channel))];
+  return `<article class="lmo-link-preview">
+    <header><div>${icon('sparkle')}<span><strong>投递前预览</strong><small>${linkCenter.previewDrafts.length} 条草稿 · 确认前不会写入任何频道</small></span></div><button data-action="clear-link-preview" aria-label="关闭预览">${icon('close')}</button></header>
+    <div class="lmo-link-draft-grid">${linkCenter.previewDrafts.map(renderLinkDraft).join('')}</div>
+    <footer><p>${unavailable.length ? `${escapeHtml(unavailable.join('、'))}频道尚未就绪，当前不能投递。` : '正文会注入下一次生成；微信和新闻会写入原有模块；建筑会同步内部记录。'}</p><button class="lmo-primary" data-action="dispatch-preview-links" ${unavailable.length ? 'disabled' : ''}>确认投递 ${linkCenter.previewDrafts.length} 条 ${icon('arrow')}</button></footer>
+  </article>`;
+}
+
 function renderEvents(state, portfolio, linkCenter) {
   const events = Object.entries(state.事件列表 ?? {}).reverse();
   const channels = ['正文', '微信', '新闻', '建筑'];
   return `<section class="lmo-view"><div class="lmo-section-heading"><div><span>BUILDING MEMORY</span><h2>真正发生过的变化</h2></div><p>这里只有确认写入过的操作，不展示临时候选和取消的方案。</p></div>
-    <div class="lmo-link-channels">${channels.map(channel => `<div><span>${escapeHtml(channel)}</span><strong>${linkCenter.counts[channel] ?? 0}</strong><small>待分发联动</small>${linkCenter.capabilities[channel] && linkCenter.counts[channel] ? `<button data-action="dispatch-next-link" data-channel="${escapeHtml(channel)}">投递下一条</button>` : ''}</div>`).join('')}</div>
-    <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon('sparkle')}<span><strong>跨系统联动队列</strong><small>正文、微信、新闻和建筑使用同一个事件源</small></span></div></div>${linkCenter.pending.length ? `<div class="lmo-link-list">${linkCenter.pending.map(item => `<div><span>${escapeHtml(item.频道)}</span><p><strong>${escapeHtml(item.标题)}</strong><small>${escapeHtml(item.摘要)}</small></p><button data-action="consume-link" data-link-id="${escapeHtml(item.id)}">已读</button><button data-action="ignore-link" data-link-id="${escapeHtml(item.id)}">忽略</button></div>`).join('')}</div>` : emptyState('联动队列已清空', '新的经营变化会自动投递到四个频道。')}</article>
+    <div class="lmo-link-channels">${channels.map(channel => `<div class="${linkCenter.capabilities[channel] ? '' : 'unavailable'}"><span>${escapeHtml(channel)}</span><strong>${linkCenter.counts[channel] ?? 0}</strong><small>${linkCenter.capabilities[channel] ? '待分发联动' : '频道未就绪'}</small>${linkCenter.counts[channel] ? `<button data-action="preview-channel-links" data-channel="${escapeHtml(channel)}">预览本批次</button>` : ''}</div>`).join('')}</div>
+    ${renderLinkPreview(linkCenter)}
+    <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon('sparkle')}<span><strong>跨系统联动队列</strong><small>正文、微信、新闻和建筑使用同一个事件源</small></span></div></div>${linkCenter.pending.length ? `<div class="lmo-link-list">${linkCenter.pending.map(item => `<div><span>${escapeHtml(item.频道)}</span><p><strong>${escapeHtml(item.标题)}</strong><small>${escapeHtml(item.摘要)}</small></p><button data-action="preview-link" data-link-id="${escapeHtml(item.id)}">预览</button><button data-action="consume-link" data-link-id="${escapeHtml(item.id)}">已读</button><button data-action="ignore-link" data-link-id="${escapeHtml(item.id)}">忽略</button></div>`).join('')}</div>` : emptyState('联动队列已清空', '新的经营变化会自动投递到四个频道。')}</article>
     ${events.length ? `<div class="lmo-event-timeline">${events.map(([id, event]) => { const building = portfolio.buildings.find(item => item.id === event.建筑ID); return `<article><div class="lmo-event-mark">${icon(event.类型 === '人物加入' ? 'person' : event.类型 === '装修完成' ? 'renovate' : 'buildings')}</div><div><span>${escapeHtml(event.类型)} · ${escapeHtml(building?.name ?? '未知建筑')}</span><h3>${escapeHtml(event.标题)}</h3><p>${escapeHtml(event.摘要)}</p><small>${escapeHtml(event.发生时间)} · ${escapeHtml(id)}</small></div><em>${escapeHtml(event.状态)}</em></article>`; }).join('')}</div>` : emptyState('还没有经营记录', '完成第一次接管、装修或招募后，建筑记忆会出现在这里。')}</section>`;
 }
 
-export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, twin }) {
+const operationKindLabels = Object.freeze({
+  takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募', exploration: '探索感知', management: '经营操作',
+});
+
+function renderOperationTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '当前会话';
+  return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function renderHistory(historyCenter) {
+  const blocked = historyCenter.blockedUndo
+    ? '<div class="lmo-history-warning">检测到同一区域有更新，为避免覆盖新剧情，当前撤销已被安全锁定。</div>'
+    : '';
+  return `<section class="lmo-view lmo-history-view">
+    <div class="lmo-section-heading"><div><span>OPERATION TIME MACHINE</span><h2>只回溯你确认过的经营操作</h2></div><p>它不是存档迁移；只在当前会话里撤销接管、装修、招募和探索。</p></div>
+    <article class="lmo-history-console">
+      <div class="lmo-history-orbit"><span>${historyCenter.appliedCount}</span><small>已应用操作</small><i></i></div>
+      <div class="lmo-history-copy"><span>SAFE REVERSIBLE STATE</span><h3>经营状态有自己的时间轴</h3><p>每次只恢复本次操作真正改动的字段。其他脚本产生的不相关变化会被保留；发生重叠时则拒绝覆盖。</p><div class="lmo-history-actions"><button class="lmo-secondary" data-action="undo-operation" ${historyCenter.canUndo && !historyCenter.busy ? '' : 'disabled'}>${icon('back')} 撤销${historyCenter.undoLabel ? `：${escapeHtml(historyCenter.undoLabel)}` : ''}</button><button class="lmo-primary" data-action="redo-operation" ${historyCenter.canRedo && !historyCenter.busy ? '' : 'disabled'}>重做${historyCenter.redoLabel ? `：${escapeHtml(historyCenter.redoLabel)}` : ''} ${icon('arrow')}</button></div>${blocked}</div>
+    </article>
+    <article class="lmo-panel"><div class="lmo-panel-title"><div>${icon('history')}<span><strong>当前会话操作链</strong><small>${historyCenter.count} 条可回溯记录，新的操作会截断已撤销分支</small></span></div></div>
+      ${historyCenter.entries.length ? `<div class="lmo-history-list">${historyCenter.entries.map(entry => `<div class="status-${entry.status === '已应用' ? 'applied' : 'undone'}"><span>${icon(entry.kind === 'recruitment' ? 'person' : entry.kind === 'renovation' ? 'renovate' : entry.kind === 'exploration' ? 'sparkle' : 'buildings')}</span><p><strong>${escapeHtml(entry.label)}</strong><small>${escapeHtml(operationKindLabels[entry.kind] ?? entry.kind)} · ${entry.changeCount} 处原子变化 · ${escapeHtml(entry.affectedRoots.join(' / '))}</small></p><time>${renderOperationTime(entry.createdAt)}</time><em>${escapeHtml(entry.status)}</em></div>`).join('')}</div>` : emptyState('还没有可以回溯的操作', '确认一次接管、装修、招募或探索后，这里会自动出现记录。')}
+    </article>
+  </section>`;
+}
+
+export function renderConsole({ state, portfolio, current, ui, task, taskCenter, linkCenter, identityCenter, historyCenter, twin }) {
   let content;
   if (ui.section === 'portfolio') content = renderPortfolio(state, portfolio);
   else if (ui.section === 'building') content = renderBuilding(current, identityCenter);
-  else if (ui.section === 'twin') content = renderTwin(twin);
+  else if (ui.section === 'twin') content = renderTwin(twin, ui);
   else if (ui.section === 'takeover') content = renderTakeover(state, ui.targetBuilding, task, ui.selectedOptionId, ui.busy);
   else if (ui.section === 'renovation') content = renderRenovation(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
   else if (ui.section === 'recruitment') content = renderRecruitment(state, current, task, ui.selectedSpaceId, ui.selectedOptionId, ui.busy);
   else if (ui.section === 'tasks') content = renderTasks(taskCenter);
+  else if (ui.section === 'history') content = renderHistory(historyCenter);
   else content = renderEvents(state, portfolio, linkCenter);
 
   const displayBuilding = ui.section === 'takeover' ? ui.targetBuilding : current;

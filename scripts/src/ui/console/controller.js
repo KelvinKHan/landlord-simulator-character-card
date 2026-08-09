@@ -4,7 +4,7 @@ function owned(building) {
   return building && ['总部', '已接管'].includes(building.status);
 }
 
-export function createLandlordConsole({ document, store, tasks, events = null, perception = null, identities = null, layouts = null, bridges = null, compiler, logger }) {
+export function createLandlordConsole({ document, store, tasks, events = null, history = null, perception = null, identities = null, layouts = null, bridges = null, compiler, logger }) {
   let root = null;
   let visible = false;
   let disposed = false;
@@ -12,6 +12,9 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
     section: 'portfolio',
     targetBuildingId: null,
     selectedSpaceId: null,
+    focusedFloorId: null,
+    twinSpaceId: null,
+    previewLinkIds: [],
     selectedOptionId: null,
     taskId: null,
     busy: false,
@@ -29,11 +32,20 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
       tasks: tasks.list(),
     };
     const linkCenter = events
-      ? { counts: events.counts(), pending: events.list({ status: '待分发', limit: 20 }), capabilities: bridges?.capabilities() ?? {} }
-      : { counts: { 正文: 0, 微信: 0, 新闻: 0, 建筑: 0 }, pending: [], capabilities: {} };
+      ? (() => {
+          const pending = events.list({ status: '待分发', limit: 20 });
+          const pendingIds = new Set(pending.map(item => item.id));
+          const previewIds = ui.previewLinkIds.filter(id => pendingIds.has(id));
+          const previewDrafts = bridges ? previewIds.map(id => bridges.draft(id)) : [];
+          return { counts: events.counts(), pending, capabilities: bridges?.capabilities() ?? {}, previewDrafts };
+        })()
+      : { counts: { 正文: 0, 微信: 0, 新闻: 0, 建筑: 0 }, pending: [], capabilities: {}, previewDrafts: [] };
     const identityCenter = { residents: identities?.listForBuilding(current.id) ?? [] };
     const twin = layouts?.compile(current) ?? { buildingId: current.id, name: current.name, theme: current.theme, floors: [], metrics: { floors: 0, nodes: 0, edges: 0 } };
-    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, twin };
+    const historyCenter = history
+      ? { ...history.summary(), entries: history.list({ limit: 20 }) }
+      : { busy: false, count: 0, appliedCount: 0, canUndo: false, canRedo: false, undoLabel: '', redoLabel: '', blockedUndo: false, entries: [] };
+    return { state, portfolio, current, targetBuilding, taskCenter, linkCenter, identityCenter, historyCenter, twin };
   }
 
   function resetWorkflow({ keepSpace = false } = {}) {
@@ -41,6 +53,11 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
     ui.selectedOptionId = null;
     if (!keepSpace) ui.selectedSpaceId = null;
     ui.notice = null;
+  }
+
+  function resetTwin() {
+    ui.focusedFloorId = null;
+    ui.twinSpaceId = null;
   }
 
   function setNotice(text, type = 'info') {
@@ -78,6 +95,10 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
     ui.taskId = task.id;
   }
 
+  function recordOperation(kind, label, action) {
+    return history ? history.perform({ kind, label }, action) : action();
+  }
+
   async function handleAction(button) {
     const action = button.dataset.action;
     const data = getData();
@@ -92,6 +113,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
     if (action === 'open-building') {
       await store.setCurrentBuilding(button.dataset.buildingId);
       resetWorkflow();
+      resetTwin();
       ui.section = 'building';
       return render();
     }
@@ -107,10 +129,33 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
       ui.section = 'renovation';
       return render();
     }
+    if (action === 'focus-twin-floor') {
+      ui.focusedFloorId = button.dataset.floorId;
+      ui.twinSpaceId = data.twin.floors.find(floor => floor.id === ui.focusedFloorId)?.nodes[0]?.id ?? null;
+      return render();
+    }
+    if (action === 'inspect-twin-space') {
+      ui.focusedFloorId = button.dataset.floorId;
+      ui.twinSpaceId = button.dataset.spaceId;
+      return render();
+    }
+    if (action === 'undo-operation' || action === 'redo-operation') {
+      if (!history) throw new Error('经营回溯服务尚未加载');
+      return withBusy(async () => {
+        const entry = action === 'undo-operation' ? await history.undo() : await history.redo();
+        resetWorkflow();
+        resetTwin();
+        setNotice(`${action === 'undo-operation' ? '已撤销' : '已重做'}：${entry.label}`, 'success');
+      });
+    }
     if (action === 'explore-next') {
       if (!perception) throw new Error('逐步感知服务尚未加载');
       return withBusy(async () => {
-        const result = await perception.exploreNext(data.current.id);
+        const result = await recordOperation(
+          'exploration',
+          `探索${data.current.name}`,
+          () => perception.exploreNext(data.current.id),
+        );
         setNotice(
           result.complete ? '这栋建筑的当前结构已全部掌握。' : `对「${result.target.name}」的了解提升到 ${result.target.awareness}%。`,
           'success',
@@ -167,25 +212,54 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
       return withBusy(async () => {
         if (action === 'consume-link') await events.consume(button.dataset.linkId);
         else await events.ignore(button.dataset.linkId);
+        ui.previewLinkIds = ui.previewLinkIds.filter(id => id !== button.dataset.linkId);
         setNotice(action === 'consume-link' ? '该联动已标记为已读取。' : '该联动已忽略。', 'success');
+      });
+    }
+    if (action === 'preview-link') {
+      ui.previewLinkIds = [button.dataset.linkId];
+      return render();
+    }
+    if (action === 'preview-channel-links') {
+      ui.previewLinkIds = data.linkCenter.pending
+        .filter(item => item.频道 === button.dataset.channel)
+        .slice(0, 5)
+        .map(item => item.id);
+      return render();
+    }
+    if (action === 'clear-link-preview') {
+      ui.previewLinkIds = [];
+      return render();
+    }
+    if (action === 'dispatch-preview-links') {
+      if (!bridges) throw new Error('联动投递桥尚未加载');
+      const ids = data.linkCenter.previewDrafts.map(item => item.deliveryId);
+      return withBusy(async () => {
+        const result = await bridges.dispatchMany(ids, { confirmed: true });
+        ui.previewLinkIds = [];
+        setNotice(
+          result.failed
+            ? `已投递 ${result.successful} 条，${result.failed} 条失败并保留在队列中。`
+            : `已确认投递 ${result.successful} 条联动草稿。`,
+          result.failed ? 'error' : 'success',
+        );
       });
     }
     if (action === 'dispatch-link') {
       if (!bridges) throw new Error('联动投递桥尚未加载');
       return withBusy(async () => {
         const dispatched = await bridges.dispatch(button.dataset.linkId, { confirmed: true });
+        ui.previewLinkIds = ui.previewLinkIds.filter(id => id !== button.dataset.linkId);
         setNotice(`草稿已投递到${dispatched.draft.channel}频道。`, 'success');
       });
     }
-    if (action === 'dispatch-next-link') {
+    if (action === 'preview-next-link') {
       if (!bridges) throw new Error('联动投递桥尚未加载');
       const channel = button.dataset.channel;
       const next = data.linkCenter.pending.find(item => item.频道 === channel);
       if (!next) throw new Error(`${channel}频道没有待投递草稿`);
-      return withBusy(async () => {
-        await bridges.dispatch(next.id, { confirmed: true });
-        setNotice(`已将下一条草稿投递到${channel}频道。`, 'success');
-      });
+      ui.previewLinkIds = [next.id];
+      return render();
     }
     if (action === 'run-takeover') {
       return withBusy(() => runTask('takeover', { building: data.targetBuilding }));
@@ -203,9 +277,14 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
         const task = tasks.get(ui.taskId);
         const direction = task?.preview?.directions.find(item => item.id === ui.selectedOptionId);
         if (!direction) throw new Error('请选择接管方向');
-        await tasks.confirm(task.id, () => store.acquireBuilding(data.targetBuilding.id, direction));
+        await tasks.confirm(task.id, () => recordOperation(
+          'takeover',
+          `接管${data.targetBuilding.name}`,
+          () => store.acquireBuilding(data.targetBuilding.id, direction),
+        ));
         ui.targetBuildingId = null;
         resetWorkflow();
+        resetTwin();
         ui.section = 'building';
         setNotice('建筑已经进入你的经营版图', 'success');
       });
@@ -215,9 +294,12 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
         const task = tasks.get(ui.taskId);
         const plan = task?.preview?.plans.find(item => item.id === ui.selectedOptionId);
         if (!plan || !ui.selectedSpaceId) throw new Error('请选择装修方案');
-        await tasks.confirm(task.id, () =>
-          store.applyRenovation({ buildingId: data.current.id, spaceId: ui.selectedSpaceId, plan }),
-        );
+        const space = data.current.floors.flatMap(floor => floor.spaces).find(item => item.id === ui.selectedSpaceId);
+        await tasks.confirm(task.id, () => recordOperation(
+          'renovation',
+          `装修${space?.name ?? '空间'}`,
+          () => store.applyRenovation({ buildingId: data.current.id, spaceId: ui.selectedSpaceId, plan }),
+        ));
         resetWorkflow();
         setNotice('装修已经具现化并写入建筑状态', 'success');
       });
@@ -227,9 +309,11 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
         const task = tasks.get(ui.taskId);
         const candidate = task?.preview?.candidates.find(item => item.id === ui.selectedOptionId);
         if (!candidate || !ui.selectedSpaceId) throw new Error('请选择候选人和安置空间');
-        await tasks.confirm(task.id, () =>
-          store.recruit({ buildingId: data.current.id, spaceId: ui.selectedSpaceId, candidate }),
-        );
+        await tasks.confirm(task.id, () => recordOperation(
+          'recruitment',
+          `招募${candidate.name}`,
+          () => store.recruit({ buildingId: data.current.id, spaceId: ui.selectedSpaceId, candidate }),
+        ));
         resetWorkflow();
         setNotice(`${candidate.name}已经正式加入${data.current.name}`, 'success');
       });
@@ -271,6 +355,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
   document.addEventListener('keydown', onKeyDown);
   const unsubscribeStore = store.subscribe(() => render());
   const unsubscribeTasks = tasks.subscribe(() => render());
+  const unsubscribeHistory = history?.subscribe(() => render()) ?? (() => {});
 
   return Object.freeze({
     open,
@@ -281,6 +366,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, p
       disposed = true;
       unsubscribeStore();
       unsubscribeTasks();
+      unsubscribeHistory();
       document.removeEventListener('keydown', onKeyDown);
       root.removeEventListener('click', onClick);
       root.remove();

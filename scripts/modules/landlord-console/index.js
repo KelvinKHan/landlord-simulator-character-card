@@ -9,6 +9,7 @@ export function activate(context) {
   const store = context.services.require('landlord.store');
   const tasks = context.services.require('landlord.tasks');
   const events = context.services.require('landlord.events');
+  const history = context.services.require('landlord.history');
   const perception = context.services.require('landlord.perception');
   const identities = context.services.require('landlord.identities');
   const layouts = context.services.require('building.layout');
@@ -24,6 +25,7 @@ export function activate(context) {
     store,
     tasks,
     events,
+    history,
     perception,
     identities,
     layouts,

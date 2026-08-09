@@ -8,7 +8,9 @@ import { createBuildingEventBus } from '../scripts/src/events/building-event-bus
 import { managementMockRecipes } from '../scripts/src/mock/management-recipes.js';
 import { createLandlordStore } from '../scripts/src/services/landlord-store.js';
 import { createMockTaskService } from '../scripts/src/services/mock-task-service.js';
+import { createOperationJournal } from '../scripts/src/services/operation-journal-service.js';
 import { createPerceptionService } from '../scripts/src/services/perception-service.js';
+import { createChannelBridgeService } from '../scripts/src/services/channel-bridge-service.js';
 import { createTenantIdentityService } from '../scripts/src/services/tenant-identity-service.js';
 import { createRecipeTaskProvider, createTaskCenter } from '../scripts/src/services/task-center.js';
 import { createLandlordConsole } from '../scripts/src/ui/console/controller.js';
@@ -73,15 +75,28 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
   const store = createLandlordStore({ mvu: createMemoryMvu(), schema, idFactory: createIds() });
   const tasks = createMockTaskService({ recipes: managementMockRecipes, idFactory: createIds() });
   const events = createBuildingEventBus({ store });
+  const historyIds = createIds();
+  const history = createOperationJournal({ store, idFactory: () => historyIds('operation') });
   const perception = createPerceptionService({ store });
   const identities = createTenantIdentityService({ store });
+  const dispatchedLinks = [];
+  const channelPorts = {
+    capabilities: () => ({ 正文: true, 微信: true, 新闻: true, 建筑: true }),
+    story: async draft => dispatchedLinks.push(draft),
+    wechat: async draft => dispatchedLinks.push(draft),
+    news: async draft => dispatchedLinks.push(draft),
+    building: async draft => dispatchedLinks.push(draft),
+  };
+  const bridges = createChannelBridgeService({ events, identities, ports: channelPorts });
   const controller = createLandlordConsole({
     document: dom.window.document,
     store,
     tasks,
     events,
+    history,
     perception,
     identities,
+    bridges,
     layouts: createBuildingLayoutService(),
     compiler: { compileBuilding, compilePortfolio },
     logger: { error: () => {} },
@@ -92,6 +107,11 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     assert.match(dom.window.document.body.textContent, /我的建筑版图/);
     assert.match(dom.window.document.body.textContent, /本地模拟模式/);
     assert.match(dom.window.document.body.textContent, /白塔社区医院/);
+
+    click(dom.window.document, '[data-action="navigate"][data-section="twin"]');
+    click(dom.window.document, '[data-action="focus-twin-floor"][data-floor-id="floor_1"]');
+    assert.ok(dom.window.document.querySelectorAll('.lmo-twin-edges [data-edge-id]').length >= 1);
+    click(dom.window.document, '[data-action="navigate"][data-section="portfolio"]');
 
     click(dom.window.document, '[data-action="open-takeover"][data-building-id="building_hospital_candidate"]');
     assert.match(dom.window.document.body.textContent, /建筑接管提案/);
@@ -127,6 +147,16 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     await waitFor(() => assert.equal(store.getState().人物列表.person_mock_医院_linxia.姓名, '林夏'));
     assert.match(dom.window.document.body.textContent, /林夏已经正式加入白塔治愈生活馆/);
 
+    click(dom.window.document, '[data-action="navigate"][data-section="history"]');
+    assert.match(dom.window.document.body.textContent, /经营状态有自己的时间轴/);
+    assert.equal(dom.window.document.querySelectorAll('.lmo-history-list>div').length, 3);
+    click(dom.window.document, '[data-action="undo-operation"]');
+    await waitFor(() => assert.equal(store.getState().人物列表.person_mock_医院_linxia, undefined));
+    assert.match(dom.window.document.body.textContent, /已撤销：招募林夏/);
+    click(dom.window.document, '[data-action="redo-operation"]');
+    await waitFor(() => assert.equal(store.getState().人物列表.person_mock_医院_linxia.姓名, '林夏'));
+    assert.match(dom.window.document.body.textContent, /已重做：招募林夏/);
+
     click(dom.window.document, '[data-action="navigate"][data-section="tasks"]');
     assert.match(dom.window.document.body.textContent, /统一任务中心/);
     assert.match(dom.window.document.body.textContent, /切换模式不会发起生成/);
@@ -138,15 +168,36 @@ test('经营中枢可以只用本地模拟数据完成接管、装修和招募',
     assert.equal(events.list({ status: '待分发' }).length, 12);
     click(dom.window.document, '[data-action="consume-link"]');
     await waitFor(() => assert.equal(events.list({ status: '已读取' }).length, 1));
+    click(dom.window.document, '[data-action="preview-link"]');
+    assert.match(dom.window.document.body.textContent, /投递前预览/);
+    assert.equal(dispatchedLinks.length, 0);
+    click(dom.window.document, '[data-action="dispatch-preview-links"]');
+    await waitFor(() => assert.equal(events.list({ status: '已读取' }).length, 2));
+    assert.equal(dispatchedLinks.length, 1);
 
     click(dom.window.document, '[data-action="navigate"][data-section="building"]');
     assert.match(dom.window.document.body.textContent, /landlord_wechat_/);
     click(dom.window.document, '[data-action="navigate"][data-section="twin"]');
     assert.match(dom.window.document.body.textContent, /可计算空间镜像/);
-    assert.ok(dom.window.document.querySelectorAll('.lmo-twin-map [data-space-id]').length >= 3);
+    assert.equal(dom.window.document.querySelectorAll('.lmo-twin-map').length, 1);
+    assert.ok(dom.window.document.querySelectorAll('.lmo-twin-map [data-action="inspect-twin-space"]').length >= 1);
+    assert.ok(dom.window.document.querySelector('.lmo-twin-inspector [data-action="select-space"]'));
+
+    const rooms = [...dom.window.document.querySelectorAll('[data-action="inspect-twin-space"]')];
+    const inspectedName = rooms.at(-1).querySelector('strong').textContent;
+    rooms.at(-1).click();
+    assert.equal(dom.window.document.querySelector('[data-action="inspect-twin-space"][aria-pressed="true"] strong').textContent, inspectedName);
+    assert.match(dom.window.document.querySelector('.lmo-twin-inspector').textContent, new RegExp(inspectedName));
+
+    const floorButtons = [...dom.window.document.querySelectorAll('[data-action="focus-twin-floor"]')];
+    assert.ok(floorButtons.length >= 2);
+    floorButtons.at(-1).click();
+    assert.equal(dom.window.document.querySelectorAll('[data-action="focus-twin-floor"][aria-pressed="true"]').length, 1);
+    assert.equal(dom.window.document.querySelectorAll('.lmo-twin-map').length, 1);
   } finally {
     controller.dispose();
     events.dispose();
+    history.dispose();
     dom.window.close();
     delete globalThis.generate;
     delete globalThis.generateRaw;

@@ -1,16 +1,16 @@
 {
-  "version": "0.3.0-preview.1",
+  "version": "0.3.0-preview.2",
   "format": "esm",
   "entry": "landlord-simulator.bundle.js",
-  "bytes": 1114859,
-  "sha256": "b70ee8a0f675226b42dfca818d06ad813806a38805c07bbd95876134649a5b0e",
+  "bytes": 1154073,
+  "sha256": "5c80b39c21c050af55b6bd773f08ce8e4c60a876e7893bb6be75c728f5ddaf31",
   "release": {
-    "tag": "v0.3.0-preview.1",
+    "tag": "v0.3.0-preview.2",
     "repository": "KelvinKHan/landlord-simulator-character-card",
     "loader": "landlord-simulator.loader.js",
     "sources": [
-      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.1/dist/landlord-simulator.bundle.js",
-      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.1/dist/landlord-simulator.bundle.js"
+      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.2/dist/landlord-simulator.bundle.js",
+      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.2/dist/landlord-simulator.bundle.js"
     ]
   },
   "upstreams": {
@@ -566,6 +566,7 @@
         "landlord.store",
         "landlord.tasks",
         "landlord.events",
+        "landlord.history",
         "landlord.perception",
         "landlord.identities",
         "landlord.bridges",
@@ -578,12 +579,13 @@
         "多建筑编译",
         "本地/AI 双模式统一任务中心",
         "任务排队、取消、重试、超时和预览确认",
+        "当前会话内可冲突检测的经营撤销与重做",
         "接管、装修与招募的确认写入",
         "正文、微信、新闻与建筑的联动事件总线",
         "建筑、楼层与空间的逐步感知",
         "租客在正文、微信、新闻与建筑中的统一身份",
         "基于空间尺寸与相邻关系的建筑数字孪生",
-        "原有微信、新闻与正文模块的显式草稿投递桥"
+        "正文一次性提示词注入与微信、新闻的显式草稿投递桥"
       ]
     },
     {
@@ -596,6 +598,7 @@
         "landlord.store",
         "landlord.tasks",
         "landlord.events",
+        "landlord.history",
         "landlord.perception",
         "landlord.identities",
         "landlord.bridges",
@@ -615,6 +618,7 @@
         "本地模拟的接管、装修、招募预览与确认",
         "经营事件时间线",
         "多频道联动待办与消费状态",
+        "经营操作时间线与安全撤销/重做",
         "糖果明亮主题与 Rose Pine 暗色主题",
         "桌面与窄屏响应式布局"
       ]
