@@ -370,6 +370,50 @@ export function createLandlordStore({ mvu, schema, idFactory = defaultIdFactory 
       });
     },
 
+    async activateRelationshipScene(scene) {
+      return commit('启动双人生活场景', state => {
+        if (!scene?.id || !Array.isArray(scene.personIds) || scene.personIds.length !== 2) throw new Error('双人生活场景内容无效');
+        if (Object.values(state.事件列表).some(event => event.场景键 === scene.id)) throw new Error('这个双人生活场景已经启动过了');
+        const building = state.建筑列表[scene.buildingId];
+        const destination = building?.空间列表?.[scene.destination?.id];
+        if (!destination || !['总部', '已接管'].includes(building.接管状态)) throw new Error('双人生活场景的目标空间不可用');
+        const people = scene.personIds.map(personId => {
+          const person = state.人物列表[personId];
+          const expected = scene.expectedLocations?.[personId];
+          if (!person) throw new Error('双人生活场景中的人物已经不存在');
+          if (person.所在建筑ID !== expected?.buildingId || person.所在空间ID !== expected?.spaceId) {
+            throw new Error(`${person.姓名}的位置已经变化，请重新编排双人生活场景`);
+          }
+          return [personId, person];
+        });
+        const participants = {};
+        for (const [personId, person] of people) {
+          const source = state.建筑列表[person.所在建筑ID]?.空间列表?.[person.所在空间ID];
+          const role = source?.占用者?.[personId] ?? person.身份类型;
+          if (source?.占用者) delete source.占用者[personId];
+          destination.占用者[personId] = role;
+          person.所在建筑ID = scene.buildingId;
+          person.所在空间ID = scene.destination.id;
+          person.状态 = scene.activities?.[personId] ?? `正在参与${scene.title}`;
+          participants[personId] = scene.label;
+        }
+        revealManagedSpace(building, destination);
+        building.经营摘要.今日亮点 = scene.title;
+        building.经营摘要.活跃度 = Math.min(100, Number(building.经营摘要.活跃度 ?? 0) + 4);
+        appendDomainEvent(state, {
+          标题: scene.title,
+          类型: '关系场景',
+          建筑ID: scene.buildingId,
+          空间ID: scene.destination.id,
+          状态: '已完成',
+          摘要: scene.summary,
+          发生时间: '刚刚',
+          场景键: scene.id,
+          参与者: participants,
+        }, { channels: ['正文', '微信', '建筑'] });
+      });
+    },
+
     async setDeliveryStatus(deliveryId, status) {
       if (!['待分发', '已读取', '已忽略'].includes(status)) throw new Error(`不支持的联动状态：${status}`);
       return commit('更新联动队列', state => {

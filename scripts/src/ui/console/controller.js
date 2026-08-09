@@ -1,5 +1,6 @@
 import { renderConsole } from './templates.js';
-import { applyRelationshipSpark, detectDocumentTheme, extractNarrativeProposals, isOwnedBuilding as owned } from './workflow-actions.js';
+import { handleRelationshipAction } from './relationship-actions.js';
+import { detectDocumentTheme, extractNarrativeProposals, isOwnedBuilding as owned } from './workflow-actions.js';
 
 export function createLandlordConsole({ document, store, tasks, events = null, history = null, spatialSync = null, narrativeIntents = null, contextCapsules = null, embodiment = null, relationships = null, perception = null, identities = null, layouts = null, operations = null, bridges = null, compiler, logger }) {
   let root = null;
@@ -15,6 +16,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     selectedPulseSceneId: null,
     selectedReactionId: null,
     selectedRelationshipSparkId: null,
+    selectedRelationshipSceneId: null,
     previewLinkIds: [],
     contextCapsuleVisible: false,
     selectedMovePersonId: null,
@@ -50,7 +52,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
     const twin = layouts?.compile(current) ?? { buildingId: current.id, name: current.name, theme: current.theme, floors: [], metrics: { floors: 0, nodes: 0, edges: 0 } };
     const pulse = operations?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'pulse_unavailable', total: 0, state: '尚未加载', metrics: { comfort: 0, function: 0, vitality: 0, appeal: 0 }, spaces: [], synergies: [], scenes: [], residentCount: 0, originCount: 0 };
     const tenantLife = embodiment?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, signature: 'embodied_unavailable', residents: [], encounters: [] };
-    const relationshipCenter = relationships?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, sparks: [], network: null };
+    const relationshipCenter = relationships?.compile(state, current.id) ?? { buildingId: current.id, buildingName: current.name, sparks: [], scenes: [], network: null };
     const historyCenter = history
       ? { ...history.summary(), entries: history.list({ limit: 20 }) }
       : { busy: false, count: 0, appliedCount: 0, canUndo: false, canRedo: false, undoLabel: '', redoLabel: '', blockedUndo: false, entries: [] };
@@ -189,18 +191,7 @@ export function createLandlordConsole({ document, store, tasks, events = null, h
         setNotice('这份感受已经进入人物状态，并生成正文、微信和建筑草稿。', 'success');
       });
     }
-    if (action === 'choose-relationship-spark') {
-      ui.selectedRelationshipSparkId = button.dataset.sparkId;
-      return render();
-    }
-    if (action === 'confirm-relationship-spark') {
-      const spark = data.relationshipCenter.sparks.find(item => item.id === ui.selectedRelationshipSparkId);
-      return withBusy(async () => {
-        await applyRelationshipSpark({ spark, store, recordOperation });
-        ui.selectedRelationshipSparkId = null;
-        setNotice('这次关系火花已经双向写入人物关系，并生成正文、微信和建筑草稿。', 'success');
-      });
-    }
+    if (action.includes('relationship')) return handleRelationshipAction({ action, button, data, ui, store, render, withBusy, recordOperation, setNotice });
     if (action === 'undo-operation' || action === 'redo-operation') {
       if (!history) throw new Error('经营回溯服务尚未加载');
       return withBusy(async () => {

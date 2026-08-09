@@ -108,6 +108,8 @@ test('确认关系火花会双向写入关系并生成三个联动草稿', async
   assert.equal(confirmedCenter.network.edges.length, 1);
   assert.equal(confirmedCenter.network.edges[0].type, 'confirmed');
   assert.equal(confirmedCenter.network.edges[0].label, spark.label);
+  assert.equal(confirmedCenter.scenes.length, 2);
+  assert.deepEqual(confirmedCenter.scenes.map(scene => scene.kind).sort(), ['dual-profession', 'world-exchange']);
   await assert.rejects(() => store.confirmRelationshipSpark(spark), /已经记录过/);
 });
 
@@ -142,4 +144,36 @@ test('已确认关系在人物分开活动后保留并重排为空间群落', as
   assert.equal(center.network.edges[0].type, 'confirmed');
   assert.equal(center.network.edges[0].label, spark.label);
   assert.notEqual(center.network.nodes[0].spaceId, center.network.nodes[1].spaceId);
+});
+
+test('启动双人生活场景会原子移动双方并生成三类联动', async () => {
+  const store = createStore(createPairState());
+  const spark = compileRelationshipSparks(store.getState(), 'building_headquarters').sparks[0];
+  await store.confirmRelationshipSpark(spark);
+  const scene = compileRelationshipSparks(store.getState(), 'building_headquarters').scenes[0];
+  await store.activateRelationshipScene(scene);
+
+  const state = store.getState();
+  for (const personId of scene.personIds) {
+    assert.equal(state.人物列表[personId].所在空间ID, scene.destination.id);
+    assert.equal(state.建筑列表.building_headquarters.空间列表[scene.destination.id].占用者[personId], '租客');
+    assert.match(state.人物列表[personId].状态, /正在和/);
+  }
+  assert.equal(state.建筑列表.building_headquarters.经营摘要.今日亮点, scene.title);
+  assert.equal(Object.values(state.事件列表).filter(event => event.类型 === '关系场景').length, 1);
+  assert.deepEqual(
+    Object.values(state.联动队列).filter(item => item.来源类型 === '关系场景').map(item => item.频道).sort(),
+    ['建筑', '微信', '正文'],
+  );
+  await assert.rejects(() => store.activateRelationshipScene(scene), /已经启动过/);
+});
+
+test('双人场景确认前任一人物移动都会让旧编排失效', async () => {
+  const store = createStore(createPairState());
+  const spark = compileRelationshipSparks(store.getState(), 'building_headquarters').sparks[0];
+  await store.confirmRelationshipSpark(spark);
+  const scene = compileRelationshipSparks(store.getState(), 'building_headquarters').scenes[0];
+  await store.movePerson({ personId: scene.personIds[0], buildingId: 'building_headquarters', spaceId: 'garden', activity: '临时去了花园' });
+  await assert.rejects(() => store.activateRelationshipScene(scene), /位置已经变化/);
+  assert.equal(Object.values(store.getState().事件列表).filter(event => event.类型 === '关系场景').length, 0);
 });

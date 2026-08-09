@@ -1,16 +1,16 @@
 {
-  "version": "0.3.0-preview.10",
+  "version": "0.3.0-preview.11",
   "format": "esm",
   "entry": "landlord-simulator.bundle.js",
-  "bytes": 1302277,
-  "sha256": "94150ef3b523c86dcefb0190ea19ad28bedca74d370df23b1009cf809b05a29d",
+  "bytes": 1316249,
+  "sha256": "64bca389824dd31cc067788587244b26a9ec60bd2b8c901a11042b35097f1590",
   "release": {
-    "tag": "v0.3.0-preview.10",
+    "tag": "v0.3.0-preview.11",
     "repository": "KelvinKHan/landlord-simulator-character-card",
     "loader": "landlord-simulator.loader.js",
     "sources": [
-      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.10/dist/landlord-simulator.bundle.js",
-      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.10/dist/landlord-simulator.bundle.js"
+      "https://testingcf.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.11/dist/landlord-simulator.bundle.js",
+      "https://cdn.jsdelivr.net/gh/KelvinKHan/landlord-simulator-character-card@v0.3.0-preview.11/dist/landlord-simulator.bundle.js"
     ]
   },
   "upstreams": {
@@ -600,6 +600,7 @@
         "从剧情片段本地或显式 AI 提取人物移动意图并交给空间同步复核",
         "把当前建筑相关事实压缩成有字符预算、可预览的一次性正文上下文胶囊",
         "按真实同屋位置、来源世界、职业和空间体感计算双向关系火花",
+        "从已确认人物关系编译跨世界与双职业共同生活场景并原子同步双方位置",
         "正文一次性提示词注入与微信、新闻的显式草稿投递桥"
       ]
     },
@@ -647,6 +648,7 @@
         "剧情片段解析、本地/AI 提取模式与结构化移动提案",
         "当前建筑上下文胶囊预览、预算显示与一次性正文注入",
         "同屋人物关系火花预览、成因解释、双向确认与三频道联动",
+        "已确认关系专属的双人生活导演台、位置复核与共同场景启动",
         "糖果明亮主题与 Rose Pine 暗色主题",
         "桌面与窄屏响应式布局"
       ]

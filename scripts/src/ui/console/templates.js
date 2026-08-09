@@ -334,6 +334,15 @@ function renderRelationshipNetwork(relationshipCenter) {
   </section>`;
 }
 
+function renderRelationshipScenes(relationshipCenter, ui) {
+  if (!relationshipCenter.scenes?.length) return '';
+  const selected = relationshipCenter.scenes.find(scene => scene.id === ui.selectedRelationshipSceneId && !scene.recorded);
+  return `<section class="lmo-duo-scenes"><div class="lmo-section-heading compact"><div><span>DUO SCENE COMPOSER</span><h2>双人生活导演台 · 把关系变成真正发生的共同生活</h2></div><p>场景启动时会同时校验两个人的位置，再把双方移动到目标空间。</p></div>
+    <div class="lmo-duo-scene-grid">${relationshipCenter.scenes.map(scene => `<button class="lmo-duo-scene-card ${scene.id === ui.selectedRelationshipSceneId ? 'selected' : ''} ${scene.recorded ? 'recorded' : ''}" data-action="choose-relationship-scene" data-scene-id="${escapeHtml(scene.id)}" ${scene.recorded ? 'disabled' : ''}><header><span>${escapeHtml(scene.label)}</span><em>${escapeHtml(scene.destination.name)} · ${scene.destination.score} 空间分</em></header><div class="lmo-duo-people">${scene.people.map(person => `<i style="--person-accent:${safeColor(person.color)}">${escapeHtml(person.name.slice(0, 1))}</i>`).join('')}<strong>${escapeHtml(scene.people.map(person => person.name).join(' × '))}</strong></div><h3>${escapeHtml(scene.title)}</h3><p>${escapeHtml(scene.summary)}</p><footer><span>${escapeHtml(scene.relationshipLabel)}</span><em>${scene.recorded ? '场景已发生' : '编排这个场景'}</em></footer></button>`).join('')}</div>
+    ${selected ? `<div class="lmo-confirm-bar lmo-duo-scene-confirm"><div><strong>启动「${escapeHtml(selected.title)}」</strong><span>确认后两人会一起前往${escapeHtml(selected.destination.name)}；若任意一人位置已变化，本次编排自动失效。</span></div><button class="lmo-primary" data-action="confirm-relationship-scene" ${ui.busy ? 'disabled' : ''}>启动共同生活 ${icon('sparkle')}</button></div>` : ''}
+  </section>`;
+}
+
 function renderTenantLife(tenantLife, relationshipCenter, ui) {
   const selected = tenantLife.residents.find(item => item.id === ui.selectedReactionId && !item.recorded);
   const selectedSpark = relationshipCenter.sparks.find(item => item.id === ui.selectedRelationshipSparkId && !item.recorded);
@@ -344,6 +353,7 @@ function renderTenantLife(tenantLife, relationshipCenter, ui) {
     ${relationshipCenter.sparks.length ? `<div class="lmo-section-heading compact"><div><span>RELATIONSHIP SPARKS</span><h2>只有真的在同一间房里，关系才有发生地点</h2></div><p>分数用于解释这次相遇的潜力，不会每天衰减，也不会强制失败。</p></div><div class="lmo-relationship-grid">${relationshipCenter.sparks.map(spark => `<button class="lmo-relationship-card ${spark.id === ui.selectedRelationshipSparkId ? 'selected' : ''} ${spark.recorded ? 'recorded' : ''}" data-action="choose-relationship-spark" data-spark-id="${escapeHtml(spark.id)}" style="--score:${spark.score}" ${spark.recorded ? 'disabled' : ''}><header><div>${spark.people.map(person => `<i style="--person-accent:${safeColor(person.color)}">${escapeHtml(person.name.slice(0, 1))}</i>`).join('')}</div><span><b>${spark.score}</b><small>火花强度</small></span></header><strong>${escapeHtml(spark.title)}</strong><p>${escapeHtml(spark.summary)}</p><ul>${spark.reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('')}</ul><footer><span>${escapeHtml(spark.spaceName)}</span><em>${spark.recorded ? '已经记录' : spark.existing.left || spark.existing.right ? `现有：${escapeHtml(spark.existing.left || spark.existing.right)}` : '新的关系可能'}</em></footer></button>`).join('')}</div>` : ''}
     ${selectedSpark ? `<div class="lmo-confirm-bar lmo-relationship-confirm"><div><strong>确认「${escapeHtml(selectedSpark.title)}」</strong><span>只在两人仍处于${escapeHtml(selectedSpark.spaceName)}时双向写入关系，并创建正文、微信和建筑草稿。</span></div><button class="lmo-primary" data-action="confirm-relationship-spark" ${ui.busy ? 'disabled' : ''}>记录关系火花 ${icon('sparkle')}</button></div>` : ''}
     ${renderRelationshipNetwork(relationshipCenter)}
+    ${renderRelationshipScenes(relationshipCenter, ui)}
     ${tenantLife.residents.length ? `<div class="lmo-tenant-life-grid">${tenantLife.residents.map(person => `<button class="lmo-tenant-life-card ${person.id === ui.selectedReactionId ? 'selected' : ''} ${person.recorded ? 'recorded' : ''}" data-action="choose-tenant-reaction" data-reaction-id="${escapeHtml(person.id)}" style="--person-accent:${safeColor(person.color)}" ${person.recorded ? 'disabled' : ''}><header><i>${escapeHtml(person.name.slice(0, 1))}</i><p><span>${escapeHtml(person.origin)} · ${escapeHtml(person.profession)}</span><strong>${escapeHtml(person.name)}</strong><small>${escapeHtml(person.spaceName)} · ${escapeHtml(person.state)}</small></p><div style="--fit:${person.fit}"><b>${person.fit}</b><small>契合</small></div></header><blockquote>${escapeHtml(person.reaction)}</blockquote><div class="lmo-tenant-preferences"><small>识别偏好</small>${tags(person.preferenceTags)}</div>${person.matchedTags.length ? `<div class="lmo-tenant-matches"><small>房间已回应</small>${tags(person.matchedTags)}</div>` : ''}<footer>${person.alternatives.length ? `<span>更适合：${person.alternatives.map(item => `${escapeHtml(item.spaceName)} +${item.delta}`).join(' / ')}</span>` : '<span>当前已经是最合适的已知空间</span>'}<em>${person.recorded ? '感受已记录' : '选择这份反应'}</em></footer></button>`).join('')}</div>` : emptyState('建筑里还没有具身人物', '先从招募中心让一位人物进入建筑，再回来观察其真实空间反应。')}
     ${selected ? `<div class="lmo-confirm-bar lmo-tenant-confirm"><div><strong>记录${escapeHtml(selected.name)}此刻的感受</strong><span>确认后会写入人物生活状态，并创建正文、微信与建筑草稿；位置变化会使旧反应自动失效。</span></div><button class="lmo-primary" data-action="confirm-tenant-reaction" ${ui.busy ? 'disabled' : ''}>确认记录 ${icon('arrow')}</button></div>` : ''}
   </section>`;
@@ -411,7 +421,7 @@ function renderEvents(state, portfolio, linkCenter, contextCapsule, ui) {
 }
 
 const operationKindLabels = Object.freeze({
-  takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募', exploration: '探索感知', movement: '人物移动', scene: '建筑场景', reaction: '人物感受', relationship: '关系火花', management: '经营操作',
+  takeover: '建筑接管', renovation: '空间装修', recruitment: '人物招募', exploration: '探索感知', movement: '人物移动', scene: '建筑场景', reaction: '人物感受', relationship: '关系火花', 'relationship-scene': '双人生活', management: '经营操作',
 });
 
 function renderSpatial(spatialCenter, current, ui) {

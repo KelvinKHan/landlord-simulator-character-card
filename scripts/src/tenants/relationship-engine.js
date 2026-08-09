@@ -199,16 +199,95 @@ function compileNetwork(state, buildingId, building, sparks) {
   });
 }
 
+function compileRelationshipScenes(state, buildingId, building, operations, network) {
+  const recordedKeys = new Set(Object.values(state.事件列表 ?? {}).map(event => event.场景键).filter(Boolean));
+  const spaceCandidates = operations.spaces
+    .filter(space => building.空间列表?.[space.id])
+    .sort((left, right) => right.total - left.total || left.id.localeCompare(right.id));
+  const nodeMap = new Map(network.nodes.map(node => [node.id, node]));
+  const scenes = [];
+  for (const edge of network.edges.filter(item => item.type === 'confirmed')) {
+    const left = state.人物列表[edge.source];
+    const right = state.人物列表[edge.target];
+    const leftNode = nodeMap.get(edge.source);
+    const rightNode = nodeMap.get(edge.target);
+    if (!left || !right || !leftNode || !rightNode) continue;
+    const sharedSpaceId = left.所在空间ID === right.所在空间ID ? left.所在空间ID : null;
+    const destination = spaceCandidates.find(space => space.id === sharedSpaceId) ?? spaceCandidates[0];
+    if (!destination) continue;
+    const variants = [];
+    if (left.来源世界 !== right.来源世界) {
+      variants.push({
+        kind: 'world-exchange',
+        label: '跨世界共居实验',
+        title: `${left.姓名}与${right.姓名}的常识交换夜`,
+        summary: `${left.姓名}和${right.姓名}准备在${destination.name}各自拿出一种故乡生活方式，让两个世界第一次真正共用同一处空间。`,
+        activity: otherName => `正在和${otherName}交换故乡的生活常识`,
+      });
+    }
+    if (left.职业 !== right.职业) {
+      variants.push({
+        kind: 'dual-profession',
+        label: '双职业联手',
+        title: `${left.职业} × ${right.职业}的空间共创`,
+        summary: `${left.姓名}和${right.姓名}将在${destination.name}把${left.职业}与${right.职业}的专长拼成一项只属于这栋建筑的新体验。`,
+        activity: otherName => `正在和${otherName}进行双职业空间共创`,
+      });
+    }
+    if (!variants.length) {
+      variants.push({
+        kind: 'shared-ritual',
+        label: '共同生活仪式',
+        title: `${left.姓名}与${right.姓名}的空间小仪式`,
+        summary: `${left.姓名}和${right.姓名}准备在${destination.name}建立一个以后只要看见就会想起彼此的共同生活习惯。`,
+        activity: otherName => `正在和${otherName}建立共同生活仪式`,
+      });
+    }
+    for (const variant of variants.slice(0, 2)) {
+      const expectedLocations = Object.freeze({
+        [edge.source]: Object.freeze({ buildingId, spaceId: left.所在空间ID }),
+        [edge.target]: Object.freeze({ buildingId, spaceId: right.所在空间ID }),
+      });
+      const id = `duo_${hash([edge.id, variant.kind, destination.id, operations.signature, left.所在空间ID, right.所在空间ID].join('|'))}`;
+      scenes.push(Object.freeze({
+        id,
+        kind: variant.kind,
+        label: variant.label,
+        title: variant.title,
+        summary: variant.summary,
+        relationshipLabel: edge.label,
+        buildingId,
+        buildingName: building.名称,
+        destination: Object.freeze({ id: destination.id, name: destination.name, score: destination.total }),
+        personIds: Object.freeze([edge.source, edge.target]),
+        people: Object.freeze([
+          Object.freeze({ id: edge.source, name: left.姓名, profession: left.职业, color: left.视觉身份?.主色 ?? '#FF9EAA' }),
+          Object.freeze({ id: edge.target, name: right.姓名, profession: right.职业, color: right.视觉身份?.主色 ?? '#55B7A5' }),
+        ]),
+        expectedLocations,
+        activities: Object.freeze({
+          [edge.source]: variant.activity(right.姓名),
+          [edge.target]: variant.activity(left.姓名),
+        }),
+        recorded: recordedKeys.has(id),
+      }));
+    }
+  }
+  return Object.freeze(scenes.sort((left, right) => Number(left.recorded) - Number(right.recorded) || right.destination.score - left.destination.score || left.id.localeCompare(right.id)));
+}
+
 export function compileRelationshipSparks(state, buildingId) {
   const building = state?.建筑列表?.[buildingId];
   if (!building) throw new Error(`建筑不存在：${buildingId}`);
   const operations = compileBuildingOperations(state, buildingId);
   const sparks = compileSparks(state, buildingId, building, operations);
+  const network = compileNetwork(state, buildingId, building, sparks);
   return Object.freeze({
     buildingId,
     buildingName: building.名称,
     sparks: Object.freeze(sparks),
-    network: compileNetwork(state, buildingId, building, sparks),
+    network,
+    scenes: compileRelationshipScenes(state, buildingId, building, operations, network),
   });
 }
 

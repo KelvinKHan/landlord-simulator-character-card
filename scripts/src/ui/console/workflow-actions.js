@@ -19,8 +19,3 @@ export function detectDocumentTheme(document) {
   if (classes.includes('dark')) return 'dark';
   return globalThis.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
-
-export async function applyRelationshipSpark({ spark, store, recordOperation }) {
-  if (!spark || spark.recorded) throw new Error('请选择一条尚未记录的关系火花');
-  return recordOperation('relationship', `记录${spark.title}`, () => store.confirmRelationshipSpark(spark));
-}

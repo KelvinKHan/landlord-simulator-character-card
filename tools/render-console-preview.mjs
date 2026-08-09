@@ -92,6 +92,10 @@ const spatialCenter = {
 };
 const pulse = compileBuildingOperations(state, current.id);
 const tenantLife = compileTenantEmbodiment(state, current.id);
+const previewRelationshipSpark = compileRelationshipSparks(state, current.id).sparks[0];
+state.人物列表.preview_person_linxia.关系.preview_person_shaoqing = previewRelationshipSpark.label;
+state.人物列表.preview_person_shaoqing.关系.preview_person_linxia = previewRelationshipSpark.label;
+state.事件列表.preview_relationship = { 标题: previewRelationshipSpark.title, 类型: '关系火花', 建筑ID: current.id, 空间ID: previewRelationshipSpark.spaceId, 状态: '已完成', 摘要: previewRelationshipSpark.summary, 发生时间: '刚刚', 场景键: previewRelationshipSpark.id, 参与者: { preview_person_linxia: previewRelationshipSpark.label, preview_person_shaoqing: previewRelationshipSpark.label } };
 const relationshipCenter = compileRelationshipSparks(state, current.id);
 const contextCapsule = compileContextCapsule(state, current.id);
 
@@ -100,8 +104,9 @@ const pages = {
   'portfolio-dark': { ui: { section: 'portfolio' }, task: null, theme: 'dark' },
   building: { ui: { section: 'building' }, task: null },
   pulse: { ui: { section: 'pulse', selectedPulseSceneId: pulse.scenes[0]?.id }, task: null },
-  tenants: { ui: { section: 'tenants', selectedReactionId: tenantLife.residents[0]?.id, selectedRelationshipSparkId: relationshipCenter.sparks[0]?.id }, task: null },
+  tenants: { ui: { section: 'tenants', selectedReactionId: tenantLife.residents[0]?.id, selectedRelationshipSparkId: null, selectedRelationshipSceneId: relationshipCenter.scenes[0]?.id }, task: null },
   social: { ui: { section: 'tenants', selectedReactionId: null, selectedRelationshipSparkId: null }, task: null, scrollTop: 520 },
+  duo: { ui: { section: 'tenants', selectedReactionId: null, selectedRelationshipSparkId: null, selectedRelationshipSceneId: relationshipCenter.scenes[0]?.id }, task: null, scrollTop: 980 },
   takeover: {
     ui: { section: 'takeover', targetBuilding: hospital, selectedOptionId: 'multiverse-medical', busy: false },
     task: { status: 'ready', preview: takeoverPreview },
